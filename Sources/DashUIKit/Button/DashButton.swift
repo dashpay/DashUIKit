@@ -172,7 +172,8 @@ public struct DashButton: View {
                     .padding(.horizontal, size.hPadding)
                     .padding(.vertical, size.vPadding)
                     .foregroundColor(style.foregroundColor(isEnabled: isEnabled))
-                    .clipShape(.rect(cornerRadius: size.radius))
+                    .background(style.backgroundColor(isEnabled: isEnabled))
+                    .clipShape(RoundedRectangle(cornerRadius: size.radius, style: .continuous))
                     .frame(maxWidth: fillsWidth ? .infinity : nil)
                     .overlay(
                         RoundedRectangle(cornerRadius: size.radius)
@@ -186,7 +187,7 @@ public struct DashButton: View {
                     .foregroundColor(style.foregroundColor(isEnabled: isEnabled))
                     .frame(maxWidth: fillsWidth ? .infinity : nil)
                     .background(style.backgroundColor(isEnabled: isEnabled))
-                    .clipShape(.rect(cornerRadius: size.radius))
+                    .clipShape(RoundedRectangle(cornerRadius: size.radius, style: .continuous))
             }
         }
 

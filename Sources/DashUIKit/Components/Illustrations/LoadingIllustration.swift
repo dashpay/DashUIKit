@@ -70,17 +70,19 @@ public struct LoadingSpinner: View {
     /// Index of the currently-brightest spoke; advances clockwise on each timer tick.
     @State private var phase = 0
     /// Fires once per spoke step (duration / spokeCount). Created once so it isn't restarted
-    /// on every body re-evaluation.
-    private let timer: Publishers.Autoconnect<Timer.TimerPublisher>
+    /// on every body re-evaluation; connected on appear and cancelled on disappear so no timer
+    /// runs while the view is off-screen.
+    private let timer: Timer.TimerPublisher
+    /// Handle for the connected timer; `nil` while the view is off-screen.
+    @State private var timerCancellable: Cancellable?
 
     public init(size: CGFloat = 61.73, color: Color = defaultColor, spokeCount: Int = 12, duration: Double = 1) {
         self.size = size
         self.color = color
-        self.spokeCount = spokeCount
+        self.spokeCount = max(spokeCount, 1)
         self.duration = duration
         self.timer = Timer
             .publish(every: duration / Double(max(spokeCount, 1)), on: .main, in: .common)
-            .autoconnect()
     }
 
     private var stepInterval: Double { duration / Double(max(spokeCount, 1)) }
@@ -104,6 +106,15 @@ public struct LoadingSpinner: View {
             withAnimation(.linear(duration: stepInterval)) {
                 phase = (phase + 1) % spokeCount
             }
+        }
+        .onAppear {
+            if timerCancellable == nil {
+                timerCancellable = timer.connect()
+            }
+        }
+        .onDisappear {
+            timerCancellable?.cancel()
+            timerCancellable = nil
         }
     }
 
