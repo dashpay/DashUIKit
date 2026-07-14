@@ -286,6 +286,9 @@ private struct AnimatedSwapLayout: View {
     @State private var scaleB: CGFloat = 1.0
     /// Controls `.offset`. Animated after `scalePhase` delay in phase 2.
     @State private var offsetPrimary: Bool
+    /// Invalidation token for the delayed animation callbacks. Each `onChange` bumps it so any
+    /// still-pending scale/offset closures from a previous toggle become no-ops.
+    @State private var swapGeneration = 0
 
     // MARK: Timing
 
@@ -381,6 +384,11 @@ private struct AnimatedSwapLayout: View {
         .frame(height: SwapAnimLayout.containerHeight)
         .frame(maxWidth: .infinity)
         .onChange(of: isPrimaryLarge) { newValue in
+            // A rapid re-toggle must invalidate the previous change's still-pending callbacks,
+            // otherwise a stale scale/offset update can run after the newer state (visible jump).
+            swapGeneration &+= 1
+            let generation = swapGeneration
+
             // Step 1: font/color snaps to target (no animation — font is not animatable)
             fontPrimary = newValue
 
@@ -396,6 +404,7 @@ private struct AnimatedSwapLayout: View {
             // Deferring to the next run loop lets SwiftUI render the compensating scale first,
             // so the animation truly starts from the compensating value.
             DispatchQueue.main.async {
+                guard generation == swapGeneration else { return }
                 withAnimation(.easeInOut(duration: Self.scalePhase)) {
                     scaleA = 1.0
                     scaleB = 1.0
@@ -404,6 +413,7 @@ private struct AnimatedSwapLayout: View {
 
             // Phase 2: offset glide after the scale phase completes
             DispatchQueue.main.asyncAfter(deadline: .now() + Self.scalePhase) {
+                guard generation == swapGeneration else { return }
                 withAnimation(.easeInOut(duration: Self.offsetPhase)) {
                     offsetPrimary = newValue
                 }
@@ -454,8 +464,8 @@ extension View {
     /// Long-press to paste. Intentionally uses an `onLongPressGesture` and NOT `.contextMenu`:
     /// `.contextMenu` adds a `_UIReparentingView` to the host's view hierarchy, which is
     /// unsupported when the SwiftUI content is embedded in a `UIHostingController` (as Send /
-    /// Specify are) and silently breaks the gesture. The long-press pastes only when the
-    /// clipboard actually has a string.
+    /// Specify are) and silently breaks the gesture. On long-press it invokes `onPaste`; whether
+    /// the clipboard actually has something to paste is decided by the caller.
     @ViewBuilder
     func dashPasteContextMenu(onPaste: (() -> Void)?) -> some View {
         if let onPaste {
