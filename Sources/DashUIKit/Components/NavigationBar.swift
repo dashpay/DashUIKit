@@ -113,16 +113,36 @@ public enum NavigationBarElement: String {
                 .contentShape(Rectangle())
         }
         .buttonStyle(NavigationBarButtonStyle())
+        .accessibilityLabel(Text(accessibilityLabelText))
+    }
+
+    var accessibilityLabelText: String {
+        switch self {
+        case .back:
+            return NSLocalizedString("Back", bundle: .module, comment: "DashUIKit navigation bar")
+        case .close:
+            return NSLocalizedString("Close", bundle: .module, comment: "DashUIKit navigation bar")
+        case .plus:
+            return NSLocalizedString("Add", bundle: .module, comment: "DashUIKit navigation bar")
+        case .info:
+            return NSLocalizedString("Info", bundle: .module, comment: "DashUIKit navigation bar")
+        }
     }
 }
 
 @available(iOS 14, macOS 11, *)
 private struct NavigationBarButtonStyle: ButtonStyle {
+    @ViewBuilder
     func makeBody(configuration: Configuration) -> some View {
-        configuration.label
+        let content = configuration.label
             .scaleEffect(configuration.isPressed ? 0.88 : 1)
             .opacity(configuration.isPressed ? 0.7 : 1)
-            .animation(.easeInOut(duration: 0.12), value: configuration.isPressed)
+
+        if #available(iOS 15, macOS 12, *) {
+            content.animation(.easeInOut(duration: 0.12), value: configuration.isPressed)
+        } else {
+            content.animation(.easeInOut(duration: 0.12))
+        }
     }
 }
 

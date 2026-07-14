@@ -112,6 +112,7 @@ public struct MenuItem: View {
         case .toggle(let isOn):
             Toggle("", isOn: isOn)
                 .labelsHidden()
+                .disabled(!isEnabled)
         case .text(let value):
             Text(value)
                 .dashFont(.subhead)

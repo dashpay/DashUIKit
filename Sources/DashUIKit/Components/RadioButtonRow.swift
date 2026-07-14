@@ -98,6 +98,7 @@ public struct RadioButtonRow: View {
             .frame(minHeight: subtitle != nil ? 60 : 54)
         }
         .buttonStyle(PlainButtonStyle())
+        .accessibilityAddTraits(isSelected ? .isSelected : [])
     }
 }
 

@@ -72,7 +72,7 @@ public struct SystemMessageView: View {
                     }
                 }
 
-                if buttonName != nil || secondaryButtonName != nil {
+                if (buttonName != nil && onAction != nil) || (secondaryButtonName != nil && onSecondaryAction != nil) {
                     HStack(spacing: 10) {
                         if let buttonName, let onAction {
                             DashUIKit.DashButton(
