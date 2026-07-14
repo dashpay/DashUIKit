@@ -1,0 +1,63 @@
+//
+//  Created by Roman Chornyi
+//  Copyright © 2026 Dash Core Group. All rights reserved.
+//
+//  Licensed under the MIT License (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//  https://opensource.org/licenses/MIT
+//
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
+//
+
+import SwiftUI
+
+// MARK: - ConverterRowSlot
+
+/// Identifies the two cards in the `ConverterCard` stack so the parent can position the arrow
+/// badge on the seam between them.
+enum ConverterRowSlot {
+    case top
+    case bottom
+}
+
+// MARK: - ConverterRowHeightKey
+
+/// Reports each row's measured height up to `ConverterCard`, which uses the values to center the
+/// arrow badge exactly between the two rows. Kept here next to the row that writes it.
+struct ConverterRowHeightKey: PreferenceKey {
+    static let defaultValue: [ConverterRowSlot: CGFloat] = [:]
+
+    static func reduce(value: inout [ConverterRowSlot: CGFloat], nextValue: () -> [ConverterRowSlot: CGFloat]) {
+        value.merge(nextValue()) { _, new in new }
+    }
+}
+
+// MARK: - ConverterCardRow
+
+/// One card in the conversion stack: wraps arbitrary content with the shared, non-interactive
+/// card chrome and reports its height via `ConverterRowHeightKey` for its `slot`.
+@available(iOS 14, macOS 11, *)
+struct ConverterCardRow<Content: View>: View {
+    let slot: ConverterRowSlot
+    @ViewBuilder var content: () -> Content
+
+    var body: some View {
+        content()
+            .allowsHitTesting(false)
+            .padding(6)
+            .background(Color.dash.secondaryBackground)
+            .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+            .background(
+                GeometryReader { proxy in
+                    Color.clear
+                        .preference(key: ConverterRowHeightKey.self, value: [slot: proxy.size.height])
+                }
+            )
+    }
+}

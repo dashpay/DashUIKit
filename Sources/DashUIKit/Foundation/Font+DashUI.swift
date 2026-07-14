@@ -68,6 +68,9 @@ public enum DashFonts {
     /// Caption 1: 12pt Regular (line height: 16pt)
     public static let caption1: Font = DashTextStyle.caption1.font
 
+    /// Caption 1 Medium: 12pt Medium (line height: 16pt)
+    public static let caption1Medium: Font = DashTextStyle.caption1Medium.font
+
     /// Caption 2: 11pt Regular (line height: 13pt)
     public static let caption2: Font = DashTextStyle.caption2.font
 }
