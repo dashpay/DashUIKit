@@ -61,6 +61,9 @@ public struct TransactionView: View {
     public var dashAmount: Int64
     public var amountSign: DashAmountSign
     public var fiat: String?
+    /// Short status shown immediately before the amount, e.g. "Locked" for a coinbase reward that
+    /// has not matured yet. Rendered in the warning tone, since it qualifies the amount.
+    public var trailingStatusText: String?
 
     /// When set, the whole row is a plain-styled button. `nil` renders a non-interactive row.
     public var action: (() -> Void)?
@@ -76,6 +79,7 @@ public struct TransactionView: View {
         dashAmount: Int64 = 0,
         amountSign: DashAmountSign = .negativeOnly,
         fiat: String? = nil,
+        trailingStatusText: String? = nil,
         action: (() -> Void)? = nil
     ) {
         self.icon = icon
@@ -88,6 +92,7 @@ public struct TransactionView: View {
         self.dashAmount = dashAmount
         self.amountSign = amountSign
         self.fiat = fiat
+        self.trailingStatusText = trailingStatusText
         self.action = action
     }
 
@@ -197,8 +202,16 @@ public struct TransactionView: View {
 
     private var trailingAmount: some View {
         VStack(alignment: .trailing, spacing: 1) {
-            DashAmount(amount: dashAmount, sign: amountSign)
-                .foregroundColor(Color.dash.primaryText)
+            HStack(spacing: 4) {
+                if let trailingStatusText {
+                    Text(trailingStatusText)
+                        .dashFont(.caption1Medium)
+                        .foregroundColor(Color.dash.orange)
+                }
+
+                DashAmount(amount: dashAmount, sign: amountSign)
+                    .foregroundColor(Color.dash.primaryText)
+            }
 
             if let fiat {
                 Text(fiat)
@@ -252,6 +265,21 @@ public struct TransactionView: View {
         subtitle: "8:34 AM",
         dashAmount: 50_000_000,
         amountSign: .none
+    )
+    .padding(.horizontal)
+    .background(Color.dash.primaryBackground)
+}
+
+@available(iOS 17, macOS 14, *)
+#Preview("Locked reward") {
+    TransactionView(
+        icon: .custom("transaction-mining"),
+        title: "Reward",
+        subtitle: "8:34 AM",
+        dashAmount: 250_000_000,
+        amountSign: .always,
+        fiat: "$ 68.75",
+        trailingStatusText: "Locked"
     )
     .padding(.horizontal)
     .background(Color.dash.primaryBackground)
