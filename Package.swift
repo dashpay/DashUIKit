@@ -17,5 +17,9 @@ let package = Package(
                 .process("Resources/Media.xcassets"),
             ]
         ),
+        .testTarget(
+            name: "DashUIKitTests",
+            dependencies: ["DashUIKit"]
+        ),
     ]
 )
