@@ -37,6 +37,26 @@ Convenience initializers let you omit any slot (e.g. only `leading`, or `central
 
 ---
 
+## TopIntroView
+
+File `Components/TopIntro/TopIntroView.swift` · `@available(iOS 14, macOS 11, *)`
+
+A lightweight top-of-screen intro block: title plus up to two description lines, laid
+out as a leading-aligned text stack with extra trailing padding so it breathes beside
+actions or safe areas.
+
+```swift
+TopIntroView(
+    title: "Confirm details",
+    mainDescription: "Review the amount before continuing.",
+    secondaryDescription: "You can always go back and edit it."
+)
+```
+
+Use it for screen headers that sit above the main content rather than inside a nav bar.
+
+---
+
 ## BottomSheet
 
 File `Components/BottomSheet.swift` · `@available(iOS 14, macOS 11, *)`
@@ -58,7 +78,7 @@ Sheet chrome to put **inside** a SwiftUI `.sheet { }`: a grabber, a `NavigationB
 ```
 
 - **`fillsHeight: true`** (default) — content fills the sheet; pair with an explicit detent
-  (`.large` / `.medium` / `.height`). Wraps content in a `NavigationView`.
+  on **iOS 16+** (`.large` / `.medium` / `.height`). Wraps content in a `NavigationView`.
 - **`fillsHeight: false`** — natural height; pair with `.selfSizingSheet(…)` so the sheet
   snaps to its content.
 

@@ -79,6 +79,7 @@ Available styles (size / weight / line height), each present as both `Font.dash.
 | `footnote` | 13 | regular | 18 |
 | `footnoteMedium` | 13 | medium | 18 |
 | `caption1` | 12 | regular | 16 |
+| `caption1Medium` | 12 | medium | 16 |
 | `caption2` | 11 | regular | 13 |
 
 `.dashLineHeight(size:lineHeight:)` (in `LineHeight+DashUI.swift`) is the lower-level

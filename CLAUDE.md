@@ -31,7 +31,7 @@ When writing or changing code:
 
 ## Where things are
 
-```
+```text
 Sources/DashUIKit/
   Button/            DashButton (+ DashButtonSize / DashButtonStyle)
   Components/        Most components (one type per file)

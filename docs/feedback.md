@@ -20,9 +20,10 @@ Toast(
 )
 ```
 
-**`ToastStyle`** — `.warning` · `.info` · `.error` · `.success` · `.copied` · `.loading`.
-Each maps to an icon asset under `Media.xcassets/Icons & Illustrations/Toast/`
-(`toast-warning`, `toast-info`, …). `.loading` instead renders the DS `LoadingSpinner`.
+**`ToastStyle`** — `.warning` · `.info` · `.error` · `.success` · `.copied` · `.loading`
+· `.noInternet`. Each maps to an icon asset under
+`Media.xcassets/Icons & Illustrations/Toast/` (`toast-warning`, `toast-info`, …,
+`toast-no-wifi`). `.loading` instead renders the DS `LoadingSpinner`.
 
 > ⚠️ The toast icon assets are placeholders to be supplied. Until the imagesets exist the
 > icon slot renders empty for the non-loading styles — that's expected, not a bug. See the
@@ -30,6 +31,29 @@ Each maps to an icon asset under `Media.xcassets/Icons & Illustrations/Toast/`
 
 This is just the toast *view* — presentation/animation/auto-dismiss timing is the host's
 responsibility (e.g. overlay it and drive visibility yourself).
+
+---
+
+## SystemMessageView
+
+File `Components/SystemMessageView.swift` · `@available(iOS 14, macOS 11, *)`
+
+An icon-led system banner with optional subtitle, up to two action buttons, and an
+optional close button. The default icon is the bundled `warning_triangle` asset, and the
+default background is a lightly tinted DS gray.
+
+```swift
+SystemMessageView(
+    title: "Address expired",
+    subtitle: "Generate a new receiving address.",
+    buttonName: "Renew",
+    onAction: { /* handle action */ },
+    onClose: { /* dismiss */ }
+)
+```
+
+The action buttons are regular `DashButton`s, so use the host to decide whether to show
+one or two of them.
 
 ---
 

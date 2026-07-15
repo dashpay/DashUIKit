@@ -65,6 +65,78 @@ per-call fonts/colors, to keep rows consistent):
 
 ---
 
+## ConverterCard
+
+File `Components/ConverterCard/ConverterCard.swift` · `@available(iOS 14, macOS 11, *)`
+
+A two-row source/destination card with a seam-centered arrow badge. Each row is wrapped
+in shared card chrome; passing `onSwap` makes the badge tappable and rotates the arrow,
+omitting it leaves a static down arrow.
+
+```swift
+ConverterCard(
+    fromItem: ConverterCardItem(
+        icon: .system("bitcoinsign.circle.fill"),
+        title: "Coinbase",
+        subtitle: "Dash Wallet",
+        dashBalance: 420_000_000,
+        fiat: "$410.00"
+    ),
+    toItem: ConverterCardItem(
+        icon: .system("d.circle.fill"),
+        title: "Dash",
+        dashBalance: 123_456_789,
+        fiat: "$120.00",
+        showsBalance: false
+    ),
+    onSwap: { /* swap rows */ }
+)
+```
+
+### ConverterCardItem
+
+Display data for one row in `ConverterCard`. Use the plain fields for icon/title/subtitle/
+balance/fiat, or override the leading/trailing content with `iconView` / `trailingView`.
+`subtitleLineLimit` controls wrapping; `showsBalance` hides the trailing amount when
+`false`.
+
+### ConverterCardRow
+
+Internal helper that applies the shared rounded card chrome and reports its height. It is
+not intended for direct use.
+
+### ConverterArrowBadge
+
+Internal seam badge: static `arrow-down` without swapping, or tappable
+`diagonal-up-down` when `onSwap` is supplied. It is also an internal helper.
+
+---
+
+## TransactionView
+
+File `Components/Transaction/TransactionView.swift` · `@available(iOS 14, macOS 11, *)`
+
+A transaction row with a leading icon, optional status badge, title/time/detail text, and
+a trailing Dash amount plus optional fiat line. Pass `action` to make the whole row
+tappable; omit it for a static row.
+
+```swift
+TransactionView(
+    icon: .system("arrow.down.circle.fill"),
+    title: "Received",
+    subtitle: "8:34 AM",
+    details: "Processing",
+    dashAmount: 6_791_000,
+    amountSign: .always,
+    fiat: "$ 1.87",
+    action: { /* open details */ }
+)
+```
+
+The amount is a raw duff value (`Int64`, 10⁸ per Dash) rendered via `DashAmount`.
+
+---
+
 ## RadioButtonRow
 
 File `Components/RadioButtonRow.swift` · `@available(iOS 14, macOS 11, *)`

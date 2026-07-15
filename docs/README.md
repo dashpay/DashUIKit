@@ -15,13 +15,15 @@ and callbacks; they render and report intent. They require `import DashUIKit` an
 - **[Buttons & inputs](buttons-and-inputs.md)** — `DashButton`, `DashSwitch`, `SearchBar`,
   `AddressFieldView`, `NumericKeyboardView`.
 - **[Amount & currency](amount-and-currency.md)** — `EnterAmountView`, `SwapAmountView`,
-  `DashAmount`, `DashBalanceView`, `DashPickerView`, `CurrencyOption`.
-- **[Lists & rows](lists-and-rows.md)** — `CoinSelector`, `MenuItem`, `RadioButtonRow`,
-  `List1View`.
+  `ReceiveEstimateView`, `DashAmount`, `DashBalanceView`, `DashPickerView`,
+  `CurrencyOption`.
+- **[Lists & rows](lists-and-rows.md)** — `CoinSelector`, `MenuItem`,
+  `ConverterCard`, `TransactionView`, `RadioButtonRow`, `List1View`.
 - **[Navigation & containers](navigation-and-containers.md)** — `NavigationBar`,
-  `NavigationBarElement`, `BottomSheet`, `MenuViewModifier`.
-- **[Feedback](feedback.md)** — `Toast`, `LoadingIllustration` / `LoadingSpinner`,
-  `SuccessIllustration`, `ErrorIllustration`, `XmarkIcon`.
+  `NavigationBarElement`, `TopIntroView`, `BottomSheet`, `MenuViewModifier`.
+- **[Feedback](feedback.md)** — `Toast`, `SystemMessageView`,
+  `LoadingIllustration` / `LoadingSpinner`, `SuccessIllustration`, `ErrorIllustration`,
+  `XmarkIcon`.
 - **[Utilities](utilities.md)** — geometry readers (`readingFrame`, `readingLocation`),
   `ScrollViewWithOnScrollChanged`, `scaleToFitWidth`.
 
@@ -34,6 +36,10 @@ and callbacks; they render and report intent. They require `import DashUIKit` an
 | `Bundle.dashUIKit` | [Foundation](foundation.md#bundle) |
 | `CoinSelector` | [Lists & rows](lists-and-rows.md#coinselector) |
 | `Color.dash.*` (`DashColors`) | [Foundation](foundation.md#colors) |
+| `ConverterArrowBadge` | [Lists & rows](lists-and-rows.md#converterarrowbadge) |
+| `ConverterCard` | [Lists & rows](lists-and-rows.md#convertercard) |
+| `ConverterCardItem` | [Lists & rows](lists-and-rows.md#convertercarditem) |
+| `ConverterCardRow` | [Lists & rows](lists-and-rows.md#convertercardrow) |
 | `CurrencyOption` | [Amount & currency](amount-and-currency.md#currencyoption) |
 | `DashAmount` | [Amount & currency](amount-and-currency.md#dashamount) |
 | `DashBalanceView` | [Amount & currency](amount-and-currency.md#dashbalanceview) |
@@ -52,10 +58,14 @@ and callbacks; they render and report intent. They require `import DashUIKit` an
 | `NumericKeyboardView` | [Buttons & inputs](buttons-and-inputs.md#numerickeyboardview) |
 | `RadioButtonRow` | [Lists & rows](lists-and-rows.md#radiobuttonrow) |
 | `readingFrame` / `readingLocation` | [Utilities](utilities.md#frame--location-readers) |
+| `ReceiveEstimateView` | [Amount & currency](amount-and-currency.md#receiveestimateview) |
 | `ScrollViewWithOnScrollChanged` | [Utilities](utilities.md#scrollviewwithonscrollchanged) |
 | `scaleToFitWidth` | [Utilities](utilities.md#scaletofitwidth) |
 | `SearchBar` | [Buttons & inputs](buttons-and-inputs.md#searchbar) |
 | `SuccessIllustration` | [Feedback](feedback.md#successillustration--errorillustration) |
 | `SwapAmountView` | [Amount & currency](amount-and-currency.md#swapamountview) |
+| `SystemMessageView` | [Feedback](feedback.md#systemmessageview) |
 | `Toast` (`ToastStyle`) | [Feedback](feedback.md#toast) |
+| `TopIntroView` | [Navigation & containers](navigation-and-containers.md#topintroview) |
+| `TransactionView` | [Lists & rows](lists-and-rows.md#transactionview) |
 | `XmarkIcon` | [Feedback](feedback.md#xmarkicon) |

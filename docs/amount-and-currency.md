@@ -38,8 +38,8 @@ EnterAmountView(
 
 ```swift
 EnterAmountView(
-    primaryAmount: "1.23456",        // host-formatted (e.g. Dash)
-    secondaryAmount: "$ 150.00",     // host-formatted (e.g. fiat)
+    primaryAmount: "1.23456",        // host-formatted numeric string
+    secondaryAmount: "150.00",       // host-formatted numeric string
     primaryCurrency: .dash,
     secondaryCurrency: .fiat("USD"),
     isPrimarySelected: true,         // true → primary in large slot
@@ -53,6 +53,10 @@ EnterAmountView(
     onSelectInputType: { code in /* user picked a code */ }
 )
 ```
+
+For the dual-swap API, `primaryAmount` and `secondaryAmount` are numeric or
+host-formatted strings only. The renderer adds the currency symbol from
+`primaryCurrency` / `secondaryCurrency`.
 
 The dual-swap layout uses three columns — leading (Max or spacer), centered animated
 amount stack, trailing (switcher or spacer) — with equal fixed side widths so the amount
@@ -142,6 +146,30 @@ strings (from a view model), not duffs.
 ```swift
 DashBalanceView(balance: "1.5", fiat: "$ 150.00")  // fiat nil → hide sub-line
 ```
+
+---
+
+## ReceiveEstimateView
+
+File `Components/ReceiveEstimateView.swift` · `@available(iOS 14, macOS 11, *)`
+
+A centered estimate line shown beneath amount inputs. It shows a loading spinner first,
+then an error message, then the title + estimated amount. When `fiat` is provided it is
+joined with `≈`; when `approximate` is `true` and no fiat is present, the amount is
+prefixed with `~`.
+
+```swift
+ReceiveEstimateView(
+    isVisible: true,
+    title: "You will receive",
+    amount: "0.5 DASH",
+    isLoading: false,
+    errorMessage: nil,
+    approximate: false
+)
+```
+
+The view collapses to nothing when `isVisible` is `false`.
 
 ---
 
