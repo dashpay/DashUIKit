@@ -56,6 +56,7 @@ public extension DashTextStyle {
     static let footnote = DashTextStyle(size: 13, weight: .regular, lineHeight: 18)
     static let footnoteMedium = DashTextStyle(size: 13, weight: .medium, lineHeight: 18)
     static let caption1 = DashTextStyle(size: 12, weight: .regular, lineHeight: 16)
+    static let caption1Medium = DashTextStyle(size: 12, weight: .medium, lineHeight: 16)
     static let caption2 = DashTextStyle(size: 11, weight: .regular, lineHeight: 13)
 }
 
