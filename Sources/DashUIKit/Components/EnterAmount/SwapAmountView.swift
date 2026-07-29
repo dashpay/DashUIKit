@@ -96,7 +96,7 @@ public struct SwapAmountView: View {
         VStack(spacing: 2) {
             if let top = topText {
                 Text(top)
-                    .font(Font.dash.caption1)
+                    .dashFont(.caption1)
                     .foregroundColor(Color.dash.tertiaryText)
             }
 
@@ -108,7 +108,7 @@ public struct SwapAmountView: View {
 
             if let bottom = bottomText {
                 Text(bottom)
-                    .font(Font.dash.caption1)
+                    .dashFont(.caption1)
                     .foregroundColor(Color.dash.tertiaryText)
             }
         }
@@ -123,7 +123,7 @@ public struct SwapAmountView: View {
 
             if let secondary = secondaryText {
                 Text(secondary)
-                    .font(Font.dash.subhead)
+                    .dashFont(.subhead)
                     .foregroundColor(Color.dash.tertiaryText)
             }
         }
@@ -622,7 +622,7 @@ private struct SwapAmountAnimatedPreview: View {
     var body: some View {
         VStack(spacing: 16) {
             Text(isPrimarySelected ? "Dash is primary (large)" : "Fiat is primary (large)")
-                .font(Font.dash.caption1)
+                .dashFont(.caption1)
                 .foregroundColor(Color.dash.tertiaryText)
 
             SwapAmountView(
@@ -640,7 +640,7 @@ private struct SwapAmountAnimatedPreview: View {
             .onTapGesture { isPrimarySelected.toggle() }
 
             Button("Tap to swap") { isPrimarySelected.toggle() }
-                .font(Font.dash.footnote)
+                .dashFont(.footnote)
                 .foregroundColor(Color.dash.blue)
         }
     }

@@ -198,7 +198,7 @@ public struct NumericKeyboardView: View {
     private func helperTextRow(_ text: String?) -> some View {
         if let text, !text.isEmpty {
             Text(text)
-                .font(Font.dash.footnote)
+                .dashFont(.footnote)
                 .foregroundColor(Color.dash.secondaryText)
                 .multilineTextAlignment(.center)
                 .frame(maxWidth: .infinity)
