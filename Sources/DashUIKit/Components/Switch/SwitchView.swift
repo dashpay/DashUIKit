@@ -12,7 +12,7 @@ public struct SwitchView: View {
 
     private struct Constants {
         static let switchTrackFillOn: Color = Color.dash.blue
-        static let switchTrackFillOnDisabled: Color = Color.dash.blueAlpha50
+        static let switchTrackFillOnDisabled: Color = Color.dash.black1000Alpha20
         static let switchTrackFillOff: Color = Color.dash.gray300Alpha50
         static let switchTrackFillOffDisabled: Color = Color.dash.black1000Alpha20
         static let switchTrackWidth: CGFloat = 64
