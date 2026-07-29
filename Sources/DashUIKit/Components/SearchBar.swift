@@ -142,7 +142,7 @@ private struct SearchBarFocused: View {
             TextField(
                 text: $text,
                 prompt: Text(placeholder)
-                    .font(Font.dash.subhead)
+                    .dashFont(.subhead)
                     .foregroundStyle(Color.dash.black1000Alpha30)
             ) {
                 EmptyView()
