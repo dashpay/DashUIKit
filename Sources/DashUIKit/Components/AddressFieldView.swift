@@ -150,7 +150,7 @@ public struct AddressFieldView: View {
         Group {
             if text.isEmpty {
                 Button(action: { onScanQR?() }) {
-                    Image(dash: .custom("text-field-qr", bundle: .dashUIKit))
+                    DashIcon.Other.textFieldQR.image
                         .resizable()
                         .scaledToFit()
                         .frame(width: Layout.iconSize, height: Layout.iconSize)
@@ -158,7 +158,7 @@ public struct AddressFieldView: View {
                 .accessibilityLabel(NSLocalizedString("Scan QR code", bundle: .module, comment: "DashUIKit"))
             } else {
                 Button(action: { text = "" }) {
-                    Image(dash: .custom("text-field-clear", bundle: .dashUIKit))
+                    DashIcon.Other.textFieldClear.image
                         .renderingMode(.template)
                         .resizable()
                         .scaledToFit()

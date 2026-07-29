@@ -54,7 +54,7 @@ public struct DashBalanceView: View {
     }
 
     private var dashSymbol: some View {
-        Image(dash: .custom("icon_dash_currency", bundle: .dashUIKit))
+        DashIcon.Common.iconDashCurrency.image
             .resizable()
             .aspectRatio(contentMode: .fit)
             .frame(width: 12, height: 10)
