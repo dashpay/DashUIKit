@@ -67,7 +67,7 @@ public extension View {
     return VStack(alignment: .leading, spacing: 24) {
         VStack(alignment: .leading, spacing: 4) {
             Text("Default (.system natural ≈ 15.5pt)")
-                .font(Font.dash.caption2)
+                .dashFont(.caption2)
                 .foregroundColor(Color.dash.secondaryText)
             Text(sample)
                 .font(Font.dash.footnote)
@@ -77,7 +77,7 @@ public extension View {
 
         VStack(alignment: .leading, spacing: 4) {
             Text("dashLineHeight(size: 13, lineHeight: 18)")
-                .font(Font.dash.caption2)
+                .dashFont(.caption2)
                 .foregroundColor(Color.dash.secondaryText)
             Text(sample)
                 .font(Font.dash.footnote)

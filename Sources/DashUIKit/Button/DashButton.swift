@@ -273,7 +273,7 @@ private struct DashButtonStylePreview: View {
             VStack(alignment: .leading, spacing: 12) {
                 VStack(alignment: .leading, spacing: 8) {
                     Text("Enabled")
-                        .font(.subheadline)
+                        .dashFont(.subhead)
                         .foregroundColor(.secondary)
 
                     HStack(alignment: .top, spacing: 12) {
@@ -291,7 +291,7 @@ private struct DashButtonStylePreview: View {
 
                 VStack(alignment: .leading, spacing: 8) {
                     Text("Disabled")
-                        .font(.subheadline)
+                        .dashFont(.subhead)
                         .foregroundColor(.secondary)
 
                     HStack(alignment: .top, spacing: 12) {
