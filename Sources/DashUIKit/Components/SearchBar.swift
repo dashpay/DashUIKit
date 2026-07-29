@@ -93,7 +93,7 @@ private struct SearchBarFocused: View {
     }
 
     private var magnifyingGlass: some View {
-        Image(dash: .custom("searchbar-magnifyingglass-icon", bundle: .dashUIKit))
+        DashIcon.SearchBar.magnifyingglassIcon.image
             .resizable()
             .scaledToFit()
             .frame(maxHeight: 15)
@@ -105,7 +105,7 @@ private struct SearchBarFocused: View {
             Button(
                 action: { text = "" },
                 label: {
-                    Image(dash: .custom("searchbar-xmark-icon", bundle: .dashUIKit))
+                    DashIcon.SearchBar.xmarkIcon.image
                         .resizable()
                         .scaledToFit()
                         .frame(maxHeight: 15)
@@ -188,7 +188,7 @@ private struct SearchBarLegacy: View {
     }
 
     private var magnifyingGlass: some View {
-        Image(dash: .custom("searchbar-magnifyingglass-icon", bundle: .dashUIKit))
+        DashIcon.SearchBar.magnifyingglassIcon.image
             .resizable()
             .scaledToFit()
             .frame(maxHeight: 15)
@@ -200,7 +200,7 @@ private struct SearchBarLegacy: View {
             Button(
                 action: { text = "" },
                 label: {
-                    Image(dash: .custom("searchbar-xmark-icon", bundle: .dashUIKit))
+                    DashIcon.SearchBar.xmarkIcon.image
                         .resizable()
                         .scaledToFit()
                         .frame(maxHeight: 15)

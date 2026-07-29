@@ -32,7 +32,7 @@ public struct SystemMessageView: View {
     public init(
         title: String,
         subtitle: String? = nil,
-        icon: DashIconSource = .custom("warning_triangle", bundle: .dashUIKit),
+        icon: DashIconSource = DashIcon.SystemMessage.warningTriangle.source,
         backgroundColor: Color = Color.dash.gray300Alpha10,
         buttonName: String? = nil,
         onAction: (() -> Void)? = nil,

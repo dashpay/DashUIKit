@@ -166,7 +166,7 @@ public struct SwapAmountView: View {
                 Button {
                     onCurrencyTap?()
                 } label: {
-                    Image(dash: .custom("chevron-down-currency-select", bundle: .dashUIKit))
+                    DashIcon.Common.chevronDownCurrencySelect.image
                         .frame(width: 10, height: 5)
                 }
                 .buttonStyle(.plain)
@@ -191,7 +191,7 @@ public struct SwapAmountView: View {
                 .font(font)
 
             if showDashLogo {
-                Image(dash: .custom("enter-amount-dash", bundle: .dashUIKit))
+                DashIcon.Common.enterAmountDash.image
                     .resizable()
                     .scaledToFit()
                     .frame(width: dashSize?.width, height: dashSize?.height)
@@ -210,7 +210,7 @@ public struct SwapAmountView: View {
                 .font(font)
 
             if showSecondaryDashLogo {
-                Image(dash: .custom("enter-amount-dash", bundle: .dashUIKit))
+                DashIcon.Common.enterAmountDash.image
                     .resizable()
                     .scaledToFit()
                     .frame(width: dashSize?.width, height: dashSize?.height)
@@ -365,7 +365,7 @@ private struct AnimatedSwapLayout: View {
 
                 if showSecondaryCurrencyButton {
                     Button { onSecondaryCurrencyTap?() } label: {
-                        Image(dash: .custom("chevron-down-currency-select", bundle: .dashUIKit))
+                        DashIcon.Common.chevronDownCurrencySelect.image
                             .resizable()
                             .scaledToFit()
                             .frame(width: chevronSize.width, height: chevronSize.height)
@@ -436,7 +436,7 @@ private struct AnimatedSwapLayout: View {
             }
             Text(displayText).font(font)
             if showLogo {
-                Image(dash: .custom("enter-amount-dash", bundle: .dashUIKit))
+                DashIcon.Common.enterAmountDash.image
                     .resizable()
                     .scaledToFit()
                     .frame(width: dashSize.width, height: dashSize.height)

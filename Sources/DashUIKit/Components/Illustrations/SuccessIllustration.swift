@@ -26,7 +26,7 @@ public struct SuccessIllustration: View {
         ZStack {
             Color.dash.green
 
-            Image(dash: .custom("checkmark", bundle: .dashUIKit))
+            DashIcon.Common.checkmark.image
                 .resizable()
                 .scaledToFit()
                 .frame(maxHeight: 29)
