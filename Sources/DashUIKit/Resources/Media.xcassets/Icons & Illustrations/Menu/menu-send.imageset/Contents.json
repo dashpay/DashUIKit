@@ -1,17 +1,50 @@
 {
   "images" : [
     {
-      "filename" : "send.png",
+      "filename" : "menu-send.png",
       "idiom" : "universal",
       "scale" : "1x"
     },
     {
-      "filename" : "send@2x.png",
+      "appearances" : [
+        {
+          "appearance" : "luminosity",
+          "value" : "dark"
+        }
+      ],
+      "filename" : "menu-send-dark.png",
+      "idiom" : "universal",
+      "scale" : "1x"
+    },
+    {
+      "filename" : "menu-send@2x.png",
       "idiom" : "universal",
       "scale" : "2x"
     },
     {
-      "filename" : "send@3x.png",
+      "appearances" : [
+        {
+          "appearance" : "luminosity",
+          "value" : "dark"
+        }
+      ],
+      "filename" : "menu-send-dark@2x.png",
+      "idiom" : "universal",
+      "scale" : "2x"
+    },
+    {
+      "filename" : "menu-send@3x.png",
+      "idiom" : "universal",
+      "scale" : "3x"
+    },
+    {
+      "appearances" : [
+        {
+          "appearance" : "luminosity",
+          "value" : "dark"
+        }
+      ],
+      "filename" : "menu-send-dark@3x.png",
       "idiom" : "universal",
       "scale" : "3x"
     }
