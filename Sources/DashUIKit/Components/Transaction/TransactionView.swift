@@ -273,7 +273,7 @@ public struct TransactionView: View {
 @available(iOS 17, macOS 14, *)
 #Preview("Locked reward") {
     TransactionView(
-        icon: .custom("transaction-mining"),
+        icon: DashIcon.Transaction.mining.source,
         title: "Reward",
         subtitle: "8:34 AM",
         dashAmount: 250_000_000,

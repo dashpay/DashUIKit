@@ -38,7 +38,7 @@ public struct DashBalanceView: View {
         VStack(alignment: .trailing, spacing: 0) {
             HStack(spacing: 6) {
                 Text(balance)
-                    .font(Font.dash.subhead)
+                    .dashFont(.subhead)
                     .lineLimit(1)
 
                 dashSymbol
@@ -47,14 +47,14 @@ public struct DashBalanceView: View {
 
             if let fiat {
                 Text(fiat)
-                    .font(Font.dash.caption1)
+                    .dashFont(.caption1)
                     .foregroundColor(Color.dash.primaryText)
             }
         }
     }
 
     private var dashSymbol: some View {
-        Image(dash: .custom("icon_dash_currency", bundle: .dashUIKit))
+        DashIcon.Common.iconDashCurrency.image
             .resizable()
             .aspectRatio(contentMode: .fit)
             .frame(width: 12, height: 10)

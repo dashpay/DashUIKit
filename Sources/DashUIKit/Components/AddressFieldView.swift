@@ -122,12 +122,12 @@ public struct AddressFieldView: View {
                 "",
                 text: $text,
                 prompt: Text(placeholder)
-                    .font(Font.dash.subhead)
+                    .dashFont(.subhead)
                     .foregroundStyle(Color.dash.black1000Alpha30),
                 axis: .vertical
             )
             .lineLimit(1...2)
-            .font(Font.dash.subhead)
+            .dashFont(.subhead)
             .textInputAutocapitalization(.never)
             .disableAutocorrection(true)
             .foregroundStyle(Color.dash.primaryText)
@@ -136,7 +136,7 @@ public struct AddressFieldView: View {
             .disabled(isDisabled)
         } else {
             TextField(placeholder, text: $text)
-                .font(Font.dash.subhead)
+                .dashFont(.subhead)
                 .textInputAutocapitalization(.never)
                 .disableAutocorrection(true)
                 .foregroundStyle(Color.dash.primaryText)
@@ -150,7 +150,7 @@ public struct AddressFieldView: View {
         Group {
             if text.isEmpty {
                 Button(action: { onScanQR?() }) {
-                    Image(dash: .custom("text-field-qr", bundle: .dashUIKit))
+                    DashIcon.Other.textFieldQR.image
                         .resizable()
                         .scaledToFit()
                         .frame(width: Layout.iconSize, height: Layout.iconSize)
@@ -158,7 +158,7 @@ public struct AddressFieldView: View {
                 .accessibilityLabel(NSLocalizedString("Scan QR code", bundle: .module, comment: "DashUIKit"))
             } else {
                 Button(action: { text = "" }) {
-                    Image(dash: .custom("text-field-clear", bundle: .dashUIKit))
+                    DashIcon.Other.textFieldClear.image
                         .renderingMode(.template)
                         .resizable()
                         .scaledToFit()

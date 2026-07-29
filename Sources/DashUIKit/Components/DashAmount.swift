@@ -88,7 +88,7 @@ public struct DashAmount: View {
                 Text(DashAmountFormat.string(forDuffs: abs(amount)))
                     .font(.system(size: fontSize, weight: weight))
                     .lineLimit(1)
-                Image(dash: .custom("icon_dash_currency", bundle: .dashUIKit))
+                DashIcon.Common.iconDashCurrency.image
                     .resizable()
                     .aspectRatio(contentMode: .fit)
                     .frame(width: fontSize * dashSymbolFactor,

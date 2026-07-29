@@ -96,7 +96,7 @@ public struct SwapAmountView: View {
         VStack(spacing: 2) {
             if let top = topText {
                 Text(top)
-                    .font(Font.dash.caption1)
+                    .dashFont(.caption1)
                     .foregroundColor(Color.dash.tertiaryText)
             }
 
@@ -108,7 +108,7 @@ public struct SwapAmountView: View {
 
             if let bottom = bottomText {
                 Text(bottom)
-                    .font(Font.dash.caption1)
+                    .dashFont(.caption1)
                     .foregroundColor(Color.dash.tertiaryText)
             }
         }
@@ -123,7 +123,7 @@ public struct SwapAmountView: View {
 
             if let secondary = secondaryText {
                 Text(secondary)
-                    .font(Font.dash.subhead)
+                    .dashFont(.subhead)
                     .foregroundColor(Color.dash.tertiaryText)
             }
         }
@@ -166,7 +166,7 @@ public struct SwapAmountView: View {
                 Button {
                     onCurrencyTap?()
                 } label: {
-                    Image(dash: .custom("chevron-down-currency-select", bundle: .dashUIKit))
+                    DashIcon.Common.chevronDownCurrencySelect.image
                         .frame(width: 10, height: 5)
                 }
                 .buttonStyle(.plain)
@@ -191,7 +191,7 @@ public struct SwapAmountView: View {
                 .font(font)
 
             if showDashLogo {
-                Image(dash: .custom("enter-amount-dash", bundle: .dashUIKit))
+                DashIcon.Common.enterAmountDash.image
                     .resizable()
                     .scaledToFit()
                     .frame(width: dashSize?.width, height: dashSize?.height)
@@ -210,7 +210,7 @@ public struct SwapAmountView: View {
                 .font(font)
 
             if showSecondaryDashLogo {
-                Image(dash: .custom("enter-amount-dash", bundle: .dashUIKit))
+                DashIcon.Common.enterAmountDash.image
                     .resizable()
                     .scaledToFit()
                     .frame(width: dashSize?.width, height: dashSize?.height)
@@ -365,7 +365,7 @@ private struct AnimatedSwapLayout: View {
 
                 if showSecondaryCurrencyButton {
                     Button { onSecondaryCurrencyTap?() } label: {
-                        Image(dash: .custom("chevron-down-currency-select", bundle: .dashUIKit))
+                        DashIcon.Common.chevronDownCurrencySelect.image
                             .resizable()
                             .scaledToFit()
                             .frame(width: chevronSize.width, height: chevronSize.height)
@@ -436,7 +436,7 @@ private struct AnimatedSwapLayout: View {
             }
             Text(displayText).font(font)
             if showLogo {
-                Image(dash: .custom("enter-amount-dash", bundle: .dashUIKit))
+                DashIcon.Common.enterAmountDash.image
                     .resizable()
                     .scaledToFit()
                     .frame(width: dashSize.width, height: dashSize.height)
@@ -622,7 +622,7 @@ private struct SwapAmountAnimatedPreview: View {
     var body: some View {
         VStack(spacing: 16) {
             Text(isPrimarySelected ? "Dash is primary (large)" : "Fiat is primary (large)")
-                .font(Font.dash.caption1)
+                .dashFont(.caption1)
                 .foregroundColor(Color.dash.tertiaryText)
 
             SwapAmountView(
@@ -640,7 +640,7 @@ private struct SwapAmountAnimatedPreview: View {
             .onTapGesture { isPrimarySelected.toggle() }
 
             Button("Tap to swap") { isPrimarySelected.toggle() }
-                .font(Font.dash.footnote)
+                .dashFont(.footnote)
                 .foregroundColor(Color.dash.blue)
         }
     }

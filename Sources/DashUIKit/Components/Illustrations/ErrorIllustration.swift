@@ -26,7 +26,7 @@ public struct ErrorIllustration: View {
         ZStack {
             Color.dash.red
 
-            Image(dash: .custom("illustration-xmark", bundle: .dashUIKit))
+            DashIcon.Common.illustrationXmark.image
                 .resizable()
                 .scaledToFit()
                 .frame(maxHeight: 29)

@@ -249,7 +249,7 @@ public struct MenuItem: View {
 #Preview("Enabled vs disabled") {
     VStack(spacing: 0) {
         MenuItem(
-            leadingIcon: .custom("menu-receive", bundle: .dashUIKit),
+            leadingIcon: DashIcon.Menu.receive.source,
             title: "Buy Dash",
             helpText: "From any crypto to your Dash Wallet"
         )
@@ -257,9 +257,9 @@ public struct MenuItem: View {
         Divider().padding(.leading, 16)
 
         MenuItem(
-            leadingIcon: .custom("menu-receive", bundle: .dashUIKit),
+            leadingIcon: DashIcon.Menu.receive.source,
             isEnabled: false,
-            disabledLeadingIcon: .custom("menu-receive.disabled", bundle: .dashUIKit),
+            disabledLeadingIcon: DashIcon.Menu.receiveDisabled.source,
             title: "Buy Dash",
             helpText: "From any crypto to your Dash Wallet"
         )
