@@ -121,8 +121,10 @@ public struct AddressFieldView: View {
             TextField(
                 "",
                 text: $text,
+                // A prompt must stay a `Text`; `dashFont` returns `some View`, and a
+                // line height cannot be applied to `Text` anyway.
                 prompt: Text(placeholder)
-                    .dashFont(.subhead)
+                    .font(Font.dash.subhead)
                     .foregroundStyle(Color.dash.black1000Alpha30),
                 axis: .vertical
             )
