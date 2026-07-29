@@ -1,17 +1,17 @@
 {
   "images" : [
     {
-      "filename" : "warning_triangle.png",
+      "filename" : "system-message-warning-triangle.png",
       "idiom" : "universal",
       "scale" : "1x"
     },
     {
-      "filename" : "warning_triangle@2x.png",
+      "filename" : "system-message-warning-triangle@2x.png",
       "idiom" : "universal",
       "scale" : "2x"
     },
     {
-      "filename" : "warning_triangle@3x.png",
+      "filename" : "system-message-warning-triangle@3x.png",
       "idiom" : "universal",
       "scale" : "3x"
     }
