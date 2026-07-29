@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+# https://docs.coderabbit.ai/guides/configure-coderabbit
+
+language: en-US
+
+reviews:
+  auto_review:
+    enabled: true
+
+  path_filters:
+    # Asset catalogs are generated: imageset Contents.json is written by Xcode or by the
+    # Figma export tooling, never edited by hand, so there is nothing to review in them.
+    # Their volume alone also pushes icon-import PRs past CodeRabbit's file limit, which
+    # skips the review of the Swift changes that actually matter.
+    - "!**/*.xcassets/**"
+
+  path_instructions:
+    # Generated from the asset catalog on disk — the raw values cannot be meaningfully
+    # checked line by line, but the shape of the API can.
+    - path: "Sources/DashUIKit/Foundation/Icon_DashUI.swift"
+      instructions: >-
+        This file is generated from the asset catalog. Review the API shape — protocol
+        conformances, availability annotations, naming scheme — but do not comment on
+        individual enum cases or their raw values.
