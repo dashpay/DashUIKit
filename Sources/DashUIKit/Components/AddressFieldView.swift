@@ -17,17 +17,19 @@
 #if canImport(UIKit)
 import SwiftUI
 
+/// Outside the view, not nested in it: `AddressFieldView` is generic over its
+/// accessory, and a generic type cannot hold static stored properties.
+private enum Layout {
+    static let hSpacing: CGFloat = 20
+    static let lPadding: CGFloat = 20
+    static let tPadding: CGFloat = 10
+    static let iconSize: CGFloat = 17
+    static let cornerRadius: CGFloat = 16
+    static let actionTapArea: CGFloat = 40
+}
+
 @available(iOS 15, macOS 12, *)
 public struct AddressFieldView<Accessory: View>: View {
-
-    private enum Layout {
-        static let hSpacing: CGFloat = 20
-        static let lPadding: CGFloat = 20
-        static let tPadding: CGFloat = 10
-        static let iconSize: CGFloat = 17
-        static let cornerRadius: CGFloat = 16
-        static let actionTapArea: CGFloat = 40
-    }
 
     @Binding private var text: String
     private let label: String
