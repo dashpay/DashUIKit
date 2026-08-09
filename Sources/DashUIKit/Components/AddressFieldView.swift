@@ -18,7 +18,7 @@
 import SwiftUI
 
 @available(iOS 15, macOS 12, *)
-public struct AddressFieldView: View {
+public struct AddressFieldView<Accessory: View>: View {
 
     private enum Layout {
         static let hSpacing: CGFloat = 20
@@ -37,6 +37,11 @@ public struct AddressFieldView: View {
     private var isDisabled: Bool
     private var onScanQR: (() -> Void)?
     private var onPaste: (() -> Void)?
+    /// Trailing content on the label row — a badge naming what the entered
+    /// address turned out to be, say. Sits opposite `label`, so it is for
+    /// something that describes the field rather than acts on it; the
+    /// controls that act live inside the field itself.
+    private let accessory: Accessory
 
     @FocusState private var isTextFieldFocused: Bool
 
@@ -48,7 +53,8 @@ public struct AddressFieldView: View {
         errorText: String? = nil,
         isDisabled: Bool = false,
         onScanQR: (() -> Void)? = nil,
-        onPaste: (() -> Void)? = nil
+        onPaste: (() -> Void)? = nil,
+        @ViewBuilder accessory: () -> Accessory
     ) {
         self._text = text
         self.label = label
@@ -58,14 +64,21 @@ public struct AddressFieldView: View {
         self.isDisabled = isDisabled
         self.onScanQR = onScanQR
         self.onPaste = onPaste
+        self.accessory = accessory()
     }
 
     public var body: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text(label)
-                .dashFont(.footnote)
-                .foregroundStyle(Color.dash.gray500)
-                .frame(maxWidth: .infinity, alignment: .leading)
+            HStack(spacing: 8) {
+                Text(label)
+                    .dashFont(.footnote)
+                    .foregroundStyle(Color.dash.gray500)
+
+                Spacer(minLength: 0)
+
+                accessory
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
 
             HStack(alignment: .center, spacing: Layout.hSpacing) {
                 textField
@@ -101,6 +114,37 @@ public struct AddressFieldView: View {
         }
     }
 
+}
+
+@available(iOS 15, macOS 12, *)
+public extension AddressFieldView where Accessory == EmptyView {
+    /// No label accessory — the original shape, unchanged for callers that
+    /// have nothing to put there.
+    init(
+        text: Binding<String>,
+        label: String,
+        placeholder: String,
+        hasError: Bool,
+        errorText: String? = nil,
+        isDisabled: Bool = false,
+        onScanQR: (() -> Void)? = nil,
+        onPaste: (() -> Void)? = nil
+    ) {
+        self.init(
+            text: text,
+            label: label,
+            placeholder: placeholder,
+            hasError: hasError,
+            errorText: errorText,
+            isDisabled: isDisabled,
+            onScanQR: onScanQR,
+            onPaste: onPaste,
+            accessory: { EmptyView() })
+    }
+}
+
+@available(iOS 15, macOS 12, *)
+extension AddressFieldView {
     // MARK: - Subviews
 
     private var showsPasteButton: Bool {
@@ -290,6 +334,32 @@ public struct AddressFieldView: View {
         onScanQR: {}
     )
     .padding()
+}
+
+@available(iOS 17, macOS 14, *)
+#Preview("Label accessory") {
+    AddressFieldView(
+        text: .constant("yV1D1ivvSUyKPJnbFmzSTVh1MyZ3JbeVkY"),
+        label: "Address",
+        placeholder: "Dash address",
+        hasError: false
+    ) {
+        // What the host puts here is its own: a badge naming the kind of
+        // address that was entered, decided by the host's own decoder.
+        HStack(spacing: 4) {
+            Image(systemName: "d.circle.fill")
+                .font(.system(size: 10, weight: .semibold))
+            Text("Transparent address")
+                .dashFont(.caption2)
+        }
+        .foregroundStyle(Color.dash.blueText)
+        .padding(.horizontal, 8)
+        .padding(.vertical, 3)
+        .background(Color.dash.blueAlpha10)
+        .clipShape(Capsule())
+    }
+    .padding()
+    .background(Color.dash.primaryBackground)
 }
 
 #endif
