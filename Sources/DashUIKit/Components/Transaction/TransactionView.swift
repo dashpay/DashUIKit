@@ -60,6 +60,10 @@ public struct TransactionView: View {
     /// Dash amount in duffs (10⁸ per Dash). Negative = outgoing.
     public var dashAmount: Int64
     public var amountSign: DashAmountSign
+    /// Optional SF Symbol rendered immediately before the amount, in the secondary tone.
+    /// Meant for rows whose amount carries no direction — e.g. a circulating-arrows glyph on a
+    /// wallet-internal transfer shown with `amountSign: .none`.
+    public var amountAccessorySystemImage: String?
     public var fiat: String?
     /// Short status shown immediately before the amount, e.g. "Locked" for a coinbase reward that
     /// has not matured yet. Rendered in the warning tone, since it qualifies the amount.
@@ -78,6 +82,7 @@ public struct TransactionView: View {
         details: String? = nil,
         dashAmount: Int64 = 0,
         amountSign: DashAmountSign = .negativeOnly,
+        amountAccessorySystemImage: String? = nil,
         fiat: String? = nil,
         trailingStatusText: String? = nil,
         action: (() -> Void)? = nil
@@ -91,6 +96,7 @@ public struct TransactionView: View {
         self.details = details
         self.dashAmount = dashAmount
         self.amountSign = amountSign
+        self.amountAccessorySystemImage = amountAccessorySystemImage
         self.fiat = fiat
         self.trailingStatusText = trailingStatusText
         self.action = action
@@ -209,6 +215,12 @@ public struct TransactionView: View {
                         .foregroundColor(Color.dash.orange)
                 }
 
+                if let amountAccessorySystemImage {
+                    Image(systemName: amountAccessorySystemImage)
+                        .font(.system(size: 11, weight: .semibold))
+                        .foregroundColor(Color.dash.secondaryText)
+                }
+
                 DashAmount(amount: dashAmount, sign: amountSign)
                     .foregroundColor(Color.dash.primaryText)
             }
@@ -265,6 +277,21 @@ public struct TransactionView: View {
         subtitle: "8:34 AM",
         dashAmount: 50_000_000,
         amountSign: .none
+    )
+    .padding(.horizontal)
+    .background(Color.dash.primaryBackground)
+}
+
+@available(iOS 17, macOS 14, *)
+#Preview("Internal transfer — amount accessory") {
+    TransactionView(
+        icon: .system("arrow.forward.circle.fill"),
+        title: "Internal Transfer",
+        subtitle: "8:34 AM",
+        dashAmount: 200_000_000,
+        amountSign: .none,
+        amountAccessorySystemImage: "arrow.triangle.2.circlepath",
+        fiat: "$ 55.00"
     )
     .padding(.horizontal)
     .background(Color.dash.primaryBackground)
