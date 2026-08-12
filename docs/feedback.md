@@ -98,7 +98,7 @@ ErrorIllustration()
 
 ## XmarkIcon
 
-File `Components/Icons/XmarkIcon.swift` · `@available(iOS 14, macOS 11, *)` · internal
+File `Components/Icons/XmarkIcon.swift` · `@available(iOS 14, macOS 11, *)` · public
 
 A code-drawn "✕" close icon (a `Shape` with two round-capped diagonals, mirroring a 9×9
 SVG), so it scales cleanly to any size without an asset. Used by `Toast`'s dismiss button.
@@ -107,5 +107,8 @@ SVG), so it scales cleanly to any size without an asset. Used by `Toast`'s dismi
 XmarkIcon(size: 24, color: .white, lineWidth: 2)
 ```
 
-> Internal to the module (not part of the public API) — reach for the bundled
-> `navigationbar-close` asset or an SF Symbol from app code.
+> Prefer this over the bundled `navigationbar-close` asset when the close control
+> is drawn at a non-standard size or needs to take the surrounding tint: being a
+> `Shape`, it stays crisp at any `size` and honours `color` / `lineWidth`. The
+> asset remains the right choice where the navigation bar's exact artwork is
+> wanted.
