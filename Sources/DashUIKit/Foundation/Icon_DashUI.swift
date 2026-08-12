@@ -156,6 +156,7 @@ public enum DashIcon {
         case security = "menu-security"
         case send = "menu-send"
         case sendAccount = "menu-send-account"
+        case sendAccountDisabled = "menu-send-account-disabled"
         case sendAddress = "menu-send-address"
         case sendDisabled = "menu-send-disabled"
         case settings = "menu-settings"
