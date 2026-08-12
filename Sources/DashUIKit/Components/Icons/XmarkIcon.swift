@@ -22,12 +22,25 @@ import SwiftUI
 /// A code-drawn "✕" (close) icon. Mirrors the source SVG (9×9 viewBox, two diagonals
 /// inset from 0.75 to 7.75, round caps/joins). Scales cleanly to any `size`.
 @available(iOS 14, macOS 11, *)
-struct XmarkIcon: View {
-    var size: CGFloat = 9
-    var color: Color = Color.dash.primaryText
-    var lineWidth: CGFloat = 1.5
+public struct XmarkIcon: View {
+    public var size: CGFloat = 9
+    public var color: Color = Color.dash.primaryText
+    public var lineWidth: CGFloat = 1.5
 
-    var body: some View {
+    /// A public struct gets no public memberwise initializer, so this one is
+    /// written out to keep the call site unchanged for module-internal users
+    /// and available to app code.
+    public init(
+        size: CGFloat = 9,
+        color: Color = Color.dash.primaryText,
+        lineWidth: CGFloat = 1.5
+    ) {
+        self.size = size
+        self.color = color
+        self.lineWidth = lineWidth
+    }
+
+    public var body: some View {
         XmarkShape()
             .stroke(color, style: StrokeStyle(lineWidth: lineWidth, lineCap: .round, lineJoin: .round))
             .frame(width: size, height: size)
