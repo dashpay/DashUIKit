@@ -177,7 +177,10 @@ public extension View {
     ///   - maxHeightFraction: Caps the sheet at this fraction of the window height; taller content
     ///     is clipped, so wrap it in a `ScrollView`.
     ///   - background: Fill for the sheet and its presentation, so the bottom
-    ///     safe-area strip matches the content. Defaults to the sheet's own.
+    ///     safe-area strip matches the content. This modifier cannot see the
+    ///     colour the wrapped `BottomSheet` was built with, so a custom one has
+    ///     to be passed here too — or use `BottomSheet.selfSizing(...)`, which
+    ///     forwards a single `background` to both.
     ///   - cornerRadius: Optional corner radius applied via `presentationCornerRadius` on
     ///     iOS 16.4..<26 (iOS 26+ keeps the system corner styling).
     @ViewBuilder
@@ -205,6 +208,15 @@ public extension View {
                     modified
                         .presentationBackground(background)
                 }
+            } else {
+                modified
+            }
+            #elseif os(macOS)
+            // `presentationCornerRadius` is iOS-only, but the presentation
+            // background lands on macOS 13.3 — apply it there too so the
+            // parameter is not silently ignored.
+            if #available(macOS 13.3, *) {
+                modified.presentationBackground(background)
             } else {
                 modified
             }
@@ -263,6 +275,8 @@ private struct SelfSizingSheetModifier: ViewModifier {
         #endif
     }
 }
+
+#if DEBUG
 
 @available(iOS 17, macOS 14, *)
 #Preview("BottomSheet Filled Height") {
@@ -324,3 +338,5 @@ private struct SelfSizingSheetModifier: ViewModifier {
         .padding()
     }
 }
+
+#endif

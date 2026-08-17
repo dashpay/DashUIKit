@@ -349,8 +349,11 @@ extension AddressFieldView {
         // What the host puts here is its own: a badge naming the kind of
         // address that was entered, decided by the host's own decoder.
         HStack(spacing: 4) {
-            Image(systemName: "d.circle.fill")
-                .font(.system(size: 10, weight: .semibold))
+            DashIcon.Common.iconDashCurrency.image
+                .renderingMode(.template)
+                .resizable()
+                .scaledToFit()
+                .frame(width: 10, height: 10)
             Text("Transparent address")
                 .dashFont(.caption2)
         }
