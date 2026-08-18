@@ -125,7 +125,8 @@ sentence. Stack several to describe what a feature unlocks.
 SheetFeature(
     title: "Identity",
     description: "Register a username and be paid by name instead of an address.",
-    icon: .custom("feature-identity", bundle: .dashUIKit))   // tinted .blue by default
+    icon: .custom("feature-identity", bundle: .dashUIKit),
+    iconColor: Color.dash.purple)                            // omit to keep the asset's own colours
 
 SheetFeature(title: "Custom", description: "…") {            // or any view in the slot
     Circle().fill(Color.dash.blueAlpha10)
@@ -134,8 +135,9 @@ SheetFeature(title: "Custom", description: "…") {            // or any view in
 
 The icon slot is a `ViewBuilder`, not a `DashIconSource`, because the leading mark is not
 always an image — a badge or a coloured container belongs there too. It is framed to 40×40
-so a column of features stays aligned whatever each row puts in it. The convenience
-initializer covers the common case of a template asset with a tint.
+so a column of features stays aligned whatever each row puts in it. The convenience initializer takes an optional `iconColor`: given one, the asset is drawn
+as a template in that colour; omitted, it renders as authored — the only way an icon with
+more than one colour keeps them, since a template flattens everything to a single tint.
 
 ---
 

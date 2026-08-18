@@ -68,22 +68,38 @@ public struct SheetFeature<Icon: View>: View {
 
 @available(iOS 14, macOS 11, *)
 public extension SheetFeature where Icon == AnyView {
-    /// Convenience for the common case: a template asset tinted to `iconColor`.
+    /// Convenience for an asset in the icon slot.
+    ///
+    /// `iconColor` is optional on purpose. Given one, the image is drawn as a
+    /// template in that colour — right for a single-colour glyph. Left `nil`,
+    /// the asset renders as authored, which is the only way an icon carrying
+    /// more than one colour keeps them: a template draws the alpha channel in
+    /// a single tint and flattens the rest away.
     init(
         title: String,
         description: String,
         icon source: DashIconSource,
-        iconColor: Color = Color.dash.blue
+        iconColor: Color? = nil
     ) {
-        self.init(title: title, description: description) {
-            AnyView(
+        // Built before the call so the slot receives exactly `AnyView`; a
+        // `@ViewBuilder` if/else would hand back `_ConditionalContent`.
+        // `.renderingMode` also lives on `Image`, so it is applied before the
+        // layout modifiers erase the type.
+        let rendered: AnyView
+        if let iconColor {
+            rendered = AnyView(
+                Image(dash: source)
+                    .renderingMode(.template)
+                    .resizable()
+                    .scaledToFit()
+                    .foregroundColor(iconColor))
+        } else {
+            rendered = AnyView(
                 Image(dash: source)
                     .resizable()
-                    .renderingMode(.template)
-                    .scaledToFit()
-                    .foregroundColor(iconColor)
-            )
+                    .scaledToFit())
         }
+        self.init(title: title, description: description) { rendered }
     }
 }
 
