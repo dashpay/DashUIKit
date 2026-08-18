@@ -110,8 +110,11 @@ public struct MenuItem: View {
         case .none:
             EmptyView()
         case .toggle(let isOn):
-            Toggle("", isOn: isOn)
-                .labelsHidden()
+            // `SwitchView`, not `Toggle`: the system switch is green and sized
+            // by UIKit, so a menu row rendered here did not match the switch
+            // the same design system hands out everywhere else. It reads
+            // `isEnabled` from the environment, which `.disabled` sets.
+            SwitchView(isOn: isOn)
                 .disabled(!isEnabled)
         case .text(let value):
             Text(value)
