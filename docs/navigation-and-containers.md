@@ -70,7 +70,8 @@ Sheet chrome to put **inside** a SwiftUI `.sheet { }`: a grabber, a `NavigationB
         title: "Details",
         showBackButton: $showBack,            // Binding<Bool>
         onBackButtonPressed: { /* pop */ },
-        fillsHeight: true                     // greedy: fills the sheet
+        fillsHeight: true,                    // greedy: fills the sheet
+        background: .dash.primaryBackground   // fill behind grabber, header and content
     ) {
         MyContent()
     }
@@ -94,6 +95,7 @@ the modifier are applied together:
         showBackButton: .constant(false),
         fallback: 240,            // height before first measurement (avoids .medium flash)
         maxHeightFraction: 0.95,  // cap at 95% of window height (clip taller → use ScrollView)
+        background: .dash.secondaryBackground, // also fills the home-indicator strip
         cornerRadius: 24          // iOS 16.4..<26; iOS 26+ keeps system corners
     ) {
         MyContent()
@@ -107,6 +109,10 @@ a **no-op below iOS 16**. The measured content must have a finite intrinsic heig
 greedy `Spacer`/`maxHeight: .infinity`), or the measurement is wrong.
 `BottomSheetHeightPreferenceKey` is exposed for advanced cases.
 
+`background` fills the sheet **and** its presentation. The measured height excludes the
+home-indicator inset that `presentationDetents([.height])` adds back, so that strip lies
+outside the sheet's own stack — without the presentation fill it shows the system
+background as a pale band along the bottom edge, whatever the content is styled with.
 
 ## SheetFeature
 

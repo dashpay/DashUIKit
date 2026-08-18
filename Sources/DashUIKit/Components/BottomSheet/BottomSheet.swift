@@ -17,6 +17,11 @@ public struct BottomSheet<Content: View>: View {
     /// when natural sizing is needed — it guarantees `fillsHeight: false` and the modifier are
     /// always applied together.
     public var fillsHeight: Bool = true
+    /// Fill behind the whole sheet — grabber, header and content alike. Also
+    /// used as the presentation background so the home-indicator inset the
+    /// detent adds matches; a host that only restyles its own content would
+    /// otherwise get a strip of this colour along the bottom edge.
+    public var background: Color = .dash.primaryBackground
     @ViewBuilder public var content: () -> Content
 
     public init(
@@ -24,12 +29,14 @@ public struct BottomSheet<Content: View>: View {
         showBackButton: Binding<Bool>,
         onBackButtonPressed: (() -> Void)? = nil,
         fillsHeight: Bool = true,
+        background: Color = .dash.primaryBackground,
         @ViewBuilder content: @escaping () -> Content
     ) {
         self.title = title
         self._showBackButton = showBackButton
         self.onBackButtonPressed = onBackButtonPressed
         self.fillsHeight = fillsHeight
+        self.background = background
         self.content = content
     }
 
@@ -42,7 +49,7 @@ public struct BottomSheet<Content: View>: View {
 
             contentSection
         }
-        .background(Color.dash.primaryBackground)
+        .background(background)
 
         if fillsHeight {
             sheet.edgesIgnoringSafeArea(.bottom)
@@ -103,13 +110,13 @@ public struct BottomSheet<Content: View>: View {
                     .navigationBarHidden(true)
                     #endif
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .background(Color.dash.primaryBackground)
+                    .background(background)
             }
         } else {
             // Natural height — no greedy NavigationView / maxHeight so the sheet can self-size.
             content()
                 .frame(maxWidth: .infinity)
-                .background(Color.dash.primaryBackground)
+                .background(background)
         }
     }
 }
@@ -134,6 +141,7 @@ public extension BottomSheet {
         onBackButtonPressed: (() -> Void)? = nil,
         fallback: CGFloat = 0,
         maxHeightFraction: CGFloat = 0.95,
+        background: Color = .dash.primaryBackground,
         cornerRadius: CGFloat? = nil,
         @ViewBuilder content: @escaping () -> Content
     ) -> some View {
@@ -142,9 +150,14 @@ public extension BottomSheet {
             showBackButton: showBackButton,
             onBackButtonPressed: onBackButtonPressed,
             fillsHeight: false,
+            background: background,
             content: content
         )
-        .selfSizingSheet(fallback: fallback, maxHeightFraction: maxHeightFraction, cornerRadius: cornerRadius)
+        .selfSizingSheet(
+            fallback: fallback,
+            maxHeightFraction: maxHeightFraction,
+            background: background,
+            cornerRadius: cornerRadius)
     }
 }
 
@@ -163,29 +176,47 @@ public extension View {
     ///   - fallback: Height used before the first measurement (avoids a `.medium` flash).
     ///   - maxHeightFraction: Caps the sheet at this fraction of the window height; taller content
     ///     is clipped, so wrap it in a `ScrollView`.
+    ///   - background: Fill for the sheet and its presentation, so the bottom
+    ///     safe-area strip matches the content. This modifier cannot see the
+    ///     colour the wrapped `BottomSheet` was built with, so a custom one has
+    ///     to be passed here too — or use `BottomSheet.selfSizing(...)`, which
+    ///     forwards a single `background` to both.
     ///   - cornerRadius: Optional corner radius applied via `presentationCornerRadius` on
-    ///     iOS 16.4..<26 (iOS 26+ keeps the system corner styling). When provided, the sheet
-    ///     background is also filled so the bottom safe-area strip matches the content.
+    ///     iOS 16.4..<26 (iOS 26+ keeps the system corner styling).
     @ViewBuilder
     func selfSizingSheet(
         fallback: CGFloat = 0,
         maxHeightFraction: CGFloat = 0.95,
+        background: Color = .dash.primaryBackground,
         cornerRadius: CGFloat? = nil
     ) -> some View {
         if #available(iOS 16.0, macOS 13.0, *) {
             let modified = modifier(SelfSizingSheetModifier(fallback: fallback, maxHeightFraction: maxHeightFraction))
             #if os(iOS)
-            if #available(iOS 16.4, *), let cornerRadius {
-                if #unavailable(iOS 26.0) {
-                    // iOS 16.4..<26: apply the custom corner radius + fill the sheet background.
+            if #available(iOS 16.4, *) {
+                // The background is filled whatever the corner radius: the
+                // measured height excludes the home-indicator inset that
+                // `.presentationDetents([.height])` adds back, so that strip
+                // sits outside the sheet's own `VStack` and shows the system
+                // background unless this fills it.
+                if #unavailable(iOS 26.0), let cornerRadius {
                     modified
                         .presentationCornerRadius(cornerRadius)
-                        .presentationBackground(Color.dash.primaryBackground)
+                        .presentationBackground(background)
                 } else {
-                    // iOS 26+: keep the system corner styling, just fill the background.
+                    // iOS 26+ keeps the system corner styling.
                     modified
-                        .presentationBackground(Color.dash.primaryBackground)
+                        .presentationBackground(background)
                 }
+            } else {
+                modified
+            }
+            #elseif os(macOS)
+            // `presentationCornerRadius` is iOS-only, but the presentation
+            // background lands on macOS 13.3 — apply it there too so the
+            // parameter is not silently ignored.
+            if #available(macOS 13.3, *) {
+                modified.presentationBackground(background)
             } else {
                 modified
             }
@@ -245,6 +276,8 @@ private struct SelfSizingSheetModifier: ViewModifier {
     }
 }
 
+#if DEBUG
+
 @available(iOS 17, macOS 14, *)
 #Preview("BottomSheet Filled Height") {
     BottomSheet(
@@ -283,3 +316,27 @@ private struct SelfSizingSheetModifier: ViewModifier {
         .padding()
     }
 }
+
+@available(iOS 17, macOS 14, *)
+#Preview("BottomSheet Custom Background") {
+    BottomSheet(
+        title: "Bottom Sheet",
+        showBackButton: .constant(false),
+        fillsHeight: false,
+        background: .dash.secondaryBackground
+    ) {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Cards on a tinted sheet")
+                .dashFont(.calloutMedium)
+                .foregroundColor(.dash.primaryText)
+
+            Text("The host picks the fill; cards drawn on top keep their own.")
+                .dashFont(.body)
+                .foregroundColor(.dash.secondaryText)
+                .modifier(MenuViewModifier())
+        }
+        .padding()
+    }
+}
+
+#endif
