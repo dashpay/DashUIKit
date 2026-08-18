@@ -59,7 +59,7 @@ Use it for screen headers that sit above the main content rather than inside a n
 
 ## BottomSheet
 
-File `Components/BottomSheet.swift` · `@available(iOS 14, macOS 11, *)`
+File `Components/BottomSheet/BottomSheet.swift` · `@available(iOS 14, macOS 11, *)`
 
 Sheet chrome to put **inside** a SwiftUI `.sheet { }`: a grabber, a `NavigationBar` header
 (optional back button + title + close), and your content. Two height modes.
@@ -106,6 +106,30 @@ the modifier are applied together:
 a **no-op below iOS 16**. The measured content must have a finite intrinsic height (no
 greedy `Spacer`/`maxHeight: .infinity`), or the measurement is wrong.
 `BottomSheetHeightPreferenceKey` is exposed for advanced cases.
+
+
+## SheetFeature
+
+File `Components/BottomSheet/SheetFeature.swift` · `@available(iOS 14, macOS 11, *)` · public
+
+One "here is what this gives you" line for a `BottomSheet`: an icon beside a name and a
+sentence. Stack several to describe what a feature unlocks.
+
+```swift
+SheetFeature(
+    title: "Identity",
+    description: "Register a username and be paid by name instead of an address.",
+    icon: .custom("feature-identity", bundle: .dashUIKit))   // tinted .blue by default
+
+SheetFeature(title: "Custom", description: "…") {            // or any view in the slot
+    Circle().fill(Color.dash.blueAlpha10)
+}
+```
+
+The icon slot is a `ViewBuilder`, not a `DashIconSource`, because the leading mark is not
+always an image — a badge or a coloured container belongs there too. It is framed to 40×40
+so a column of features stays aligned whatever each row puts in it. The convenience
+initializer covers the common case of a template asset with a tint.
 
 ---
 

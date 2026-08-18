@@ -32,6 +32,7 @@ and callbacks; they render and report intent. They require `import DashUIKit` an
 | Symbol | Page |
 |---|---|
 | `AddressFieldView` | [Buttons & inputs](buttons-and-inputs.md#addressfieldview) |
+| `SheetFeature` | [Navigation & containers](navigation-and-containers.md#sheetfeature) |
 | `BottomSheet` | [Navigation & containers](navigation-and-containers.md#bottomsheet) |
 | `Bundle.dashUIKit` | [Foundation](foundation.md#bundle) |
 | `CoinSelector` | [Lists & rows](lists-and-rows.md#coinselector) |
