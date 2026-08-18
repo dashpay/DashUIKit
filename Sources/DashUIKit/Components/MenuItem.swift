@@ -32,6 +32,16 @@ public enum MenuItemAccessory {
     case balance(dash: Int64, sign: DashAmountSign = .negativeOnly, fiat: String? = nil)
 }
 
+/// The glyph beside a row's title that says there is more to explain.
+///
+/// `.round` is the design system's own info mark; `.icon` stays open for a row
+/// that needs to flag something else entirely.
+@available(iOS 14, macOS 11, *)
+public enum MenuItemInfo {
+    case round(color: Color)
+    case icon(DashIconSource)
+}
+
 @available(iOS 14, macOS 11, *)
 public struct MenuItem: View {
 
@@ -40,7 +50,7 @@ public struct MenuItem: View {
     public var disabledLeadingIcon: DashIconSource?
     public var title: String
     public var helpText: String?
-    public var infoIcon: DashIconSource?
+    public var info: MenuItemInfo?
     public var accessory: MenuItemAccessory
 
     public init(
@@ -49,7 +59,7 @@ public struct MenuItem: View {
         disabledLeadingIcon: DashIconSource? = nil,
         title: String,
         helpText: String? = nil,
-        infoIcon: DashIconSource? = nil,
+        info: MenuItemInfo? = nil,
         accessory: MenuItemAccessory = .none
     ) {
         self.leadingIcon = leadingIcon
@@ -57,7 +67,7 @@ public struct MenuItem: View {
         self.disabledLeadingIcon = disabledLeadingIcon
         self.title = title
         self.helpText = helpText
-        self.infoIcon = infoIcon
+        self.info = info
         self.accessory = accessory
     }
 
@@ -89,9 +99,15 @@ public struct MenuItem: View {
                     .dashFont(.subheadMedium)
                     .foregroundColor(isEnabled ? Color.dash.primaryText : Color.dash.secondaryText)
 
-                if let icon = infoIcon {
-                    Image(dash: icon)
-                        .frame(width: 20, height: 20, alignment: .center)
+                if let info {
+                    switch info {
+                    case .round(let color):
+                        InfoRoundIcon(size: 19, color: color)
+                            .frame(width: 20, height: 20, alignment: .center)
+                    case .icon(let icon):
+                        Image(dash: icon)
+                            .frame(width: 20, height: 20, alignment: .center)
+                    }
                 }
             }
 
@@ -155,11 +171,11 @@ public struct MenuItem: View {
 }
 
 @available(iOS 17, macOS 14, *)
-#Preview("Title + infoIcon + helpText") {
+#Preview("Title + info + helpText") {
     MenuItem(
         title: "Network fee",
         helpText: "Estimated cost for this transaction",
-        infoIcon: .system("info.circle"),
+        info: .round(color: Color.dash.gray300Alpha70),
         accessory: .text("0.0001 DASH")
     )
     .padding(.horizontal)

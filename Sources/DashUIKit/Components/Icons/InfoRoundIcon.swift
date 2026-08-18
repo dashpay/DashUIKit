@@ -28,14 +28,14 @@ import SwiftUI
 public struct InfoRoundIcon: View {
     public var size: CGFloat = 19
     public var color: Color = Color.dash.blue
-    public var glyphColor: Color = Color.white
+    public var glyphColor: Color = Color.dash.white
 
     /// A public struct gets no public memberwise initializer, so this one is
     /// written out to keep the call site available to app code.
     public init(
         size: CGFloat = 19,
         color: Color = Color.dash.blue,
-        glyphColor: Color = Color.white
+        glyphColor: Color = Color.dash.white
     ) {
         self.size = size
         self.color = color

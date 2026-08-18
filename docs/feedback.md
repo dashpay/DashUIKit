@@ -96,6 +96,25 @@ ErrorIllustration()
 
 ---
 
+## InfoRoundIcon
+
+File `Components/Icons/InfoRoundIcon.swift` · `@available(iOS 14, macOS 11, *)` · public
+
+A code-drawn round "i" — a filled disc with a white glyph — for the "there is more to say
+about this" affordance. Geometry is normalized from a 19×19 SVG, so stem and dot keep
+their weight and position at any `size`.
+
+```swift
+InfoRoundIcon()                                             // 19pt, Blue disc
+InfoRoundIcon(size: 20, color: Color.dash.gray300Alpha70)   // muted, beside a menu title
+```
+
+The disc reads `Color.dash.blue` by default and the glyph `Color.dash.white`, so both
+follow the palette instead of a baked-in hex. `MenuItem` renders it for
+`MenuItemInfo.round`.
+
+---
+
 ## XmarkIcon
 
 File `Components/Icons/XmarkIcon.swift` · `@available(iOS 14, macOS 11, *)` · public
