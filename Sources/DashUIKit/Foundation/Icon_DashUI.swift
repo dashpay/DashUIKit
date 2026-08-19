@@ -73,6 +73,23 @@ public enum DashIcon {
         case dashDex = "illustration-dash-dex"
     }
 
+    // MARK: - Features
+    /// `Features`
+    ///
+    /// The illustrated rows of an explainer sheet (`SheetFeature`). Several
+    /// come in a plain and a `-purple` variant — the plain one is tinted by
+    /// the caller, the purple one carries its own colour.
+    public enum Features: String, CaseIterable, DashIconAsset {
+        case identity = "feature-identity"
+        case instant = "feature-instant"
+        case platform = "feature-platform"
+        case platformPurple = "feature-platform-purple"
+        case shield = "feature-shield"
+        case shieldPurple = "feature-shield-purple"
+        case timer = "feature-timer"
+        case timerPurple = "feature-timer-purple"
+    }
+
     // MARK: - Checkbox
     /// `Components/Checkbox`
     public enum Checkbox: String, CaseIterable, DashIconAsset {
