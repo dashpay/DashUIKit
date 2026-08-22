@@ -40,16 +40,21 @@ struct ConverterRowHeightKey: PreferenceKey {
 
 // MARK: - ConverterCardRow
 
-/// One card in the conversion stack: wraps arbitrary content with the shared, non-interactive
-/// card chrome and reports its height via `ConverterRowHeightKey` for its `slot`.
+/// One card in the conversion stack: wraps arbitrary content with the shared card chrome and
+/// reports its height via `ConverterRowHeightKey` for its `slot`.
+///
+/// The chrome swallows touches by default: a row is display-only, and the badge drawn over the
+/// seam is the card's only control. A row that carries its own action opts back in with
+/// `isInteractive` — without it the button inside the content would never see the tap.
 @available(iOS 14, macOS 11, *)
 struct ConverterCardRow<Content: View>: View {
     let slot: ConverterRowSlot
+    var isInteractive: Bool = false
     @ViewBuilder var content: () -> Content
 
     var body: some View {
         content()
-            .allowsHitTesting(false)
+            .allowsHitTesting(isInteractive)
             .padding(6)
             .background(Color.dash.secondaryBackground)
             .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
