@@ -30,6 +30,11 @@ public enum MenuItemAccessory {
     /// The caller converts the fiat value via its own exchange infrastructure;
     /// the library only renders the string it receives.
     case balance(dash: Int64, sign: DashAmountSign = .negativeOnly, fiat: String? = nil)
+    /// A picker row: the design system's tick on the chosen one.
+    ///
+    /// The mark keeps its slot while unselected, so nothing in the row shifts
+    /// horizontally as the selection moves down a list.
+    case selection(isSelected: Bool)
 }
 
 /// The glyph beside a row's title that says there is more to explain.
@@ -149,6 +154,10 @@ public struct MenuItem: View {
                         .foregroundColor(Color.dash.secondaryText)
                 }
             }
+        case .selection(let isSelected):
+            CheckmarkIcon()
+                .opacity(isSelected ? 1 : 0)
+                .accessibilityHidden(!isSelected)
         }
     }
 }
@@ -261,6 +270,31 @@ public struct MenuItem: View {
         title: "Pending",
         accessory: .balance(dash: .max)
     )
+    .padding(.horizontal)
+}
+
+/// A picker list: one row marked, the rest holding the tick's slot empty.
+@available(iOS 17, macOS 14, *)
+#Preview("Accessory: selection") {
+    VStack(spacing: 0) {
+        MenuItem(
+            leadingIcon: DashIcon.Menu.dashLogoSquare.source,
+            title: "Transparent",
+            accessory: .selection(isSelected: true)
+        )
+
+        MenuItem(
+            leadingIcon: DashIcon.Features.platform.source,
+            title: "Platform",
+            accessory: .selection(isSelected: false)
+        )
+
+        MenuItem(
+            leadingIcon: DashIcon.Features.shield.source,
+            title: "Shielded",
+            accessory: .selection(isSelected: false)
+        )
+    }
     .padding(.horizontal)
 }
 

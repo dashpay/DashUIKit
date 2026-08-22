@@ -131,3 +131,21 @@ XmarkIcon(size: 24, color: .white, lineWidth: 2)
 > `Shape`, it stays crisp at any `size` and honours `color` / `lineWidth`. The
 > asset remains the right choice where the navigation bar's exact artwork is
 > wanted.
+
+---
+
+## CheckmarkIcon
+
+File `Components/Icons/CheckmarkIcon.swift` · `@available(iOS 14, macOS 11, *)` · public
+
+A code-drawn "✓" selection mark (a `Shape` stroking the polyline of a 15×12 SVG, round
+caps and joins). Backs `MenuItemAccessory.selection`.
+
+```swift
+CheckmarkIcon(size: 24, color: .white, lineWidth: 3)
+```
+
+> `size` sets the **width**; the height follows the source aspect ratio (12/15), unlike
+> `XmarkIcon`, whose artwork is square. The default colour is `Color.dash.blue` — the
+> token the source SVG's `#008DE4` corresponds to — so the mark follows the palette
+> rather than a frozen hex.

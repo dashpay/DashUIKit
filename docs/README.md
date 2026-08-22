@@ -23,7 +23,7 @@ and callbacks; they render and report intent. They require `import DashUIKit` an
   `NavigationBarElement`, `TopIntroView`, `BottomSheet`, `MenuViewModifier`.
 - **[Feedback](feedback.md)** — `Toast`, `SystemMessageView`,
   `LoadingIllustration` / `LoadingSpinner`, `SuccessIllustration`, `ErrorIllustration`,
-  `XmarkIcon`, `InfoRoundIcon`.
+  `XmarkIcon`, `CheckmarkIcon`, `InfoRoundIcon`.
 - **[Utilities](utilities.md)** — geometry readers (`readingFrame`, `readingLocation`),
   `ScrollViewWithOnScrollChanged`, `scaleToFitWidth`.
 
@@ -70,4 +70,5 @@ and callbacks; they render and report intent. They require `import DashUIKit` an
 | `TopIntroView` | [Navigation & containers](navigation-and-containers.md#topintroview) |
 | `TransactionView` | [Lists & rows](lists-and-rows.md#transactionview) |
 | `XmarkIcon` | [Feedback](feedback.md#xmarkicon) |
+| `CheckmarkIcon` | [Feedback](feedback.md#checkmarkicon) |
 | `InfoRoundIcon` | [Feedback](feedback.md#inforoundicon) |

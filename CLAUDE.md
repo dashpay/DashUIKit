@@ -37,7 +37,7 @@ Sources/DashUIKit/
   Components/        Most components (one type per file)
     EnterAmount/     Amount-entry suite (EnterAmountView, SwapAmountView, …)
     Geometry/        Layout readers + scale-to-fit helpers
-    Icons/           Code-drawn icons (XmarkIcon, InfoRoundIcon)
+    Icons/           Code-drawn icons (XmarkIcon, CheckmarkIcon, InfoRoundIcon)
     Illustrations/   Loading / success / error illustrations
   Table List/        List1View (label/value row)
   ViewModifiers/     MenuViewModifier (card chrome)

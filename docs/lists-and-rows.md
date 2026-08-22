@@ -68,6 +68,9 @@ per-call fonts/colors, to keep rows consistent):
   a `DashAmount` (duffs) with an optional pre-formatted fiat sub-line. The fiat line is
   hidden for zero / `.max` / `.min` amounts. The library only renders the fiat string you
   pass — it does no conversion.
+- `.selection(isSelected: Bool)` — a `CheckmarkIcon` on the chosen row of a picker list.
+  Unselected rows keep the mark's slot (drawn at zero opacity), so nothing shifts
+  horizontally as the selection moves.
 
 ---
 
