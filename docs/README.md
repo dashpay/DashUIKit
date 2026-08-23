@@ -23,7 +23,7 @@ and callbacks; they render and report intent. They require `import DashUIKit` an
   `NavigationBarElement`, `TopIntroView`, `BottomSheet`, `MenuViewModifier`.
 - **[Feedback](feedback.md)** — `Toast`, `SystemMessageView`,
   `LoadingIllustration` / `LoadingSpinner`, `SuccessIllustration`, `ErrorIllustration`,
-  `XmarkIcon`, `CheckmarkIcon`, `InfoRoundIcon`.
+  `XmarkIcon`, `CheckmarkIcon`, `ChevronIcon`, `InfoRoundIcon`.
 - **[Utilities](utilities.md)** — geometry readers (`readingFrame`, `readingLocation`),
   `ScrollViewWithOnScrollChanged`, `scaleToFitWidth`.
 
@@ -71,4 +71,5 @@ and callbacks; they render and report intent. They require `import DashUIKit` an
 | `TransactionView` | [Lists & rows](lists-and-rows.md#transactionview) |
 | `XmarkIcon` | [Feedback](feedback.md#xmarkicon) |
 | `CheckmarkIcon` | [Feedback](feedback.md#checkmarkicon) |
+| `ChevronIcon` | [Feedback](feedback.md#chevronicon) |
 | `InfoRoundIcon` | [Feedback](feedback.md#inforoundicon) |
