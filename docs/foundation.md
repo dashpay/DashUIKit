@@ -116,7 +116,9 @@ Bundled custom assets (under `Media.xcassets/Icons & Illustrations/`) include na
 icons, text-field icons (`text-field-qr`, `text-field-clear`), menu icons
 (`menu-send/receive`, `support`, …), explainer-sheet feature icons
 (`feature-shield`, `feature-timer`, `feature-identity`, `feature-platform`, each
-with a `-purple` variant where one exists), and illustrations
+with a `-purple` variant where one exists), segmented-control arrows
+(`segmented-control-receive/transfer/send`, each with a grey `-disabled` twin for
+the unselected segment), and illustrations
 (`illustration-dash-dex`, `illustration-xmark`, `checkmark`,
 `crowdnode.warning`).
 

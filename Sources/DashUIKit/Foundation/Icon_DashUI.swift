@@ -97,6 +97,22 @@ public enum DashIcon {
         case checkmarkUnchecked = "checkbox-checkmark-unchecked"
     }
 
+    // MARK: - SegmentedControl
+    /// `Segmented control`
+    ///
+    /// One arrow per direction, in that direction's colour, plus a grey
+    /// `-disabled` twin for the segment that is not selected. The colour is
+    /// in the artwork rather than applied at the call site, so a segment
+    /// switches file rather than tint when the selection moves.
+    public enum SegmentedControl: String, CaseIterable, DashIconAsset {
+        case receive = "segmented-control-receive"
+        case receiveDisabled = "segmented-control-receive-disabled"
+        case send = "segmented-control-send"
+        case sendDisabled = "segmented-control-send-disabled"
+        case transfer = "segmented-control-transfer"
+        case transferDisabled = "segmented-control-transfer-disabled"
+    }
+
     // MARK: - SearchBar
     /// `Components/SearchBar`
     public enum SearchBar: String, CaseIterable, DashIconAsset {
