@@ -29,7 +29,8 @@ public enum MenuItemAccessory {
     /// Dash amount with an optional pre-formatted fiat sub-line.
     /// The caller converts the fiat value via its own exchange infrastructure;
     /// the library only renders the string it receives.
-    case balance(dash: Int64, sign: DashAmountSign = .negativeOnly, fiat: String? = nil)
+    case balance(dash: Int64, sign: DashAmountSign = .negativeOnly, fiat: String? = nil,
+                 maximumFractionDigits: Int = DashAmountFormat.defaultMaximumFractionDigits)
     /// A picker row: the design system's tick on the chosen one.
     ///
     /// The mark keeps its slot while unselected, so nothing in the row shifts
@@ -143,9 +144,9 @@ public struct MenuItem: View {
                 .foregroundColor(Color.dash.secondaryText)
         case .button(let button):
             button
-        case .balance(let dash, let sign, let fiat):
+        case .balance(let dash, let sign, let fiat, let maximumFractionDigits):
             VStack(alignment: .trailing, spacing: 1) {
-                DashAmount(amount: dash, sign: sign)
+                DashAmount(amount: dash, sign: sign, maximumFractionDigits: maximumFractionDigits)
                     .foregroundColor(Color.dash.primaryText)
 
                 if dash != 0, dash != .max, dash != .min, let fiat {
