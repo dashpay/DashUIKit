@@ -157,7 +157,8 @@ CheckmarkIcon(size: 24, color: .white, lineWidth: 3)
 File `Components/Icons/ChevronIcon.swift` · `@available(iOS 14, macOS 11, *)` · public
 
 A code-drawn chevron, in any of the four directions (a `Shape` stroking the polyline of a
-7×12 SVG, round caps and joins).
+7×12 SVG, round caps and joins). `ConverterCard` puts one on every row that carries an
+`onTap`, so a row that opens a picker reads as one at rest.
 
 ```swift
 ChevronIcon()                                    // points right, 12pt tall

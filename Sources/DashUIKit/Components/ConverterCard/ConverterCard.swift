@@ -24,6 +24,9 @@ import SwiftUI
 ///
 /// Pass `onSwap` to show a tappable `diagonal-up-down` button; omit it (or pass `nil`) for a
 /// static `arrow-down` indicator when the card is non-swappable.
+///
+/// A row given an `onTap` becomes a button and grows a trailing chevron, so a
+/// row that opens a picker reads as one at rest.
 @available(iOS 14, macOS 11, *)
 public struct ConverterCard: View {
 
@@ -119,6 +122,14 @@ public struct ConverterCard: View {
             Spacer(minLength: 8)
 
             trailing(item)
+
+            // A row that opens something says so. `onTap` is the only signal
+            // the card has for that, and it is exactly the right one: the two
+            // are set together by definition.
+            if item.onTap != nil {
+                ChevronIcon()
+                    .padding(.leading, 2)
+            }
         }
         .padding(10)
     }
@@ -194,8 +205,8 @@ struct ConverterCard_Previews: PreviewProvider {
             )
             .previewDisplayName("Static (no swap)")
 
-            // Tappable from-row: the whole row is a plain button (no chrome
-            // change at rest); the bottom row stays inert.
+            // Tappable from-row: the whole row is a plain button carrying the
+            // trailing chevron; the bottom row stays inert and chevron-less.
             ConverterCard(
                 fromItem: ConverterCardItem(
                     icon: .system("d.circle.fill"),
