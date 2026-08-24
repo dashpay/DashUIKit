@@ -201,6 +201,7 @@ public enum DashIcon {
         case spendingConfirmation = "menu-spending-confirmation"
         case staking = "menu-staking"
         case support = "menu-support"
+        case swapDashCoin = "menu-swap-dash-coin"
         case tools = "menu-tools"
         case tools2 = "menu-tools-2"
         case topper = "menu-topper"
