@@ -11,6 +11,12 @@ public struct BottomSheet<Content: View>: View {
     public var title: String = ""
     @Binding public var showBackButton: Bool
     public var onBackButtonPressed: (() -> Void)? = nil
+    /// Controls every dismissal affordance owned by the sheet. When `false`, the close button is
+    /// disabled and interactive dismissal is blocked on iOS 15+ / macOS 12+.
+    @Binding public var isDismissalEnabled: Bool
+    public var showsCloseButton: Bool = true
+    /// Overrides the close button action. The callback is responsible for dismissing the sheet.
+    public var onClose: (() -> Void)? = nil
     /// `true` (default) — greedy: content fills the sheet (use with an explicit detent or a
     /// `.large`/`.medium` detent). `false` — natural height: pair with `.selfSizingSheet()` so
     /// the sheet snaps to its content. Prefer `BottomSheet.selfSizing(...)` as the entry point
@@ -28,6 +34,9 @@ public struct BottomSheet<Content: View>: View {
         title: String = "",
         showBackButton: Binding<Bool>,
         onBackButtonPressed: (() -> Void)? = nil,
+        isDismissalEnabled: Binding<Bool> = .constant(true),
+        showsCloseButton: Bool = true,
+        onClose: (() -> Void)? = nil,
         fillsHeight: Bool = true,
         background: Color = .dash.primaryBackground,
         @ViewBuilder content: @escaping () -> Content
@@ -35,6 +44,9 @@ public struct BottomSheet<Content: View>: View {
         self.title = title
         self._showBackButton = showBackButton
         self.onBackButtonPressed = onBackButtonPressed
+        self._isDismissalEnabled = isDismissalEnabled
+        self.showsCloseButton = showsCloseButton
+        self.onClose = onClose
         self.fillsHeight = fillsHeight
         self.background = background
         self.content = content
@@ -51,28 +63,31 @@ public struct BottomSheet<Content: View>: View {
         }
         .background(background)
 
-        if fillsHeight {
-            sheet.edgesIgnoringSafeArea(.bottom)
-        } else {
-            // Publish the natural content height for `.selfSizingSheet()`. The bottom safe area is
-            // intentionally NOT ignored here, so the measured height excludes the home-indicator
-            // inset — `.presentationDetents([.height])` adds that inset itself.
-            //
-            // `.fixedSize(vertical:)` is critical: it makes the sheet report its *ideal* height
-            // independent of the height the sheet currently offers. Without it the measurement is
-            // coupled to the detent (detent <- measured <- offered height <- detent), so it ping-pongs
-            // by ~the safe-area inset and the presenting view (HomeView) jitters up/down.
-            sheet
-                .fixedSize(horizontal: false, vertical: true)
-                .background(
-                    GeometryReader { proxy in
-                        Color.clear.preference(
-                            key: BottomSheetHeightPreferenceKey.self,
-                            value: proxy.size.height
-                        )
-                    }
-                )
+        Group {
+            if fillsHeight {
+                sheet.edgesIgnoringSafeArea(.bottom)
+            } else {
+                // Publish the natural content height for `.selfSizingSheet()`. The bottom safe area is
+                // intentionally NOT ignored here, so the measured height excludes the home-indicator
+                // inset — `.presentationDetents([.height])` adds that inset itself.
+                //
+                // `.fixedSize(vertical:)` is critical: it makes the sheet report its *ideal* height
+                // independent of the height the sheet currently offers. Without it the measurement is
+                // coupled to the detent (detent <- measured <- offered height <- detent), so it ping-pongs
+                // by ~the safe-area inset and the presenting view (HomeView) jitters up/down.
+                sheet
+                    .fixedSize(horizontal: false, vertical: true)
+                    .background(
+                        GeometryReader { proxy in
+                            Color.clear.preference(
+                                key: BottomSheetHeightPreferenceKey.self,
+                                value: proxy.size.height
+                            )
+                        }
+                    )
+            }
         }
+        .modifier(BottomSheetDismissalModifier(isEnabled: isDismissalEnabled))
     }
 
     private var grabber: some View {
@@ -96,7 +111,17 @@ public struct BottomSheet<Content: View>: View {
                     .foregroundColor(.dash.primaryText)
             },
             trailing: {
-                NavigationBarElement.close.button { presentationMode.wrappedValue.dismiss() }
+                if showsCloseButton {
+                    NavigationBarElement.close.button {
+                        BottomSheetDismissalAction.perform(
+                            isEnabled: isDismissalEnabled,
+                            onClose: onClose,
+                            dismiss: { presentationMode.wrappedValue.dismiss() }
+                        )
+                    }
+                    .disabled(!isDismissalEnabled)
+                    .opacity(isDismissalEnabled ? 1 : 0.35)
+                }
             }
         )
     }
@@ -139,6 +164,9 @@ public extension BottomSheet {
         title: String = "",
         showBackButton: Binding<Bool>,
         onBackButtonPressed: (() -> Void)? = nil,
+        isDismissalEnabled: Binding<Bool> = .constant(true),
+        showsCloseButton: Bool = true,
+        onClose: (() -> Void)? = nil,
         fallback: CGFloat = 0,
         maxHeightFraction: CGFloat = 0.95,
         background: Color = .dash.primaryBackground,
@@ -149,6 +177,9 @@ public extension BottomSheet {
             title: title,
             showBackButton: showBackButton,
             onBackButtonPressed: onBackButtonPressed,
+            isDismissalEnabled: isDismissalEnabled,
+            showsCloseButton: showsCloseButton,
+            onClose: onClose,
             fillsHeight: false,
             background: background,
             content: content
@@ -158,6 +189,35 @@ public extension BottomSheet {
             maxHeightFraction: maxHeightFraction,
             background: background,
             cornerRadius: cornerRadius)
+    }
+}
+
+@available(iOS 14, macOS 11, *)
+enum BottomSheetDismissalAction {
+    static func perform(isEnabled: Bool, onClose: (() -> Void)?, dismiss: () -> Void) {
+        guard isEnabled else { return }
+
+        if let onClose {
+            onClose()
+        } else {
+            dismiss()
+        }
+    }
+}
+
+@available(iOS 14, macOS 11, *)
+private struct BottomSheetDismissalModifier: ViewModifier {
+    let isEnabled: Bool
+
+    @ViewBuilder
+    func body(content: Content) -> some View {
+        if isEnabled {
+            content
+        } else if #available(iOS 15, macOS 12, *) {
+            content.interactiveDismissDisabled()
+        } else {
+            content
+        }
     }
 }
 
@@ -337,6 +397,48 @@ private struct SelfSizingSheetModifier: ViewModifier {
         }
         .padding()
     }
+}
+
+@available(iOS 17, macOS 14, *)
+#Preview("BottomSheet Dismissal States") {
+    VStack(spacing: 12) {
+        BottomSheet(
+            title: "Dismissal enabled",
+            showBackButton: .constant(false),
+            isDismissalEnabled: .constant(true),
+            fillsHeight: false
+        ) {
+            Text("Swipe or use the close button.")
+                .dashFont(.body)
+                .foregroundColor(.dash.secondaryText)
+                .padding()
+        }
+
+        BottomSheet(
+            title: "Dismissal disabled",
+            showBackButton: .constant(false),
+            isDismissalEnabled: .constant(false),
+            fillsHeight: false
+        ) {
+            Text("The dimmed close button and swipe are disabled.")
+                .dashFont(.body)
+                .foregroundColor(.dash.secondaryText)
+                .padding()
+        }
+
+        BottomSheet(
+            title: "Close hidden",
+            showBackButton: .constant(false),
+            showsCloseButton: false,
+            fillsHeight: false
+        ) {
+            Text("The host intentionally provides no close control.")
+                .dashFont(.body)
+                .foregroundColor(.dash.secondaryText)
+                .padding()
+        }
+    }
+    .background(Color.dash.primaryBackground)
 }
 
 #endif

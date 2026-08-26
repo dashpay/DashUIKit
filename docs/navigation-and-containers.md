@@ -70,6 +70,9 @@ Sheet chrome to put **inside** a SwiftUI `.sheet { }`: a grabber, a `NavigationB
         title: "Details",
         showBackButton: $showBack,            // Binding<Bool>
         onBackButtonPressed: { /* pop */ },
+        isDismissalEnabled: $canDismiss,       // close + swipe; true by default
+        showsCloseButton: true,                // true by default
+        onClose: { /* custom close action */ },
         fillsHeight: true,                    // greedy: fills the sheet
         background: .dash.primaryBackground   // fill behind grabber, header and content
     ) {
@@ -82,6 +85,16 @@ Sheet chrome to put **inside** a SwiftUI `.sheet { }`: a grabber, a `NavigationB
   on **iOS 16+** (`.large` / `.medium` / `.height`). Wraps content in a `NavigationView`.
 - **`fillsHeight: false`** — natural height; pair with `.selfSizingSheet(…)` so the sheet
   snaps to its content.
+
+`isDismissalEnabled` controls the close button and interactive swipe dismissal together.
+The binding is dynamic, so a host can disable both while signing or broadcasting and
+restore them afterward. The close button becomes visibly disabled and exposes the disabled
+accessibility trait. Interactive-dismiss blocking uses the system API on **iOS 15+** /
+**macOS 12+**; older supported systems retain the close-button protection.
+
+Set `showsCloseButton: false` when the sheet has no close affordance. Pass `onClose` to
+override the default presentation dismissal; the callback is then responsible for actually
+dismissing the sheet. All three options preserve the existing behavior when omitted.
 
 ### Self-sizing
 
