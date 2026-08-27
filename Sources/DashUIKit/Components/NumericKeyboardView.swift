@@ -145,21 +145,17 @@ public struct NumericKeyboardView: View {
         .frame(maxWidth: .infinity)
         // Rounded at the top only, and run down into the bottom safe area.
         //
-        // Drawn as a fully rounded rectangle pushed below its own frame by the
-        // radius, so the bottom corners are never on screen.
-        // `UnevenRoundedRectangle` says that in one line but is iOS 16, and
-        // this library ships to 14; `background(alignment:content:)` is 15.
-        // Both are avoidable, the deployment target is not.
-        //
         // `.continuous` because the circular default kinks visibly where the
         // arc meets the top edge at this radius.
-        .background(
-            RoundedRectangle(cornerRadius: Layout.panelCornerRadius, style: .continuous)
-                .fill(Color.dash.secondaryBackground)
-                .padding(.bottom, -Layout.panelCornerRadius)
-                .ignoresSafeArea(edges: .bottom),
-            alignment: .top
-        )
+        .background(alignment: .top) {
+            UnevenRoundedRectangle(
+                topLeadingRadius: Layout.panelCornerRadius,
+                topTrailingRadius: Layout.panelCornerRadius,
+                style: .continuous
+            )
+            .fill(Color.dash.secondaryBackground)
+            .ignoresSafeArea(edges: .bottom)
+        }
     }
 
     private var keyboardRowsView: some View {
