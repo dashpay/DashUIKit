@@ -39,6 +39,8 @@ internal struct DualSwapAmountView: View {
     /// When `true`, primary amount occupies the large/top slot; when `false`, secondary does.
     let isPrimarySelected: Bool
     let isCurrencySelectorHidden: Bool
+    /// Stands in for the B row's value when the amount is rejected.
+    var secondaryErrorMessage: String? = nil
     let onSwap: () -> Void
     let onSelectCurrency: () -> Void
     let onPaste: (() -> Void)?
@@ -54,6 +56,7 @@ internal struct DualSwapAmountView: View {
             secondarySymbol: secondaryCurrency.symbol,
             showSecondaryDashLogo: secondaryCurrency == .dash,
             showSecondaryCurrencyButton: !isCurrencySelectorHidden,
+            secondaryErrorMessage: secondaryErrorMessage,
             onSecondaryCurrencyTap: onSelectCurrency,
             swapAnimationKey: isPrimarySelected
         )

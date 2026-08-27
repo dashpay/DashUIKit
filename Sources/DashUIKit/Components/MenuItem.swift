@@ -29,7 +29,23 @@ public enum MenuItemAccessory {
     /// Dash amount with an optional pre-formatted fiat sub-line.
     /// The caller converts the fiat value via its own exchange infrastructure;
     /// the library only renders the string it receives.
-    case balance(dash: Int64, sign: DashAmountSign = .negativeOnly, fiat: String? = nil)
+    case balance(dash: Int64, sign: DashAmountSign = .negativeOnly, fiat: String? = nil,
+                 maximumFractionDigits: Int = DashAmountFormat.defaultMaximumFractionDigits)
+    /// A picker row: the design system's tick on the chosen one.
+    ///
+    /// The mark keeps its slot while unselected, so nothing in the row shifts
+    /// horizontally as the selection moves down a list.
+    case selection(isSelected: Bool)
+}
+
+/// The glyph beside a row's title that says there is more to explain.
+///
+/// `.round` is the design system's own info mark; `.icon` stays open for a row
+/// that needs to flag something else entirely.
+@available(iOS 14, macOS 11, *)
+public enum MenuItemInfo {
+    case round(color: Color)
+    case icon(DashIconSource)
 }
 
 @available(iOS 14, macOS 11, *)
@@ -40,7 +56,7 @@ public struct MenuItem: View {
     public var disabledLeadingIcon: DashIconSource?
     public var title: String
     public var helpText: String?
-    public var infoIcon: DashIconSource?
+    public var info: MenuItemInfo?
     public var accessory: MenuItemAccessory
 
     public init(
@@ -49,7 +65,7 @@ public struct MenuItem: View {
         disabledLeadingIcon: DashIconSource? = nil,
         title: String,
         helpText: String? = nil,
-        infoIcon: DashIconSource? = nil,
+        info: MenuItemInfo? = nil,
         accessory: MenuItemAccessory = .none
     ) {
         self.leadingIcon = leadingIcon
@@ -57,7 +73,7 @@ public struct MenuItem: View {
         self.disabledLeadingIcon = disabledLeadingIcon
         self.title = title
         self.helpText = helpText
-        self.infoIcon = infoIcon
+        self.info = info
         self.accessory = accessory
     }
 
@@ -89,9 +105,15 @@ public struct MenuItem: View {
                     .dashFont(.subheadMedium)
                     .foregroundColor(isEnabled ? Color.dash.primaryText : Color.dash.secondaryText)
 
-                if let icon = infoIcon {
-                    Image(dash: icon)
-                        .frame(width: 20, height: 20, alignment: .center)
+                if let info {
+                    switch info {
+                    case .round(let color):
+                        InfoRoundIcon(size: 19, color: color)
+                            .frame(width: 20, height: 20, alignment: .center)
+                    case .icon(let icon):
+                        Image(dash: icon)
+                            .frame(width: 20, height: 20, alignment: .center)
+                    }
                 }
             }
 
@@ -110,8 +132,11 @@ public struct MenuItem: View {
         case .none:
             EmptyView()
         case .toggle(let isOn):
-            Toggle("", isOn: isOn)
-                .labelsHidden()
+            // `SwitchView`, not `Toggle`: the system switch is green and sized
+            // by UIKit, so a menu row rendered here did not match the switch
+            // the same design system hands out everywhere else. It reads
+            // `isEnabled` from the environment, which `.disabled` sets.
+            SwitchView(isOn: isOn)
                 .disabled(!isEnabled)
         case .text(let value):
             Text(value)
@@ -119,9 +144,9 @@ public struct MenuItem: View {
                 .foregroundColor(Color.dash.secondaryText)
         case .button(let button):
             button
-        case .balance(let dash, let sign, let fiat):
+        case .balance(let dash, let sign, let fiat, let maximumFractionDigits):
             VStack(alignment: .trailing, spacing: 1) {
-                DashAmount(amount: dash, sign: sign)
+                DashAmount(amount: dash, sign: sign, maximumFractionDigits: maximumFractionDigits)
                     .foregroundColor(Color.dash.primaryText)
 
                 if dash != 0, dash != .max, dash != .min, let fiat {
@@ -130,6 +155,10 @@ public struct MenuItem: View {
                         .foregroundColor(Color.dash.secondaryText)
                 }
             }
+        case .selection(let isSelected):
+            CheckmarkIcon()
+                .opacity(isSelected ? 1 : 0)
+                .accessibilityHidden(!isSelected)
         }
     }
 }
@@ -152,11 +181,11 @@ public struct MenuItem: View {
 }
 
 @available(iOS 17, macOS 14, *)
-#Preview("Title + infoIcon + helpText") {
+#Preview("Title + info + helpText") {
     MenuItem(
         title: "Network fee",
         helpText: "Estimated cost for this transaction",
-        infoIcon: .system("info.circle"),
+        info: .round(color: Color.dash.gray300Alpha70),
         accessory: .text("0.0001 DASH")
     )
     .padding(.horizontal)
@@ -242,6 +271,31 @@ public struct MenuItem: View {
         title: "Pending",
         accessory: .balance(dash: .max)
     )
+    .padding(.horizontal)
+}
+
+/// A picker list: one row marked, the rest holding the tick's slot empty.
+@available(iOS 17, macOS 14, *)
+#Preview("Accessory: selection") {
+    VStack(spacing: 0) {
+        MenuItem(
+            leadingIcon: DashIcon.Menu.dashLogoSquare.source,
+            title: "Transparent",
+            accessory: .selection(isSelected: true)
+        )
+
+        MenuItem(
+            leadingIcon: DashIcon.Features.platform.source,
+            title: "Platform",
+            accessory: .selection(isSelected: false)
+        )
+
+        MenuItem(
+            leadingIcon: DashIcon.Features.shield.source,
+            title: "Shielded",
+            accessory: .selection(isSelected: false)
+        )
+    }
     .padding(.horizontal)
 }
 

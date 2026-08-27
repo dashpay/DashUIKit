@@ -45,6 +45,10 @@ public struct SwapAmountView: View {
     public var showSecondaryDashLogo: Bool = false
     /// Show a currency-select chevron beside the B row's amount.
     public var showSecondaryCurrencyButton: Bool = false
+    /// Replaces the B row's value, symbol and chevron with a red message.
+    /// A rejected amount has to say something where the converted value
+    /// would be, so it takes that slot instead of adding a line under it.
+    public var secondaryErrorMessage: String? = nil
     /// Action fired when the secondary-row chevron is tapped.
     public var onSecondaryCurrencyTap: (() -> Void)? = nil
     /// When non-nil, enables the animated dual-swap ZStack layout and acts as the animation key.
@@ -67,6 +71,7 @@ public struct SwapAmountView: View {
         secondarySymbol: String? = nil,
         showSecondaryDashLogo: Bool = false,
         showSecondaryCurrencyButton: Bool = false,
+        secondaryErrorMessage: String? = nil,
         onSecondaryCurrencyTap: (() -> Void)? = nil,
         swapAnimationKey: Bool? = nil
     ) {
@@ -82,6 +87,7 @@ public struct SwapAmountView: View {
         self.secondarySymbol = secondarySymbol
         self.showSecondaryDashLogo = showSecondaryDashLogo
         self.showSecondaryCurrencyButton = showSecondaryCurrencyButton
+        self.secondaryErrorMessage = secondaryErrorMessage
         self.onSecondaryCurrencyTap = onSecondaryCurrencyTap
         self.swapAnimationKey = swapAnimationKey
     }
@@ -147,6 +153,7 @@ public struct SwapAmountView: View {
             showSecondaryDashLogo: showSecondaryDashLogo,
             showSecondaryCurrencyButton: showSecondaryCurrencyButton,
             onSecondaryCurrencyTap: onSecondaryCurrencyTap,
+            secondaryErrorMessage: secondaryErrorMessage,
             isPrimaryLarge: isPrimaryLarge
         )
     }
@@ -275,6 +282,7 @@ private struct AnimatedSwapLayout: View {
     let showSecondaryDashLogo: Bool
     let showSecondaryCurrencyButton: Bool
     let onSecondaryCurrencyTap: (() -> Void)?
+    let secondaryErrorMessage: String?
     let isPrimaryLarge: Bool
 
     // MARK: Phase state
@@ -309,6 +317,7 @@ private struct AnimatedSwapLayout: View {
         showSecondaryDashLogo: Bool,
         showSecondaryCurrencyButton: Bool,
         onSecondaryCurrencyTap: (() -> Void)?,
+        secondaryErrorMessage: String?,
         isPrimaryLarge: Bool
     ) {
         self.amount = amount
@@ -321,6 +330,7 @@ private struct AnimatedSwapLayout: View {
         self.secondarySymbol = secondarySymbol
         self.showSecondaryDashLogo = showSecondaryDashLogo
         self.showSecondaryCurrencyButton = showSecondaryCurrencyButton
+        self.secondaryErrorMessage = secondaryErrorMessage
         self.onSecondaryCurrencyTap = onSecondaryCurrencyTap
         self.isPrimaryLarge = isPrimaryLarge
         _fontPrimary = State(initialValue: isPrimaryLarge)
@@ -353,17 +363,29 @@ private struct AnimatedSwapLayout: View {
             .scaleEffect(scaleA, anchor: .center)
             .offset(y: offsetPrimary ? SwapAnimLayout.primaryOffset : SwapAnimLayout.secondaryOffset)
 
-            // B row — always carries the secondary logical value; shows optional chevron
+            // B row — the secondary logical value, or the message standing in
+            // for it; shows optional chevron
             HStack(spacing: 6) {
-                rowContent(
-                    font: bFont,
-                    displayText: displaySecondary,
-                    symbol: secondarySymbol,
-                    showLogo: showSecondaryDashLogo,
-                    dashSize: dashSize
-                )
+                if let secondaryErrorMessage {
+                    // `subhead` outright, not `bFont`: that one turns into
+                    // `largeTitle` when the secondary slot is the large one,
+                    // and the message must stay the size of the converted
+                    // figure it replaces however the slots are arranged.
+                    Text(secondaryErrorMessage)
+                        .font(Font.dash.subhead)
+                        .foregroundColor(Color.dash.red)
+                        .lineLimit(1)
+                } else {
+                    rowContent(
+                        font: bFont,
+                        displayText: displaySecondary,
+                        symbol: secondarySymbol,
+                        showLogo: showSecondaryDashLogo,
+                        dashSize: dashSize
+                    )
+                }
 
-                if showSecondaryCurrencyButton {
+                if showSecondaryCurrencyButton && secondaryErrorMessage == nil {
                     Button { onSecondaryCurrencyTap?() } label: {
                         DashIcon.Common.chevronDownCurrencySelect.image
                             .resizable()

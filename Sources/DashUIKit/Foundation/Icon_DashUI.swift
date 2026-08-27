@@ -73,11 +73,44 @@ public enum DashIcon {
         case dashDex = "illustration-dash-dex"
     }
 
+    // MARK: - Features
+    /// `Features`
+    ///
+    /// The illustrated rows of an explainer sheet (`SheetFeature`). Several
+    /// come in a plain and a `-purple` variant — the plain one is tinted by
+    /// the caller, the purple one carries its own colour.
+    public enum Features: String, CaseIterable, DashIconAsset {
+        case identity = "feature-identity"
+        case instant = "feature-instant"
+        case platform = "feature-platform"
+        case platformPurple = "feature-platform-purple"
+        case shield = "feature-shield"
+        case shieldPurple = "feature-shield-purple"
+        case timer = "feature-timer"
+        case timerPurple = "feature-timer-purple"
+    }
+
     // MARK: - Checkbox
     /// `Components/Checkbox`
     public enum Checkbox: String, CaseIterable, DashIconAsset {
         case checkmarkChecked = "checkbox-checkmark-checked"
         case checkmarkUnchecked = "checkbox-checkmark-unchecked"
+    }
+
+    // MARK: - SegmentedControl
+    /// `Segmented control`
+    ///
+    /// One arrow per direction, in that direction's colour, plus a grey
+    /// `-disabled` twin for the segment that is not selected. The colour is
+    /// in the artwork rather than applied at the call site, so a segment
+    /// switches file rather than tint when the selection moves.
+    public enum SegmentedControl: String, CaseIterable, DashIconAsset {
+        case receive = "segmented-control-receive"
+        case receiveDisabled = "segmented-control-receive-disabled"
+        case send = "segmented-control-send"
+        case sendDisabled = "segmented-control-send-disabled"
+        case transfer = "segmented-control-transfer"
+        case transferDisabled = "segmented-control-transfer-disabled"
     }
 
     // MARK: - SearchBar
@@ -168,6 +201,7 @@ public enum DashIcon {
         case spendingConfirmation = "menu-spending-confirmation"
         case staking = "menu-staking"
         case support = "menu-support"
+        case swapDashCoin = "menu-swap-dash-coin"
         case tools = "menu-tools"
         case tools2 = "menu-tools-2"
         case topper = "menu-topper"

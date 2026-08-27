@@ -23,7 +23,7 @@ and callbacks; they render and report intent. They require `import DashUIKit` an
   `NavigationBarElement`, `TopIntroView`, `BottomSheet`, `MenuViewModifier`.
 - **[Feedback](feedback.md)** — `Toast`, `SystemMessageView`,
   `LoadingIllustration` / `LoadingSpinner`, `SuccessIllustration`, `ErrorIllustration`,
-  `XmarkIcon`.
+  `XmarkIcon`, `CheckmarkIcon`, `ChevronIcon`, `InfoRoundIcon`.
 - **[Utilities](utilities.md)** — geometry readers (`readingFrame`, `readingLocation`),
   `ScrollViewWithOnScrollChanged`, `scaleToFitWidth`.
 
@@ -32,6 +32,7 @@ and callbacks; they render and report intent. They require `import DashUIKit` an
 | Symbol | Page |
 |---|---|
 | `AddressFieldView` | [Buttons & inputs](buttons-and-inputs.md#addressfieldview) |
+| `SheetFeature` | [Navigation & containers](navigation-and-containers.md#sheetfeature) |
 | `BottomSheet` | [Navigation & containers](navigation-and-containers.md#bottomsheet) |
 | `Bundle.dashUIKit` | [Foundation](foundation.md#bundle) |
 | `CoinSelector` | [Lists & rows](lists-and-rows.md#coinselector) |
@@ -52,7 +53,7 @@ and callbacks; they render and report intent. They require `import DashUIKit` an
 | `ErrorIllustration` | [Feedback](feedback.md#successillustration--errorillustration) |
 | `List1View` | [Lists & rows](lists-and-rows.md#list1view) |
 | `LoadingIllustration` / `LoadingSpinner` | [Feedback](feedback.md#loadingillustration--loadingspinner) |
-| `MenuItem` (`MenuItemAccessory`) | [Lists & rows](lists-and-rows.md#menuitem) |
+| `MenuItem` (`MenuItemAccessory`, `MenuItemInfo`) | [Lists & rows](lists-and-rows.md#menuitem) |
 | `MenuViewModifier` | [Navigation & containers](navigation-and-containers.md#menuviewmodifier) |
 | `NavigationBar` / `NavigationBarElement` | [Navigation & containers](navigation-and-containers.md#navigationbar) |
 | `NumericKeyboardView` | [Buttons & inputs](buttons-and-inputs.md#numerickeyboardview) |
@@ -69,3 +70,6 @@ and callbacks; they render and report intent. They require `import DashUIKit` an
 | `TopIntroView` | [Navigation & containers](navigation-and-containers.md#topintroview) |
 | `TransactionView` | [Lists & rows](lists-and-rows.md#transactionview) |
 | `XmarkIcon` | [Feedback](feedback.md#xmarkicon) |
+| `CheckmarkIcon` | [Feedback](feedback.md#checkmarkicon) |
+| `ChevronIcon` | [Feedback](feedback.md#chevronicon) |
+| `InfoRoundIcon` | [Feedback](feedback.md#inforoundicon) |
