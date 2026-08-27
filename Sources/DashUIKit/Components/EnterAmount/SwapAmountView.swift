@@ -86,6 +86,7 @@ public struct SwapAmountView: View {
         self.onPaste = onPaste
         self.secondarySymbol = secondarySymbol
         self.showSecondaryDashLogo = showSecondaryDashLogo
+        self.showSecondaryCurrencyButton = showSecondaryCurrencyButton
         self.secondaryErrorMessage = secondaryErrorMessage
         self.onSecondaryCurrencyTap = onSecondaryCurrencyTap
         self.swapAnimationKey = swapAnimationKey
