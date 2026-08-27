@@ -134,7 +134,36 @@ NumericKeyboardView(
 )
 ```
 
-Key-press logic lives in `NumericKeyboardLocaleSupport` (internal, unit-testable):
+Key-press logic lives in `NumericKeyboardLocaleSupport` (public, unit-testable):
 appends digits, inserts at most one decimal separator (only when `showDecimalSeparator`),
 ignores the grouping separator, and `⌫` removes the last character. The action button is
 enabled only when `value` is non-empty **and** `actionEnabled` is true.
+
+### Hardware keyboards
+
+The pad is made of buttons and installs no text responder, so a physical keyboard reaches
+it only if the host adds one. Route those keystrokes through the same rules rather than
+reimplementing them — a second copy is how `1,000` typed in `en_US` turns into `1.000`:
+
+```swift
+// In the host's `UIKeyInput` responder.
+override func insertText(_ text: String) {
+    for character in text {
+        guard let key = NumericKeyboardLocaleSupport.key(forTyped: character, locale: locale) else { continue }
+        value = NumericKeyboardLocaleSupport.applyKeyPress(
+            value: value, key: key, showDecimalSeparator: true, locale: locale
+        )
+    }
+}
+
+override func deleteBackward() {
+    value = NumericKeyboardLocaleSupport.applyKeyPress(
+        value: value, key: NumericKeyboardLocaleSupport.deleteKey, showDecimalSeparator: true, locale: locale
+    )
+}
+```
+
+`key(forTyped:locale:)` returns `nil` for characters the pad has no key for. A typed `.` or
+`,` maps to the locale's decimal separator, except when it *is* the locale's grouping
+separator — that one is passed through so `applyKeyPress` drops it, exactly as a tapped key
+would be.
