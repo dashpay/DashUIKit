@@ -209,12 +209,17 @@ enum BottomSheetDismissalAction {
 private struct BottomSheetDismissalModifier: ViewModifier {
     let isEnabled: Bool
 
+    // The branch is on `#available` alone, never on `isEnabled`. A `@ViewBuilder`
+    // if/else produces `_ConditionalContent`, and the two branches are different
+    // views to SwiftUI: switching between them tears the sheet down and rebuilds
+    // it, taking every piece of `@State` the host keeps inside `content()` with
+    // it — a half-typed field, the scroll position, the keyboard. `#available`
+    // cannot flip while the app runs, so this branch is decided once and the
+    // sheet keeps one identity for as long as it is on screen.
     @ViewBuilder
     func body(content: Content) -> some View {
-        if isEnabled {
-            content
-        } else if #available(iOS 15, macOS 12, *) {
-            content.interactiveDismissDisabled()
+        if #available(iOS 15, macOS 12, *) {
+            content.interactiveDismissDisabled(!isEnabled)
         } else {
             content
         }
