@@ -5,7 +5,7 @@ UI element, scan this index to see whether it already exists.
 
 All components are **presentational and value-driven** — you pass strings/flags/bindings
 and callbacks; they render and report intent. They require `import DashUIKit` and target
-**iOS 14+** (newer SwiftUI features are gated with fallbacks).
+**iOS 18+ / macOS 15+**, declared once in `Package.swift`.
 
 ## Pages
 

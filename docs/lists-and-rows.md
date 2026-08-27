@@ -8,7 +8,7 @@ as needed.
 
 ## CoinSelector
 
-File `Components/CoinSelector.swift` · `@available(iOS 14, macOS 11, *)`
+File `Components/CoinSelector.swift`
 
 A coin/asset row: leading icon (your view), name + code stacked, and a flexible trailing
 slot — a price/network readout or a "halted" badge. Generic over the icon view.
@@ -36,7 +36,7 @@ is tappable when you wrap it in a `Button`.
 
 ## MenuItem
 
-File `Components/MenuItem.swift` · `@available(iOS 14, macOS 11, *)`
+File `Components/MenuItem.swift`
 
 A settings/menu row: optional leading icon, title with optional inline info glyph, optional
 help text, and a flexible trailing **accessory**.
@@ -76,7 +76,7 @@ per-call fonts/colors, to keep rows consistent):
 
 ## ConverterCard
 
-File `Components/ConverterCard/ConverterCard.swift` · `@available(iOS 14, macOS 11, *)`
+File `Components/ConverterCard/ConverterCard.swift`
 
 A two-row source/destination card with a seam-centered arrow badge. Each row is wrapped
 in shared card chrome; passing `onSwap` makes the badge tappable and rotates the arrow,
@@ -123,7 +123,7 @@ Internal seam badge: static `arrow-down` without swapping, or tappable
 
 ## TransactionView
 
-File `Components/Transaction/TransactionView.swift` · `@available(iOS 14, macOS 11, *)`
+File `Components/Transaction/TransactionView.swift`
 
 A transaction row with a leading icon, optional status badge, title/time/detail text, and
 a trailing Dash amount plus optional fiat line. Pass `action` to make the whole row
@@ -148,7 +148,7 @@ The amount is a raw duff value (`Int64`, 10⁸ per Dash) rendered via `DashAmoun
 
 ## RadioButtonRow
 
-File `Components/RadioButtonRow.swift` · `@available(iOS 14, macOS 11, *)`
+File `Components/RadioButtonRow.swift`
 
 A tappable selectable row with title, optional subtitle, optional trailing text, optional
 leading icon, and a selection indicator in one of two styles.
@@ -173,7 +173,7 @@ subtitle, otherwise 54; the whole row is the tap target.
 
 ## List1View
 
-File `Table List/List1View.swift` · `@available(iOS 14, macOS 11, *)`
+File `Table List/List1View.swift`
 
 The simplest row: a tertiary-colored **label** on the left and a primary-colored **value**
 on the right (value is right-aligned and can wrap). Useful for detail / summary lists.

@@ -7,8 +7,7 @@ mechanics for measuring and fitting views.
 
 ## Frame & location readers
 
-Files `Components/Geometry/FrameReader.swift`, `LocationReader.swift` ·
-`@available(iOS 14, macOS 11, *)`
+Files `Components/Geometry/FrameReader.swift`, `LocationReader.swift`
 
 Read a view's frame or center point in a coordinate space via a background `GeometryReader`,
 without disturbing layout. Callbacks fire on appear and on change.
@@ -33,13 +32,12 @@ MyView()
 
 ## ScrollViewWithOnScrollChanged
 
-File `Components/Geometry/ScrollViewWithOnScrollChanged.swift` ·
-`@available(iOS 14, macOS 11, *)`
+File `Components/Geometry/ScrollViewWithOnScrollChanged.swift`
 
 A `ScrollView` that reports its content's scroll origin as it moves — handy for
-scroll-driven effects (collapsing headers, shadows, parallax) without iOS 17's
-`onScrollGeometryChange`. Works back to iOS 14 by placing a `LocationReader` at the top of
-the content in a named coordinate space.
+scroll-driven effects (collapsing headers, shadows, parallax). It works by placing a
+`LocationReader` at the top of the content in a named coordinate space, which predates
+`onScrollGeometryChange`; new code can use the system API directly.
 
 ```swift
 ScrollViewWithOnScrollChanged(.vertical, showsIndicators: false) {
@@ -53,7 +51,7 @@ ScrollViewWithOnScrollChanged(.vertical, showsIndicators: false) {
 
 ## scaleToFitWidth
 
-File `Components/Geometry/ScaleToFitWidth.swift` · `@available(iOS 14, macOS 11, *)`
+File `Components/Geometry/ScaleToFitWidth.swift`
 
 Scales a view **uniformly** to fit the available width on a single line, shrinking the
 whole group together (e.g. currency symbol + amount + logo) — unlike `minimumScaleFactor`,

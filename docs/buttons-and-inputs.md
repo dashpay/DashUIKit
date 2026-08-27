@@ -6,7 +6,7 @@ Interactive controls for tapping and text/number entry.
 
 ## DashButton
 
-File `Button/DashButton.swift` · `@available(iOS 14, macOS 11, *)`
+File `Button/DashButton.swift`
 
 The design-system button. Supports leading/trailing icons, a loading spinner,
 optional full-width fill, four sizes, and eleven styles.
@@ -43,7 +43,7 @@ Notes: `isLoading` both shows a `ProgressView` and disables the button. The `…
 
 ## DashSwitch
 
-File `Components/DashSwitch.swift` · `@available(iOS 14, *)` · **UIKit only**
+File `Components/DashSwitch.swift` · **UIKit only**
 (`#if canImport(UIKit)`)
 
 A thin wrapper over `Toggle` tinted with the DS "on" track color
@@ -61,7 +61,7 @@ DashSwitch(isOn: $isOn)
 
 ## SearchBar
 
-File `Components/SearchBar.swift` · `@available(iOS 14, *)` · **UIKit only**
+File `Components/SearchBar.swift` · **UIKit only**
 
 Rounded search field with magnifying-glass icon and inline clear (✕) button.
 
@@ -72,9 +72,8 @@ SearchBar(text: $query, placeholder: "Search coins")   // placeholder optional
 
 Behavior:
 
-- **iOS 15+** (`SearchBarFocused`): uses `@FocusState`; an animated **Cancel** button
+- Uses `@FocusState`; an animated **Cancel** button
   slides in while editing (clears text + resigns focus on tap).
-- **iOS 14** (`SearchBarLegacy`): static bar without the focus-driven cancel animation.
 
 Default placeholder is the localized "Search". Background uses `Color.dash.searchBackground`.
 
@@ -82,11 +81,11 @@ Default placeholder is the localized "Search". Background uses `Color.dash.searc
 
 ## AddressFieldView
 
-File `Components/AddressFieldView.swift` · `@available(iOS 15, macOS 12, *)` · **UIKit only**
+File `Components/AddressFieldView.swift` · **UIKit only**
 
 A labeled crypto-address input with a trailing action button (scan-QR when empty, clear
-when filled), error styling, and a multi-line read-out state. iOS 17+ uses a vertical
-axis field (1–3 lines); older iOS uses a single-line field.
+when filled), error styling, and a multi-line read-out state. Uses a vertical
+axis field (1–3 lines).
 
 ```swift
 @State private var address = ""
@@ -114,7 +113,7 @@ State-driven styling:
 
 ## NumericKeyboardView
 
-File `Components/NumericKeyboardView.swift` · `@available(iOS 14, macOS 11, *)`
+File `Components/NumericKeyboardView.swift`
 
 A custom on-screen numeric pad (1–9, 0, decimal separator, delete) plus a primary
 `DashButton` action and optional helper text. **Locale-aware**: the decimal separator and

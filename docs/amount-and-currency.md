@@ -7,7 +7,7 @@ These power Send / Convert / DashDEX-style screens.
 
 ## EnterAmountView
 
-File `Components/EnterAmount/EnterAmountView.swift` · `@available(iOS 14, macOS 11, *)`
+File `Components/EnterAmount/EnterAmountView.swift`
 
 The top-level amount-entry control. Two layouts selected by **`EnterAmountStyle`**:
 
@@ -67,7 +67,7 @@ the host formats**; the component never does currency math.
 
 ## SwapAmountView
 
-File `Components/EnterAmount/SwapAmountView.swift` · `@available(iOS 14, macOS 11, *)`
+File `Components/EnterAmount/SwapAmountView.swift`
 
 The amount display used inside `EnterAmountView`. Renders a large amount (optional
 currency symbol + number + Dash logo) with optional top/bottom helper text and an optional
@@ -111,7 +111,7 @@ The `.dashPasteContextMenu(onPaste:)` helper (in this file) wires long-press-to-
 
 ## DashAmount
 
-File `Components/DashAmount.swift` · `@available(iOS 14, macOS 11, *)`
+File `Components/DashAmount.swift`
 
 Renders a **duffs `Int64`** (1 DASH = 100,000,000 duffs) as a localized decimal amount
 followed by the Dash currency glyph. Display-only.
@@ -137,7 +137,7 @@ separators, current locale.
 
 ## DashBalanceView
 
-File `Components/EnterAmount/DashBalanceView.swift` · `@available(iOS 14, macOS 11, *)`
+File `Components/EnterAmount/DashBalanceView.swift`
 
 Trailing balance block: a **symbol-free, pre-formatted** Dash amount string + Dash glyph,
 with an optional fiat sub-line beneath. Unlike `DashAmount`, it takes already-formatted
@@ -151,7 +151,7 @@ DashBalanceView(balance: "1.5", fiat: "$ 150.00")  // fiat nil → hide sub-line
 
 ## ReceiveEstimateView
 
-File `Components/ReceiveEstimateView.swift` · `@available(iOS 14, macOS 11, *)`
+File `Components/ReceiveEstimateView.swift`
 
 A centered estimate line shown beneath amount inputs. It shows a loading spinner first,
 then an error message, then the title + estimated amount. When `fiat` is provided it is
@@ -175,7 +175,7 @@ The view collapses to nothing when `isVisible` is `false`.
 
 ## DashPickerView
 
-File `Components/EnterAmount/DashPickerView.swift` · `@available(iOS 14, macOS 11, *)`
+File `Components/EnterAmount/DashPickerView.swift`
 
 A compact vertical inline picker over any `Hashable` option; the selected row gets a
 subtle highlighted background. Generic and reusable.

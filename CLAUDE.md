@@ -55,9 +55,8 @@ Sources/DashUIKit/
   or `Font.dash.subhead` when you only need the font. Tokens defined in `DashTextStyle.swift`.
 - **Icons:** pass a `DashIconSource` (`.system` / `.custom(name, bundle:)` / `.uiImage`) and
   render with `Image(dash: source)`. Custom assets resolve from `.dashUIKit`/`.module`.
-- **Availability:** annotate public API with `@available(iOS 14, macOS 11, *)` (or higher only
-  when a newer SwiftUI feature requires it, with an iOS 14 fallback path — see `SearchBar`,
-  `BottomSheet`).
+- **Availability:** don't annotate. The floor is declared in `Package.swift`; annotate only
+  an API that needs something *newer* than it, and gate that with `if #available(...)`.
 - **UIKit-only files** are wrapped in `#if canImport(UIKit)` (e.g. `SearchBar`, `Toast`,
   `AddressFieldView`, `DashSwitch`).
 - **Localization:** user-facing strings use `NSLocalizedString(_, bundle: .module, comment:)`.
@@ -67,8 +66,7 @@ Sources/DashUIKit/
 ## Build / preview
 
 - This is a plain SwiftPM library — `swift build` compiles it; there is no app target.
-- Develop visually with Xcode SwiftUI **#Previews** (open a file, use the canvas). Previews
-  require iOS 17 for the `#Preview` macro; older `PreviewProvider` previews work back further.
+- Develop visually with Xcode SwiftUI **#Previews** (open a file, use the canvas).
 
 ## Component catalog
 
