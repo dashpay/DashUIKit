@@ -4,7 +4,6 @@ import SwiftUI
 import UIKit
 #endif
 
-@available(iOS 14, macOS 11, *)
 public struct BottomSheet<Content: View>: View {
     @Environment(\.presentationMode) private var presentationMode
 
@@ -163,7 +162,6 @@ public struct BottomSheet<Content: View>: View {
     }
 }
 
-@available(iOS 14, macOS 11, *)
 public struct BottomSheetHeightPreferenceKey: PreferenceKey {
     public static let defaultValue: CGFloat = 0
 
@@ -172,7 +170,6 @@ public struct BottomSheetHeightPreferenceKey: PreferenceKey {
     }
 }
 
-@available(iOS 14, macOS 11, *)
 public extension BottomSheet {
     /// Self-sizing bottom sheet: builds with `fillsHeight: false` and applies
     /// `.selfSizingSheet(...)` so the two can't be mismatched. Drop the result
@@ -211,7 +208,6 @@ public extension BottomSheet {
     }
 }
 
-@available(iOS 14, macOS 11, *)
 enum BottomSheetDismissalAction {
     /// The button is live while it still has something to do. Blocking dismissal only
     /// takes away what the sheet itself owns — the `dismiss()` it would call — so a host
@@ -235,7 +231,6 @@ enum BottomSheetDismissalAction {
     }
 }
 
-@available(iOS 14, macOS 11, *)
 private struct BottomSheetDismissalModifier: ViewModifier {
     let isEnabled: Bool
 
@@ -248,7 +243,6 @@ private struct BottomSheetDismissalModifier: ViewModifier {
     }
 }
 
-@available(iOS 14, macOS 11, *)
 public extension View {
     /// Sizes a `BottomSheet` (built with `fillsHeight: false`) to its content's natural height —
     /// no hardcoded `.height(...)` needed.
@@ -301,7 +295,6 @@ public extension View {
     }
 }
 
-@available(iOS 16.0, macOS 13.0, *)
 private struct SelfSizingSheetModifier: ViewModifier {
     let fallback: CGFloat
     let maxHeightFraction: CGFloat
@@ -315,7 +308,7 @@ private struct SelfSizingSheetModifier: ViewModifier {
                 GeometryReader { proxy in
                     Color.clear
                         .onAppear { update(proxy.size.height) }
-                        .onChange(of: proxy.size.height) { update($0) }
+                        .onChange(of: proxy.size.height) { _, newHeight in update(newHeight) }
                 }
             )
             .presentationDetents(detents)
@@ -350,7 +343,6 @@ private struct SelfSizingSheetModifier: ViewModifier {
 
 #if DEBUG
 
-@available(iOS 17, macOS 14, *)
 #Preview("BottomSheet Filled Height") {
     BottomSheet(
         title: "Bottom Sheet",
@@ -369,7 +361,6 @@ private struct SelfSizingSheetModifier: ViewModifier {
     }
 }
 
-@available(iOS 17, macOS 14, *)
 #Preview("BottomSheet Natural Height") {
     BottomSheet(
         title: "Bottom Sheet",
@@ -389,7 +380,6 @@ private struct SelfSizingSheetModifier: ViewModifier {
     }
 }
 
-@available(iOS 17, macOS 14, *)
 #Preview("BottomSheet Custom Background") {
     BottomSheet(
         title: "Bottom Sheet",
@@ -411,7 +401,6 @@ private struct SelfSizingSheetModifier: ViewModifier {
     }
 }
 
-@available(iOS 17, macOS 14, *)
 #Preview("BottomSheet Dismissal States") {
     VStack(spacing: 12) {
         BottomSheet(

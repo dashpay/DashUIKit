@@ -20,7 +20,6 @@ import SwiftUI
 
 // MARK: - Public shell
 
-@available(iOS 14, *)
 public struct SearchBar: View {
     @Binding private var text: String
     private let placeholder: String
@@ -80,7 +79,7 @@ private struct SearchBarFocused: View {
         .onAppear {
             isEditing = isFocused
         }
-        .onChange(of: isFocused) { focused in
+        .onChange(of: isFocused) { _, focused in
             withAnimation(.easeInOut(duration: Layout.animationDuration)) {
                 isEditing = focused
             }
@@ -151,7 +150,6 @@ private struct SearchBarFocused: View {
 
 #if DEBUG
 
-@available(iOS 17, macOS 14, *)
 #Preview {
     @Previewable @State var text = ""
     SearchBar(text: $text)

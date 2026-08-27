@@ -24,7 +24,6 @@ import SwiftUI
 /// receive amount under a caption. Collapses to nothing when `isVisible` is `false`.
 ///
 /// The `title` label is passed in so the component stays localization-agnostic.
-@available(iOS 14, macOS 11, *)
 public struct ReceiveEstimateView: View {
 
     private let isVisible: Bool
@@ -92,7 +91,6 @@ public struct ReceiveEstimateView: View {
 }
 
 #if DEBUG
-@available(iOS 14, macOS 11, *)
 struct ReceiveEstimateView_Previews: PreviewProvider {
     static var previews: some View {
         VStack(spacing: 24) {

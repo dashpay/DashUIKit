@@ -17,7 +17,6 @@
 
 import SwiftUI
 
-@available(iOS 14, macOS 11, *)
 public struct NavigationBar<Leading: View, Central: View, Trailing: View>: View {
     private let leading: Leading
     private let central: Central
@@ -50,49 +49,42 @@ public struct NavigationBar<Leading: View, Central: View, Trailing: View>: View 
     }
 }
 
-@available(iOS 14, macOS 11, *)
 public extension NavigationBar where Trailing == EmptyView {
     init(@ViewBuilder leading: () -> Leading, @ViewBuilder central: () -> Central) {
         self.init(leading: leading, central: central, trailing: { EmptyView() })
     }
 }
 
-@available(iOS 14, macOS 11, *)
 public extension NavigationBar where Central == EmptyView {
     init(@ViewBuilder leading: () -> Leading, @ViewBuilder trailing: () -> Trailing) {
         self.init(leading: leading, central: { EmptyView() }, trailing: trailing)
     }
 }
 
-@available(iOS 14, macOS 11, *)
 public extension NavigationBar where Leading == EmptyView {
     init(@ViewBuilder central: () -> Central, @ViewBuilder trailing: () -> Trailing) {
         self.init(leading: { EmptyView() }, central: central, trailing: trailing)
     }
 }
 
-@available(iOS 14, macOS 11, *)
 public extension NavigationBar where Central == EmptyView, Trailing == EmptyView {
     init(@ViewBuilder leading: () -> Leading) {
         self.init(leading: leading, central: { EmptyView() }, trailing: { EmptyView() })
     }
 }
 
-@available(iOS 14, macOS 11, *)
 public extension NavigationBar where Leading == EmptyView, Trailing == EmptyView {
     init(@ViewBuilder central: () -> Central) {
         self.init(leading: { EmptyView() }, central: central, trailing: { EmptyView() })
     }
 }
 
-@available(iOS 14, macOS 11, *)
 public extension NavigationBar where Leading == EmptyView, Central == EmptyView {
     init(@ViewBuilder trailing: () -> Trailing) {
         self.init(leading: { EmptyView() }, central: { EmptyView() }, trailing: trailing)
     }
 }
 
-@available(iOS 14, macOS 11, *)
 public enum NavigationBarElement: String {
     case back = "navigationbar-back"
     case close = "navigationbar-close"
@@ -130,7 +122,6 @@ public enum NavigationBarElement: String {
     }
 }
 
-@available(iOS 14, macOS 11, *)
 private struct NavigationBarButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
@@ -140,14 +131,12 @@ private struct NavigationBarButtonStyle: ButtonStyle {
     }
 }
 
-@available(iOS 17, macOS 14, *)
 #Preview("NavigationBar Back") {
     NavigationBar(
         leading: { NavigationBarElement.back.button { } }
     )
 }
 
-@available(iOS 17, macOS 14, *)
 #Preview("NavigationBar Back Title") {
     NavigationBar(
         leading: { NavigationBarElement.back.button { } },
@@ -159,7 +148,6 @@ private struct NavigationBarButtonStyle: ButtonStyle {
     )
 }
 
-@available(iOS 17, macOS 14, *)
 #Preview("NavigationBar Back Title Info") {
     NavigationBar(
         leading: { NavigationBarElement.back.button { } },
@@ -172,7 +160,6 @@ private struct NavigationBarButtonStyle: ButtonStyle {
     )
 }
 
-@available(iOS 17, macOS 14, *)
 #Preview("NavigationBar Variants") {
     VStack {
         NavigationBar(
@@ -197,7 +184,6 @@ private struct NavigationBarButtonStyle: ButtonStyle {
     }
 }
 
-@available(iOS 17, macOS 14, *)
 #Preview("NavigationBar Title Close") {
     NavigationBar(
         central: {

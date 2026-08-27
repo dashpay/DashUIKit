@@ -26,13 +26,11 @@ import SwiftUI
 /// Image(dash: DashIcon.Menu.send.source)
 /// DashIcon.Toast.success.image.resizable().frame(width: 24, height: 24)
 /// ```
-@available(iOS 14, macOS 11, *)
 public protocol DashIconAsset {
     /// The imageset name in the asset catalog.
     var assetName: String { get }
 }
 
-@available(iOS 14, macOS 11, *)
 public extension DashIconAsset where Self: RawRepresentable, Self.RawValue == String {
     var assetName: String { rawValue }
 
@@ -45,7 +43,6 @@ public extension DashIconAsset where Self: RawRepresentable, Self.RawValue == St
 
 /// Namespace for every icon in the library's asset catalog, grouped the same
 /// way the catalog is.
-@available(iOS 14, macOS 11, *)
 public enum DashIcon {
 
     // MARK: - Common

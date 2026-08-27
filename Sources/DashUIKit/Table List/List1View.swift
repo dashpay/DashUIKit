@@ -17,7 +17,6 @@
 
 import SwiftUI
 
-@available(iOS 14, macOS 11, *)
 public struct List1View: View {
 
     public var label: String
@@ -45,7 +44,6 @@ public struct List1View: View {
     }
 }
 
-@available(iOS 17, macOS 14, *)
 #Preview {
     List1View()
 }

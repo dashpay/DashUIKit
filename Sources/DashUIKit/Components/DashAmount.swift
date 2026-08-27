@@ -19,7 +19,6 @@ import SwiftUI
 
 // MARK: - Sign control
 
-@available(iOS 14, macOS 11, *)
 public enum DashAmountSign {
     /// Never render a sign: "0.05 Ð".
     case none
@@ -59,7 +58,6 @@ public enum DashAmountFormat {
 
 // MARK: - DashAmount view
 
-@available(iOS 14, macOS 11, *)
 public struct DashAmount: View {
 
     public var amount: Int64
@@ -122,37 +120,31 @@ public struct DashAmount: View {
 
 #if DEBUG
 
-@available(iOS 17, macOS 14, *)
 #Preview("sign: .none (positive)") {
     DashAmount(amount: 6_791_000, fontSize: 15, sign: .none)
         .padding()
 }
 
-@available(iOS 17, macOS 14, *)
 #Preview("sign: .negativeOnly — positive (no prefix)") {
     DashAmount(amount: 6_791_000, fontSize: 15, sign: .negativeOnly)
         .padding()
 }
 
-@available(iOS 17, macOS 14, *)
 #Preview("sign: .negativeOnly — negative (-)") {
     DashAmount(amount: -6_791_000, fontSize: 15, sign: .negativeOnly)
         .padding()
 }
 
-@available(iOS 17, macOS 14, *)
 #Preview("sign: .always — positive (+)") {
     DashAmount(amount: 6_791_000, fontSize: 15, sign: .always)
         .padding()
 }
 
-@available(iOS 17, macOS 14, *)
 #Preview("sign: .always — negative (-)") {
     DashAmount(amount: -6_791_000, fontSize: 15, sign: .always)
         .padding()
 }
 
-@available(iOS 17, macOS 14, *)
 #Preview("Zero (no sign in any mode)") {
     VStack(spacing: 8) {
         DashAmount(amount: 0, fontSize: 15, sign: .none)
@@ -162,7 +154,6 @@ public struct DashAmount: View {
     .padding()
 }
 
-@available(iOS 17, macOS 14, *)
 #Preview("Not available (Int64.max)") {
     DashAmount(amount: .max, fontSize: 15)
         .padding()

@@ -80,7 +80,6 @@ enum NumericKeyboardLocaleSupport {
 
 // MARK: - NumericKeyboardView
 
-@available(iOS 14, macOS 11, *)
 public struct NumericKeyboardView: View {
 
     private enum Layout {
@@ -239,7 +238,6 @@ public struct NumericKeyboardView: View {
 
 #if DEBUG
 
-@available(iOS 17, macOS 14, *)
 #Preview {
     ZStack {
         Color.red.opacity(0.3)

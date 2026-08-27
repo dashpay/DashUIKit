@@ -21,7 +21,6 @@ import SwiftUI
 
 /// A code-drawn "✕" (close) icon. Mirrors the source SVG (9×9 viewBox, two diagonals
 /// inset from 0.75 to 7.75, round caps/joins). Scales cleanly to any `size`.
-@available(iOS 14, macOS 11, *)
 public struct XmarkIcon: View {
     public var size: CGFloat = 9
     public var color: Color = Color.dash.primaryText
@@ -51,7 +50,6 @@ public struct XmarkIcon: View {
 
 /// Two diagonal strokes forming an "✕". Endpoints are normalized from the 9-unit
 /// source viewBox (inset 0.75 → 7.75) so the cross keeps its proportions at any size.
-@available(iOS 14, macOS 11, *)
 private struct XmarkShape: Shape {
     private let insetRatio: CGFloat = 0.75 / 9
     private let extentRatio: CGFloat = 7.75 / 9
@@ -73,7 +71,6 @@ private struct XmarkShape: Shape {
 
 #if DEBUG
 
-@available(iOS 17, macOS 14, *)
 #Preview {
     VStack(spacing: 24) {
         XmarkIcon()

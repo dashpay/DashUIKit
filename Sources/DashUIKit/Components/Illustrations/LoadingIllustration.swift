@@ -22,7 +22,6 @@ import SwiftUI
 
 /// Wrapper that centers the loading spinner inside a fixed-size frame, matching the
 /// Maya design (Figma node 6:254 — a 90×90 frame containing a 61.73 spinner).
-@available(iOS 14, macOS 11, *)
 public struct LoadingIllustration: View {
 
     /// Diameter of the spinner.
@@ -52,7 +51,6 @@ public struct LoadingIllustration: View {
 /// `UIActivityIndicatorView`: the spokes are **static**, and instead of rotating the whole ring
 /// the bright "head" steps clockwise from spoke to spoke while the others fade — i.e. each line
 /// changes opacity in turn. The opacity crossfades between steps for a smooth iOS-style look.
-@available(iOS 14, macOS 11, *)
 public struct LoadingSpinner: View {
 
     /// Default tint — DS blue.
@@ -129,7 +127,6 @@ public struct LoadingSpinner: View {
 
 #if DEBUG
 
-@available(iOS 14, macOS 11, *)
 struct LoadingIllustration_Previews: PreviewProvider {
     static var previews: some View {
         VStack(spacing: 40) {

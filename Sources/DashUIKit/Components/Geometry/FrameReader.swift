@@ -24,7 +24,6 @@ import SwiftUI
 /// It paints nothing: a transparent, greedy overlay that forwards the resolved `CGRect`
 /// once on first layout and again on every subsequent change. Attach it through
 /// ``SwiftUI/View/readingFrame(coordinateSpace:onChange:)`` rather than building it directly.
-@available(iOS 14, macOS 11, *)
 struct FrameReader: View {
 
     private let coordinateSpace: CoordinateSpace
@@ -51,7 +50,6 @@ struct FrameReader: View {
 
 // MARK: - View sugar
 
-@available(iOS 14, macOS 11, *)
 public extension View {
 
     /// Reports this view's frame — in `coordinateSpace` — as it appears and whenever it moves
@@ -68,7 +66,6 @@ public extension View {
 
 #if DEBUG
 
-@available(iOS 14, macOS 11, *)
 struct FrameReader_Previews: PreviewProvider {
 
     private struct Demo: View {

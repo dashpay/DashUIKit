@@ -17,12 +17,10 @@
 
 import SwiftUI
 
-@available(iOS 14, macOS 10.15, *)
 public extension Font {
     static var dash: DashFonts.Type { DashFonts.self }
 }
 
-@available(iOS 14, macOS 10.15, *)
 public enum DashFonts {
 
     /// Large Title: 34pt Bold (line height: 41pt)

@@ -7,7 +7,6 @@
 
 import SwiftUI
 
-@available(iOS 14, macOS 11, *)
 struct ThumbView: View {
 
     private struct Constants {
@@ -28,7 +27,6 @@ struct ThumbView: View {
 
 #if DEBUG
 
-@available(iOS 17, macOS 14, *)
 #Preview {
     ThumbView()
         .padding()

@@ -28,7 +28,6 @@ private enum Layout {
     static let actionTapArea: CGFloat = 40
 }
 
-@available(iOS 15, macOS 12, *)
 public struct AddressFieldView<Accessory: View>: View {
 
     @Binding private var text: String
@@ -118,7 +117,6 @@ public struct AddressFieldView<Accessory: View>: View {
 
 }
 
-@available(iOS 15, macOS 12, *)
 public extension AddressFieldView where Accessory == EmptyView {
     /// No label accessory — the original shape, unchanged for callers that
     /// have nothing to put there.
@@ -145,7 +143,6 @@ public extension AddressFieldView where Accessory == EmptyView {
     }
 }
 
-@available(iOS 15, macOS 12, *)
 extension AddressFieldView {
     // MARK: - Subviews
 
@@ -242,7 +239,6 @@ extension AddressFieldView {
 
 #if DEBUG
 
-@available(iOS 17, macOS 14, *)
 #Preview("Empty") {
     AddressFieldView(
         text: .constant(""),
@@ -254,7 +250,6 @@ extension AddressFieldView {
     .padding()
 }
 
-@available(iOS 17, macOS 14, *)
 #Preview("Empty with Paste button") {
     AddressFieldView(
         text: .constant(""),
@@ -267,7 +262,6 @@ extension AddressFieldView {
     .padding()
 }
 
-@available(iOS 17, macOS 14, *)
 #Preview("With Text") {
     AddressFieldView(
         text: .constant("bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh"),
@@ -279,7 +273,6 @@ extension AddressFieldView {
     .padding()
 }
 
-@available(iOS 17, macOS 14, *)
 #Preview("Multiline") {
     AddressFieldView(
         text: .constant("bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh\nbc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh"),
@@ -291,7 +284,6 @@ extension AddressFieldView {
     .padding()
 }
 
-@available(iOS 17, macOS 14, *)
 #Preview("Error") {
     AddressFieldView(
         text: .constant("invalid-address"),
@@ -303,7 +295,6 @@ extension AddressFieldView {
     .padding()
 }
 
-@available(iOS 17, macOS 14, *)
 #Preview("Filled") {
     AddressFieldView(
         text: .constant("bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh"),
@@ -315,7 +306,6 @@ extension AddressFieldView {
     .padding()
 }
 
-@available(iOS 17, macOS 14, *)
 #Preview("Blurred + filled (no action button)") {
     AddressFieldView(
         text: .constant("bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh"),
@@ -327,7 +317,6 @@ extension AddressFieldView {
     .padding()
 }
 
-@available(iOS 17, macOS 14, *)
 #Preview("Label accessory") {
     AddressFieldView(
         text: .constant("yV1D1ivvSUyKPJnbFmzSTVh1MyZ3JbeVkY"),

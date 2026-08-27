@@ -30,7 +30,6 @@ import SwiftUI
 /// or view recreation. The content in each row never changes — only the visual position does.
 ///
 /// Tapping anywhere in the container (except the chevron) fires `onSwap`.
-@available(iOS 14, macOS 11, *)
 internal struct DualSwapAmountView: View {
     let primaryAmount: String
     let secondaryAmount: String
@@ -71,7 +70,6 @@ internal struct DualSwapAmountView: View {
 
 /// Trailing vertical list of currency-code buttons; the selected entry is highlighted.
 /// Fixed width matches `DualSwapLayout.sideColumnWidth` so it occupies its side column exactly.
-@available(iOS 14, macOS 11, *)
 internal struct DualInputTypeSwitcher: View {
     let codes: [String]
     let selected: String

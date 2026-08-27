@@ -7,7 +7,6 @@
 
 import SwiftUI
 
-@available(iOS 14, macOS 11, *)
 public struct SwitchView: View {
 
     private struct Constants {
@@ -60,7 +59,6 @@ public struct SwitchView: View {
 
 #if DEBUG
 
-@available(iOS 17, macOS 14, *)
 #Preview("States") {
     VStack(alignment: .leading, spacing: 20) {
         SwitchView(isOn: .constant(true))
@@ -71,7 +69,6 @@ public struct SwitchView: View {
     .padding()
 }
 
-@available(iOS 17, macOS 14, *)
 #Preview("Interactive") {
     @Previewable @State var isOn = false
     SwitchView(isOn: $isOn)
