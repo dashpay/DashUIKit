@@ -11,11 +11,19 @@ public struct BottomSheet<Content: View>: View {
     public var title: String = ""
     @Binding public var showBackButton: Bool
     public var onBackButtonPressed: (() -> Void)? = nil
-    /// Controls every dismissal affordance owned by the sheet. When `false`, the close button is
-    /// disabled and interactive dismissal is blocked on iOS 15+ / macOS 12+.
+    /// Whether the sheet may dismiss itself: blocks the interactive swipe, and blocks the
+    /// close button's default `dismiss()`. It does not silence `onClose` — a host that took
+    /// the close action over stays in charge of it, which is what makes "block the swipe but
+    /// ask before closing" expressible. Use `isCloseButtonEnabled` to disable the button too.
     @Binding public var isDismissalEnabled: Bool
     public var showsCloseButton: Bool = true
-    /// Overrides the close button action. The callback is responsible for dismissing the sheet.
+    /// Whether the close button accepts taps. It also goes inert on its own when it would have
+    /// nothing left to do — dismissal disabled and no `onClose` to run.
+    public var isCloseButtonEnabled: Bool = true
+    /// Overrides the close button's action; the callback is then responsible for dismissing the
+    /// sheet. It covers the **button only** — an interactive swipe dismisses the sheet without
+    /// calling it, so a host that needs to hear about every dismissal should also pass
+    /// `onDismiss:` to the presenting `.sheet`.
     public var onClose: (() -> Void)? = nil
     /// `true` (default) — greedy: content fills the sheet (use with an explicit detent or a
     /// `.large`/`.medium` detent). `false` — natural height: pair with `.selfSizingSheet()` so
@@ -36,6 +44,7 @@ public struct BottomSheet<Content: View>: View {
         onBackButtonPressed: (() -> Void)? = nil,
         isDismissalEnabled: Binding<Bool> = .constant(true),
         showsCloseButton: Bool = true,
+        isCloseButtonEnabled: Bool = true,
         onClose: (() -> Void)? = nil,
         fillsHeight: Bool = true,
         background: Color = .dash.primaryBackground,
@@ -46,6 +55,7 @@ public struct BottomSheet<Content: View>: View {
         self.onBackButtonPressed = onBackButtonPressed
         self._isDismissalEnabled = isDismissalEnabled
         self.showsCloseButton = showsCloseButton
+        self.isCloseButtonEnabled = isCloseButtonEnabled
         self.onClose = onClose
         self.fillsHeight = fillsHeight
         self.background = background
@@ -98,6 +108,13 @@ public struct BottomSheet<Content: View>: View {
             .cornerRadius(5)
     }
 
+    private var isCloseButtonActive: Bool {
+        BottomSheetDismissalAction.isCloseButtonActive(
+            isCloseButtonEnabled: isCloseButtonEnabled,
+            isDismissalEnabled: isDismissalEnabled,
+            hasCustomCloseAction: onClose != nil)
+    }
+
     private var header: some View {
         NavigationBar(
             leading: {
@@ -114,13 +131,13 @@ public struct BottomSheet<Content: View>: View {
                 if showsCloseButton {
                     NavigationBarElement.close.button {
                         BottomSheetDismissalAction.perform(
-                            isEnabled: isDismissalEnabled,
+                            isDismissalEnabled: isDismissalEnabled,
                             onClose: onClose,
                             dismiss: { presentationMode.wrappedValue.dismiss() }
                         )
                     }
-                    .disabled(!isDismissalEnabled)
-                    .opacity(isDismissalEnabled ? 1 : 0.35)
+                    .disabled(!isCloseButtonActive)
+                    .opacity(isCloseButtonActive ? 1 : 0.35)
                 }
             }
         )
@@ -166,6 +183,7 @@ public extension BottomSheet {
         onBackButtonPressed: (() -> Void)? = nil,
         isDismissalEnabled: Binding<Bool> = .constant(true),
         showsCloseButton: Bool = true,
+        isCloseButtonEnabled: Bool = true,
         onClose: (() -> Void)? = nil,
         fallback: CGFloat = 0,
         maxHeightFraction: CGFloat = 0.95,
@@ -179,6 +197,7 @@ public extension BottomSheet {
             onBackButtonPressed: onBackButtonPressed,
             isDismissalEnabled: isDismissalEnabled,
             showsCloseButton: showsCloseButton,
+            isCloseButtonEnabled: isCloseButtonEnabled,
             onClose: onClose,
             fillsHeight: false,
             background: background,
@@ -194,12 +213,23 @@ public extension BottomSheet {
 
 @available(iOS 14, macOS 11, *)
 enum BottomSheetDismissalAction {
-    static func perform(isEnabled: Bool, onClose: (() -> Void)?, dismiss: () -> Void) {
-        guard isEnabled else { return }
+    /// The button is live while it still has something to do. Blocking dismissal only
+    /// takes away what the sheet itself owns — the `dismiss()` it would call — so a host
+    /// that supplied `onClose` keeps its action, and a sheet can block the swipe while
+    /// still answering the close button with a confirmation. `isCloseButtonEnabled`
+    /// remains the way to take the button away outright.
+    static func isCloseButtonActive(
+        isCloseButtonEnabled: Bool,
+        isDismissalEnabled: Bool,
+        hasCustomCloseAction: Bool
+    ) -> Bool {
+        isCloseButtonEnabled && (isDismissalEnabled || hasCustomCloseAction)
+    }
 
+    static func perform(isDismissalEnabled: Bool, onClose: (() -> Void)?, dismiss: () -> Void) {
         if let onClose {
             onClose()
-        } else {
+        } else if isDismissalEnabled {
             dismiss()
         }
     }
@@ -494,6 +524,19 @@ private struct SelfSizingSheetModifier: ViewModifier {
             fillsHeight: false
         ) {
             Text("The dimmed close button and swipe are disabled.")
+                .dashFont(.body)
+                .foregroundColor(.dash.secondaryText)
+                .padding()
+        }
+
+        BottomSheet(
+            title: "Swipe blocked, close confirms",
+            showBackButton: .constant(false),
+            isDismissalEnabled: .constant(false),
+            onClose: { /* host shows a "discard changes?" alert */ },
+            fillsHeight: false
+        ) {
+            Text("The swipe is blocked, but the close button still reaches the host.")
                 .dashFont(.body)
                 .foregroundColor(.dash.secondaryText)
                 .padding()

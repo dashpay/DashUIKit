@@ -18,17 +18,34 @@ import XCTest
 @testable import DashUIKit
 
 final class BottomSheetDismissalActionTests: XCTestCase {
-    func testDisabledDismissalDoesNotInvokeAnyAction() {
+
+    // MARK: - perform
+
+    func testDisabledDismissalDoesNotDismissTheSheetItself() {
+        var didDismiss = false
+
+        BottomSheetDismissalAction.perform(
+            isDismissalEnabled: false,
+            onClose: nil,
+            dismiss: { didDismiss = true }
+        )
+
+        XCTAssertFalse(didDismiss)
+    }
+
+    /// Blocking dismissal takes away the sheet's own `dismiss()`, not the host's action:
+    /// this is the "swipe is blocked, closing asks for confirmation" configuration.
+    func testCustomCloseActionStillRunsWhileDismissalIsDisabled() {
         var didClose = false
         var didDismiss = false
 
         BottomSheetDismissalAction.perform(
-            isEnabled: false,
+            isDismissalEnabled: false,
             onClose: { didClose = true },
             dismiss: { didDismiss = true }
         )
 
-        XCTAssertFalse(didClose)
+        XCTAssertTrue(didClose)
         XCTAssertFalse(didDismiss)
     }
 
@@ -37,7 +54,7 @@ final class BottomSheetDismissalActionTests: XCTestCase {
         var didDismiss = false
 
         BottomSheetDismissalAction.perform(
-            isEnabled: true,
+            isDismissalEnabled: true,
             onClose: { didClose = true },
             dismiss: { didDismiss = true }
         )
@@ -50,11 +67,43 @@ final class BottomSheetDismissalActionTests: XCTestCase {
         var didDismiss = false
 
         BottomSheetDismissalAction.perform(
-            isEnabled: true,
+            isDismissalEnabled: true,
             onClose: nil,
             dismiss: { didDismiss = true }
         )
 
         XCTAssertTrue(didDismiss)
+    }
+
+    // MARK: - isCloseButtonActive
+
+    func testCloseButtonIsActiveWhileDismissalIsEnabled() {
+        XCTAssertTrue(BottomSheetDismissalAction.isCloseButtonActive(
+            isCloseButtonEnabled: true,
+            isDismissalEnabled: true,
+            hasCustomCloseAction: false))
+    }
+
+    /// Nothing left for a tap to do: the sheet may not dismiss itself and no host
+    /// action was supplied, so the button goes inert rather than lying about it.
+    func testCloseButtonIsInertWhenDismissalIsDisabledAndNoCustomAction() {
+        XCTAssertFalse(BottomSheetDismissalAction.isCloseButtonActive(
+            isCloseButtonEnabled: true,
+            isDismissalEnabled: false,
+            hasCustomCloseAction: false))
+    }
+
+    func testCloseButtonStaysActiveForACustomActionWhileDismissalIsDisabled() {
+        XCTAssertTrue(BottomSheetDismissalAction.isCloseButtonActive(
+            isCloseButtonEnabled: true,
+            isDismissalEnabled: false,
+            hasCustomCloseAction: true))
+    }
+
+    func testCloseButtonIsInertWhenDisabledOutright() {
+        XCTAssertFalse(BottomSheetDismissalAction.isCloseButtonActive(
+            isCloseButtonEnabled: false,
+            isDismissalEnabled: true,
+            hasCustomCloseAction: true))
     }
 }
