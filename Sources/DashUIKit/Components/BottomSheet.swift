@@ -221,10 +221,78 @@ private struct BottomSheetDismissalModifier: ViewModifier {
         if #available(iOS 15, macOS 12, *) {
             content.interactiveDismissDisabled(!isEnabled)
         } else {
-            content
+            content.modifier(LegacyInteractiveDismissModifier(isDismissDisabled: !isEnabled))
         }
     }
 }
+
+#if canImport(UIKit)
+
+/// `interactiveDismissDisabled` is iOS 15, and this library ships to 14. The flag
+/// it sets underneath — `UIViewController.isModalInPresentation` — is iOS 13, so
+/// the older systems can be given the same protection rather than none at all.
+@available(iOS 14, macOS 11, *)
+private struct LegacyInteractiveDismissModifier: ViewModifier {
+    let isDismissDisabled: Bool
+
+    func body(content: Content) -> some View {
+        content.background(
+            ModalInPresentationSetter(isModal: isDismissDisabled)
+                .frame(width: 0, height: 0)
+        )
+    }
+}
+
+@available(iOS 14, macOS 11, *)
+private struct ModalInPresentationSetter: UIViewControllerRepresentable {
+    let isModal: Bool
+
+    func makeUIViewController(context: Context) -> Controller {
+        Controller()
+    }
+
+    func updateUIViewController(_ controller: Controller, context: Context) {
+        controller.isModal = isModal
+    }
+
+    final class Controller: UIViewController {
+        var isModal = false {
+            didSet { applyToPresentedController() }
+        }
+
+        override func didMove(toParent parent: UIViewController?) {
+            super.didMove(toParent: parent)
+            applyToPresentedController()
+        }
+
+        override func viewWillAppear(_ animated: Bool) {
+            super.viewWillAppear(animated)
+            applyToPresentedController()
+        }
+
+        /// The swipe belongs to the controller that was actually presented, not to
+        /// this one: the representable sits in a background deep inside the sheet's
+        /// hosting controller, so walk up to the top of the containment chain.
+        private func applyToPresentedController() {
+            var controller: UIViewController = self
+            while let parent = controller.parent {
+                controller = parent
+            }
+            controller.isModalInPresentation = isModal
+        }
+    }
+}
+
+#else
+
+@available(iOS 14, macOS 11, *)
+private struct LegacyInteractiveDismissModifier: ViewModifier {
+    let isDismissDisabled: Bool
+
+    func body(content: Content) -> some View { content }
+}
+
+#endif
 
 @available(iOS 14, macOS 11, *)
 public extension View {
