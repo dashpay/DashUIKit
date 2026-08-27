@@ -86,15 +86,37 @@ Sheet chrome to put **inside** a SwiftUI `.sheet { }`: a grabber, a `NavigationB
 - **`fillsHeight: false`** — natural height; pair with `.selfSizingSheet(…)` so the sheet
   snaps to its content.
 
-`isDismissalEnabled` controls the close button and interactive swipe dismissal together.
-The binding is dynamic, so a host can disable both while signing or broadcasting and
-restore them afterward. The close button becomes visibly disabled and exposes the disabled
-accessibility trait. Interactive-dismiss blocking uses the system API on **iOS 15+** /
-**macOS 12+**; older supported systems retain the close-button protection.
+`isDismissalEnabled` says whether the sheet may dismiss **itself**: it blocks the
+interactive swipe and the close button's default `dismiss()`. The binding is dynamic, so a
+host can lock the sheet while signing or broadcasting and restore it afterward — and
+because the flag is passed to the modifier rather than switching between two view trees,
+flipping it leaves the content, and every piece of `@State` inside it, untouched.
 
-Set `showsCloseButton: false` when the sheet has no close affordance. Pass `onClose` to
-override the default presentation dismissal; the callback is then responsible for actually
-dismissing the sheet. All three options preserve the existing behavior when omitted.
+It does not silence `onClose`. A host that took the close action over keeps it, which is
+how "the swipe is blocked, but closing asks for confirmation" is expressed:
+
+```swift
+BottomSheet(
+    title: "Edit note",
+    showBackButton: $showBack,
+    isDismissalEnabled: .constant(false),   // swipe is blocked
+    onClose: { showsDiscardAlert = true }   // …the button still reaches the host
+) { … }
+```
+
+The close button goes inert on its own when a tap would do nothing — dismissal disabled and
+no `onClose` — and `isCloseButtonEnabled: false` takes it away outright. An inert button is
+visibly dimmed and exposes the disabled accessibility trait. Use `showsCloseButton: false`
+when the sheet should have no close affordance at all.
+
+Swipe blocking uses `interactiveDismissDisabled` on **iOS 15+** / **macOS 12+** and
+`UIViewController.isModalInPresentation` below that, so an iOS 14 host is protected too.
+
+`onClose` covers the **close button only**: an interactive swipe dismisses the sheet
+without calling it. A host that has to hear about every dismissal should also pass
+`onDismiss:` to the presenting `.sheet`.
+
+All of these options preserve the existing behavior when omitted.
 
 ### Self-sizing
 
