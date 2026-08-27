@@ -18,7 +18,7 @@
 #if canImport(UIKit)
 import SwiftUI
 
-// MARK: - Public shell (iOS 14+)
+// MARK: - Public shell
 
 @available(iOS 14, *)
 public struct SearchBar: View {
@@ -35,17 +35,12 @@ public struct SearchBar: View {
     }
 
     public var body: some View {
-        if #available(iOS 15, *) {
-            SearchBarFocused(text: $text, placeholder: placeholder)
-        } else {
-            SearchBarLegacy(text: $text, placeholder: placeholder)
-        }
+        SearchBarFocused(text: $text, placeholder: placeholder)
     }
 }
 
-// MARK: - iOS 15+ (focus-driven cancel button)
+// MARK: - Focus-driven cancel button
 
-@available(iOS 15, *)
 private struct SearchBarFocused: View {
     private enum Layout {
         static let fieldHeight: CGFloat = 40
@@ -136,82 +131,19 @@ private struct SearchBarFocused: View {
         .tint(Color.dash.primaryText as Color?)
     }
 
-    @ViewBuilder
     private var searchField: some View {
-        if #available(iOS 17.0, *) {
-            TextField(
-                text: $text,
-                // A prompt must stay a `Text`; `dashFont` returns `some View`, and a
-                // line height cannot be applied to `Text` anyway.
-                prompt: Text(placeholder)
-                    .font(Font.dash.subhead)
-                    .foregroundStyle(Color.dash.black1000Alpha30)
-            ) {
-                EmptyView()
-            }
-            .focused($isFocused)
-            .tint(Color.dash.primaryText as Color?)
-        } else {
-            TextField(placeholder, text: $text)
-                .focused($isFocused)
-                .tint(Color.dash.primaryText as Color?)
-                .foregroundColor(Color.dash.primaryText)
+        TextField(
+            text: $text,
+            // A prompt must stay a `Text`; `dashFont` returns `some View`, and a
+            // line height cannot be applied to `Text` anyway.
+            prompt: Text(placeholder)
+                .font(Font.dash.subhead)
+                .foregroundStyle(Color.dash.black1000Alpha30)
+        ) {
+            EmptyView()
         }
-    }
-}
-
-// MARK: - iOS 14 fallback (no focus state — static bar without cancel animation)
-
-@available(iOS 14, *)
-private struct SearchBarLegacy: View {
-    private enum Layout {
-        static let fieldHeight: CGFloat = 40
-        static let fieldCornerRadius: CGFloat = 14
-        static let fieldHorizontalPadding: CGFloat = 14
-        static let fieldSpacing: CGFloat = 10
-    }
-
-    @Binding var text: String
-    let placeholder: String
-
-    var body: some View {
-        HStack(spacing: Layout.fieldSpacing) {
-            magnifyingGlass
-            TextField(placeholder, text: $text)
-                .accentColor(Color.dash.primaryText)
-                .foregroundColor(Color.dash.primaryText)
-            clearButton
-        }
-        .padding(.horizontal, Layout.fieldHorizontalPadding)
-        .frame(height: Layout.fieldHeight)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color.dash.searchBackground)
-        .clipShape(RoundedRectangle(cornerRadius: Layout.fieldCornerRadius, style: .continuous))
-    }
-
-    private var magnifyingGlass: some View {
-        DashIcon.SearchBar.magnifyingglassIcon.image
-            .resizable()
-            .scaledToFit()
-            .frame(maxHeight: 15)
-    }
-
-    @ViewBuilder
-    private var clearButton: some View {
-        if !text.isEmpty {
-            Button(
-                action: { text = "" },
-                label: {
-                    DashIcon.SearchBar.xmarkIcon.image
-                        .resizable()
-                        .scaledToFit()
-                        .frame(maxHeight: 15)
-                        .frame(width: 44, height: 44)
-                        .contentShape(Rectangle())
-                }
-            )
-            .accessibilityLabel(Text(NSLocalizedString("Clear", bundle: .module, comment: "DashUIKit")))
-        }
+        .focused($isFocused)
+        .tint(Color.dash.primaryText as Color?)
     }
 }
 

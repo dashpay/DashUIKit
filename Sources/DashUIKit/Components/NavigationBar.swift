@@ -132,17 +132,11 @@ public enum NavigationBarElement: String {
 
 @available(iOS 14, macOS 11, *)
 private struct NavigationBarButtonStyle: ButtonStyle {
-    @ViewBuilder
     func makeBody(configuration: Configuration) -> some View {
-        let content = configuration.label
+        configuration.label
             .scaleEffect(configuration.isPressed ? 0.88 : 1)
             .opacity(configuration.isPressed ? 0.7 : 1)
-
-        if #available(iOS 15, macOS 12, *) {
-            content.animation(.easeInOut(duration: 0.12), value: configuration.isPressed)
-        } else {
-            content.animation(.easeInOut(duration: 0.12))
-        }
+            .animation(.easeInOut(duration: 0.12), value: configuration.isPressed)
     }
 }
 

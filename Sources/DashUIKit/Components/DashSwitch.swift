@@ -30,15 +30,9 @@ public struct DashSwitch: View {
     }
 
     public var body: some View {
-        if #available(iOS 15, *) {
-            Toggle("", isOn: $isOn)
-                .labelsHidden()
-                .tint(Color.dash.switchTrackFillOn as Color?)
-        } else {
-            Toggle("", isOn: $isOn)
-                .labelsHidden()
-                .accentColor(Color.dash.switchTrackFillOn)
-        }
+        Toggle("", isOn: $isOn)
+            .labelsHidden()
+            .tint(Color.dash.switchTrackFillOn as Color?)
     }
 }
 

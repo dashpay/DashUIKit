@@ -162,36 +162,25 @@ extension AddressFieldView {
         )
     }
 
-    @ViewBuilder private var textField: some View {
-        if #available(iOS 17.0, *) {
-            TextField(
-                "",
-                text: $text,
-                // A prompt must stay a `Text`; `dashFont` returns `some View`, and a
-                // line height cannot be applied to `Text` anyway.
-                prompt: Text(placeholder)
-                    .font(Font.dash.subhead)
-                    .foregroundStyle(Color.dash.black1000Alpha30),
-                axis: .vertical
-            )
-            .lineLimit(1...2)
-            .dashFont(.subhead)
-            .textInputAutocapitalization(.never)
-            .disableAutocorrection(true)
-            .foregroundStyle(Color.dash.primaryText)
-            .tint(Color.dash.primaryText)
-            .focused($isTextFieldFocused)
-            .disabled(isDisabled)
-        } else {
-            TextField(placeholder, text: $text)
-                .dashFont(.subhead)
-                .textInputAutocapitalization(.never)
-                .disableAutocorrection(true)
-                .foregroundStyle(Color.dash.primaryText)
-                .tint(Color.dash.primaryText)
-                .focused($isTextFieldFocused)
-                .disabled(isDisabled)
-        }
+    private var textField: some View {
+        TextField(
+            "",
+            text: $text,
+            // A prompt must stay a `Text`; `dashFont` returns `some View`, and a
+            // line height cannot be applied to `Text` anyway.
+            prompt: Text(placeholder)
+                .font(Font.dash.subhead)
+                .foregroundStyle(Color.dash.black1000Alpha30),
+            axis: .vertical
+        )
+        .lineLimit(1...2)
+        .dashFont(.subhead)
+        .textInputAutocapitalization(.never)
+        .disableAutocorrection(true)
+        .foregroundStyle(Color.dash.primaryText)
+        .tint(Color.dash.primaryText)
+        .focused($isTextFieldFocused)
+        .disabled(isDisabled)
     }
 
     private var actionButton: some View {

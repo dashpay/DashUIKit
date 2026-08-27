@@ -43,19 +43,9 @@ public struct SwitchView: View {
         .animation(.easeInOut(duration: Constants.animationDuration), value: isOn)
         .contentShape(Rectangle())
         .onTapGesture { isOn.toggle() }
-        .accessibilityAddTraits(toggleTrait)
+        .accessibilityAddTraits(.isToggle)
         .accessibilityValue(Text(isOn ? Constants.onValue : Constants.offValue))
         .accessibilityAction { isOn.toggle() }
-    }
-
-    /// `.isToggle` is iOS 17, and this component must stay usable on iOS 14, so the
-    /// older path keeps the button trait.
-    private var toggleTrait: AccessibilityTraits {
-        if #available(iOS 17, macOS 14, *) {
-            return .isToggle
-        } else {
-            return .isButton
-        }
     }
 
     private var trackFill: Color {
