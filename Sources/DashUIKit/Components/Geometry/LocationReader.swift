@@ -42,7 +42,7 @@ struct LocationReader: View {
 
             Color.clear
                 .onAppear { report(center) }
-                .onChange(of: center, perform: report)
+                .onChange(of: center) { _, newCenter in report(newCenter) }
         }
         .frame(width: 0, height: 0, alignment: .center)
     }

@@ -43,7 +43,7 @@ struct FrameReader: View {
             Color.clear
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .onAppear { report(frame) }
-                .onChange(of: frame, perform: report)
+                .onChange(of: frame) { _, newFrame in report(newFrame) }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }

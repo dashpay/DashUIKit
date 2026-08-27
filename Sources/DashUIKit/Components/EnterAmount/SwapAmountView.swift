@@ -405,7 +405,7 @@ private struct AnimatedSwapLayout: View {
         }
         .frame(height: SwapAnimLayout.containerHeight)
         .frame(maxWidth: .infinity)
-        .onChange(of: isPrimaryLarge) { newValue in
+        .onChange(of: isPrimaryLarge) { _, newValue in
             // A rapid re-toggle must invalidate the previous change's still-pending callbacks,
             // otherwise a stale scale/offset update can run after the newer state (visible jump).
             swapGeneration &+= 1
