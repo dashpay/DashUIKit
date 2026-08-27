@@ -60,6 +60,10 @@ public struct EnterAmountView: View {
     public var primaryCurrency: CurrencyOption = .dash
     /// Currency for the secondary logical value.
     public var secondaryCurrency: CurrencyOption = .fiat("USD")
+    /// Shown in red in place of the secondary amount. Keep it short: it sits
+    /// in a slot sized for a converted figure.
+    public var errorMessage: String? = nil
+
     /// When `true`, `primaryAmount` occupies the large slot; when `false`, `secondaryAmount` does.
     public var isPrimarySelected: Bool = true
     /// Hides the currency-select chevron when `true`.
@@ -122,7 +126,8 @@ public struct EnterAmountView: View {
         onSwap: (() -> Void)? = nil,
         onCurrencyTap: (() -> Void)? = nil,
         onPaste: (() -> Void)? = nil,
-        onSelectInputType: ((String) -> Void)? = nil
+        onSelectInputType: ((String) -> Void)? = nil,
+        errorMessage: String? = nil
     ) {
         self._value = .constant("")
         self._selectedCurrency = .constant(.dash)
@@ -130,6 +135,7 @@ public struct EnterAmountView: View {
         self.style = .dualSwap
         self.primaryAmount = primaryAmount
         self.secondaryAmount = secondaryAmount
+        self.errorMessage = errorMessage
         self.primaryCurrency = primaryCurrency
         self.secondaryCurrency = secondaryCurrency
         self.isPrimarySelected = isPrimarySelected
@@ -194,6 +200,7 @@ public struct EnterAmountView: View {
                 secondaryCurrency: secondaryCurrency,
                 isPrimarySelected: isPrimarySelected,
                 isCurrencySelectorHidden: isCurrencySelectorHidden,
+                secondaryErrorMessage: errorMessage,
                 onSwap: onSwap ?? {},
                 onSelectCurrency: onCurrencyTap ?? {},
                 onPaste: onPaste

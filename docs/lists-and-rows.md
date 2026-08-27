@@ -38,7 +38,7 @@ is tappable when you wrap it in a `Button`.
 
 File `Components/MenuItem.swift` · `@available(iOS 14, macOS 11, *)`
 
-A settings/menu row: optional leading icon, title with optional inline info icon, optional
+A settings/menu row: optional leading icon, title with optional inline info glyph, optional
 help text, and a flexible trailing **accessory**.
 
 ```swift
@@ -46,22 +46,31 @@ MenuItem(
     leadingIcon: .custom("menu-send", bundle: .dashUIKit),  // DashIconSource?
     title: "Network fee",
     helpText: "Estimated cost for this transaction",
-    infoIcon: .system("info.circle"),
+    info: .round(color: Color.dash.gray300Alpha70),
     accessory: .text("0.0001 DASH")
 )
 ```
+
+**`MenuItemInfo`** — the glyph beside the title, when the row has something to explain:
+
+- `.round(color: Color)` — the design system's `InfoRoundIcon`, recoloured to suit the row
+- `.icon(DashIconSource)` — any other glyph
 
 **`MenuItemAccessory`** — the trailing look (extend this enum rather than overriding
 per-call fonts/colors, to keep rows consistent):
 
 - `.none`
-- `.toggle(isOn: Binding<Bool>)` — a `Toggle`
+- `.toggle(isOn: Binding<Bool>)` — a `SwitchView` (the design system's switch, not the
+  system green `Toggle`); it takes the row's enabled state from the environment
 - `.text(String)`
 - `.button(DashButton)` — embed a `DashButton`
 - `.balance(dash: Int64, sign: DashAmountSign = .negativeOnly, fiat: String? = nil)` —
   a `DashAmount` (duffs) with an optional pre-formatted fiat sub-line. The fiat line is
   hidden for zero / `.max` / `.min` amounts. The library only renders the fiat string you
   pass — it does no conversion.
+- `.selection(isSelected: Bool)` — a `CheckmarkIcon` on the chosen row of a picker list.
+  Unselected rows keep the mark's slot (drawn at zero opacity), so nothing shifts
+  horizontally as the selection moves.
 
 ---
 

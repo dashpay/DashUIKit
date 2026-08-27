@@ -84,6 +84,11 @@ enum NumericKeyboardLocaleSupport {
 public struct NumericKeyboardView: View {
 
     private enum Layout {
+        /// The panel the keypad sits on: inset from the screen edges,
+        /// clear of the home indicator, and rounded at the top.
+        static let panelHorizontalPadding: CGFloat = 20
+        static let panelVerticalPadding: CGFloat = 20
+        static let panelCornerRadius: CGFloat = 32
         static let rootSpacing: CGFloat = 20
         static let rowsSpacing: CGFloat = 10
         static let rowSpacing: CGFloat = 10
@@ -135,7 +140,26 @@ public struct NumericKeyboardView: View {
             helperTextRow(helperText)
             actionButtonView
         }
-        .background(Color.dash.secondaryBackground)
+        .padding(.horizontal, Layout.panelHorizontalPadding)
+        .padding(.vertical, Layout.panelVerticalPadding)
+        .frame(maxWidth: .infinity)
+        // Rounded at the top only, and run down into the bottom safe area.
+        //
+        // Drawn as a fully rounded rectangle pushed below its own frame by the
+        // radius, so the bottom corners are never on screen.
+        // `UnevenRoundedRectangle` says that in one line but is iOS 16, and
+        // this library ships to 14; `background(alignment:content:)` is 15.
+        // Both are avoidable, the deployment target is not.
+        //
+        // `.continuous` because the circular default kinks visibly where the
+        // arc meets the top edge at this radius.
+        .background(
+            RoundedRectangle(cornerRadius: Layout.panelCornerRadius, style: .continuous)
+                .fill(Color.dash.secondaryBackground)
+                .padding(.bottom, -Layout.panelCornerRadius)
+                .ignoresSafeArea(edges: .bottom),
+            alignment: .top
+        )
     }
 
     private var keyboardRowsView: some View {
@@ -221,8 +245,8 @@ public struct NumericKeyboardView: View {
 
 @available(iOS 17, macOS 14, *)
 #Preview {
-    VStack {
-        Spacer()
+    ZStack {
+        Color.red.opacity(0.3)
 
         NumericKeyboardView(
             value: .constant(""),
@@ -233,8 +257,6 @@ public struct NumericKeyboardView: View {
             inProgress: false,
             actionHandler: { print("Action button tapped") }
         )
-        .padding(.horizontal, 20)
-        .background(.red.opacity(0.3))
     }
 }
 

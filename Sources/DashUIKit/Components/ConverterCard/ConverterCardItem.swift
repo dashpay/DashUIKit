@@ -48,6 +48,10 @@ public struct ConverterCardItem: Identifiable {
     public let trailingView: AnyView?
     /// When `false` (and no `trailingView`), the row hides its trailing balance.
     public let showsBalance: Bool
+    /// Invoked when the whole row is tapped (e.g. to open an endpoint picker).
+    /// `nil` — the default — leaves the row inert, exactly as before this
+    /// parameter existed.
+    public let onTap: (() -> Void)?
 
     public init(
         id: AnyHashable? = nil,
@@ -59,7 +63,8 @@ public struct ConverterCardItem: Identifiable {
         dashBalance: Int64 = 0,
         fiat: String? = nil,
         trailingView: AnyView? = nil,
-        showsBalance: Bool = true
+        showsBalance: Bool = true,
+        onTap: (() -> Void)? = nil
     ) {
         self.id = id ?? AnyHashable(title)
         self.icon = icon
@@ -71,5 +76,6 @@ public struct ConverterCardItem: Identifiable {
         self.fiat = fiat
         self.trailingView = trailingView
         self.showsBalance = showsBalance
+        self.onTap = onTap
     }
 }

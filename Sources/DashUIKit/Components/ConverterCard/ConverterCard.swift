@@ -24,6 +24,9 @@ import SwiftUI
 ///
 /// Pass `onSwap` to show a tappable `diagonal-up-down` button; omit it (or pass `nil`) for a
 /// static `arrow-down` indicator when the card is non-swappable.
+///
+/// A row given an `onTap` becomes a button and grows a trailing chevron, so a
+/// row that opens a picker reads as one at rest.
 @available(iOS 14, macOS 11, *)
 public struct ConverterCard: View {
 
@@ -52,7 +55,10 @@ public struct ConverterCard: View {
     public var body: some View {
         VStack(spacing: Layout.cardSpacing) {
             ForEach(Array(orderedItems.enumerated()), id: \.element.id) { index, item in
-                ConverterCardRow(slot: index == 0 ? .top : .bottom) {
+                ConverterCardRow(
+                    slot: index == 0 ? .top : .bottom,
+                    isInteractive: item.onTap != nil
+                ) {
                     row(item: item)
                 }
             }
@@ -75,9 +81,25 @@ public struct ConverterCard: View {
     /// spacing — never on the bottom row — so it stays correct when the rows differ in height.
     private var seamY: CGFloat { topRowHeight + Layout.cardSpacing / 2 }
 
+    /// A row with an `onTap` becomes a plain button over the whole row area
+    /// (`contentShape` keeps the padding and the spacer tappable); without
+    /// one it stays inert, exactly as before the action existed.
+    @ViewBuilder
+    private func row(item: ConverterCardItem) -> some View {
+        if let onTap = item.onTap {
+            Button(action: onTap) {
+                rowContent(item: item)
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+        } else {
+            rowContent(item: item)
+        }
+    }
+
     /// Row layout mirrors `MenuItem` (icon 30pt, 10pt padding) but stays flexible enough for a
     /// custom icon/trailing view and a multi-line subtitle.
-    private func row(item: ConverterCardItem) -> some View {
+    private func rowContent(item: ConverterCardItem) -> some View {
         HStack(spacing: 10) {
             leading(item)
 
@@ -100,6 +122,14 @@ public struct ConverterCard: View {
             Spacer(minLength: 8)
 
             trailing(item)
+
+            // A row that opens something says so. `onTap` is the only signal
+            // the card has for that, and it is exactly the right one: the two
+            // are set together by definition.
+            if item.onTap != nil {
+                ChevronIcon()
+                    .padding(.leading, 2)
+            }
         }
         .padding(10)
     }
@@ -174,6 +204,25 @@ struct ConverterCard_Previews: PreviewProvider {
                 )
             )
             .previewDisplayName("Static (no swap)")
+
+            // Tappable from-row: the whole row is a plain button carrying the
+            // trailing chevron; the bottom row stays inert and chevron-less.
+            ConverterCard(
+                fromItem: ConverterCardItem(
+                    icon: .system("d.circle.fill"),
+                    title: "Tap to pick a source",
+                    subtitle: "From",
+                    dashBalance: 245_000_000,
+                    onTap: {}
+                ),
+                toItem: ConverterCardItem(
+                    icon: .system("person.crop.circle.fill"),
+                    title: "Identity",
+                    subtitle: "To",
+                    showsBalance: false
+                )
+            )
+            .previewDisplayName("Tappable from-row")
 
             // Unequal rows — badge must stay on the seam when the bottom row is taller.
             ConverterCard(
