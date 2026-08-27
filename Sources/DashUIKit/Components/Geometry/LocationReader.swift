@@ -24,7 +24,6 @@ import SwiftUI
 /// The point-sized sibling of ``FrameReader``: it collapses to a zero-sized probe and only
 /// emits the midpoint, which is all most scroll/position effects need. Reach for it through
 /// ``SwiftUI/View/readingLocation(coordinateSpace:onChange:)``.
-@available(iOS 14, macOS 11, *)
 struct LocationReader: View {
 
     private let coordinateSpace: CoordinateSpace
@@ -42,7 +41,7 @@ struct LocationReader: View {
 
             Color.clear
                 .onAppear { report(center) }
-                .onChange(of: center, perform: report)
+                .onChange(of: center) { _, newCenter in report(newCenter) }
         }
         .frame(width: 0, height: 0, alignment: .center)
     }
@@ -50,7 +49,6 @@ struct LocationReader: View {
 
 // MARK: - View sugar
 
-@available(iOS 14, macOS 11, *)
 extension View {
 
     /// Reports this view's center point — in `coordinateSpace` — on appear and on every change.
@@ -65,7 +63,6 @@ extension View {
 
 // MARK: - Helpers
 
-@available(iOS 14, macOS 11, *)
 private extension CGRect {
     /// Geometric center of the rect.
     var center: CGPoint { CGPoint(x: midX, y: midY) }
@@ -75,7 +72,6 @@ private extension CGRect {
 
 #if DEBUG
 
-@available(iOS 14, macOS 11, *)
 struct LocationReader_Previews: PreviewProvider {
 
     private struct Demo: View {

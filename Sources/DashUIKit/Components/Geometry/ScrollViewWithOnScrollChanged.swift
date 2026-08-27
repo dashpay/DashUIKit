@@ -26,7 +26,6 @@ import SwiftUI
 /// The trick: a zero-sized ``LocationReader`` rides at the very top of the content inside a
 /// private named coordinate space. As the content slides, the probe's position within that
 /// space is exactly the scroll offset, which is forwarded through `onScrollChanged`.
-@available(iOS 14, macOS 11, *)
 public struct ScrollViewWithOnScrollChanged<Content: View>: View {
 
     private let axes: Axis.Set
@@ -67,7 +66,6 @@ public struct ScrollViewWithOnScrollChanged<Content: View>: View {
 
 #if DEBUG
 
-@available(iOS 14, macOS 11, *)
 struct ScrollViewWithOnScrollChanged_Previews: PreviewProvider {
 
     private struct Demo: View {

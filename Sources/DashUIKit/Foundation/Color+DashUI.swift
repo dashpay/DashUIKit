@@ -20,12 +20,10 @@ import SwiftUI
 import UIKit
 #endif
 
-@available(iOS 14, macOS 10.15, *)
 public extension Color {
     static var dash: DashColors.Type { DashColors.self }
 }
 
-@available(iOS 14, macOS 10.15, *)
 public enum DashColors {
 
     // MARK: Text
@@ -307,7 +305,6 @@ public enum DashColors {
     }
 }
 
-@available(iOS 14, macOS 10.15, *)
 private extension DashColors {
     static func dashAsset(_ name: String) -> Color {
         Color(name, bundle: .module)

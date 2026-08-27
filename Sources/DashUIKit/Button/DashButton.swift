@@ -17,7 +17,6 @@
 
 import SwiftUI
 
-@available(iOS 14, macOS 10.15, *)
 public enum DashButtonSize: Sendable {
     case large, medium, small, extraSmall
 
@@ -67,7 +66,6 @@ public enum DashButtonSize: Sendable {
     }
 }
 
-@available(iOS 14, macOS 10.15, *)
 public enum DashButtonStyle {
     case filledBlue, filledRed, strokeGray, tintedBlue, tintedGray, plainBlue, plainBlack, plainRed, filledWhiteBlue, tintedWhite, plainWhite
 
@@ -120,7 +118,6 @@ public enum DashButtonStyle {
     }
 }
 
-@available(iOS 14, macOS 11, *)
 public struct DashButton: View {
 
     public var text: String? = "Label"
@@ -216,7 +213,6 @@ public struct DashButton: View {
 
 #if DEBUG
 
-@available(iOS 17, macOS 14, *)
 private let previewButtonSizes: [DashButtonSize] = [
     .large,
     .medium,
@@ -224,7 +220,6 @@ private let previewButtonSizes: [DashButtonSize] = [
     .extraSmall,
 ]
 
-@available(iOS 17, macOS 14, *)
 private extension DashButtonSize {
     var previewTitle: String {
         switch self {
@@ -236,7 +231,6 @@ private extension DashButtonSize {
     }
 }
 
-@available(iOS 17, macOS 14, *)
 private extension DashButtonStyle {
     var previewTitle: String {
         switch self {
@@ -264,7 +258,6 @@ private extension DashButtonStyle {
     }
 }
 
-@available(iOS 17, macOS 14, *)
 private struct DashButtonStylePreview: View {
     let style: DashButtonStyle
 
@@ -313,7 +306,6 @@ private struct DashButtonStylePreview: View {
     }
 }
 
-@available(iOS 17, macOS 14, *)
 #Preview("Example") {
     VStack {
         DashButton(
@@ -335,57 +327,46 @@ private struct DashButtonStylePreview: View {
     .padding(.horizontal)
 }
 
-@available(iOS 17, macOS 14, *)
 #Preview("Filled Blue") {
     DashButtonStylePreview(style: .filledBlue)
 }
 
-@available(iOS 17, macOS 14, *)
 #Preview("Filled Red") {
     DashButtonStylePreview(style: .filledRed)
 }
 
-@available(iOS 17, macOS 14, *)
 #Preview("Stroke Gray") {
     DashButtonStylePreview(style: .strokeGray)
 }
 
-@available(iOS 17, macOS 14, *)
 #Preview("Tinted Blue") {
     DashButtonStylePreview(style: .tintedBlue)
 }
 
-@available(iOS 17, macOS 14, *)
 #Preview("Tinted Gray") {
     DashButtonStylePreview(style: .tintedGray)
 }
 
-@available(iOS 17, macOS 14, *)
 #Preview("Plain Blue") {
     DashButtonStylePreview(style: .plainBlue)
 }
 
-@available(iOS 17, macOS 14, *)
 #Preview("Plain Black") {
     DashButtonStylePreview(style: .plainBlack)
 }
 
-@available(iOS 17, macOS 14, *)
 #Preview("Plain Red") {
     DashButtonStylePreview(style: .plainRed)
 }
 
-@available(iOS 17, macOS 14, *)
 #Preview("Filled White Blue") {
     DashButtonStylePreview(style: .filledWhiteBlue)
 }
 
-@available(iOS 17, macOS 14, *)
 #Preview("Tinted White") {
     DashButtonStylePreview(style: .tintedWhite)
 }
 
-@available(iOS 17, macOS 14, *)
 #Preview("Plain White") {
     DashButtonStylePreview(style: .plainWhite)
 }

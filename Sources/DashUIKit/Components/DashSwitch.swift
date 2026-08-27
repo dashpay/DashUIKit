@@ -20,7 +20,6 @@ import SwiftUI
 
 // TODO: Add a custom DashToggleStyle using switchThumbFill / switchTrackFillOff /
 // switchTrackFillOffDisabled tokens for full pixel-exact fidelity when needed.
-@available(iOS 14, *)
 public struct DashSwitch: View {
 
     @Binding private var isOn: Bool
@@ -30,21 +29,14 @@ public struct DashSwitch: View {
     }
 
     public var body: some View {
-        if #available(iOS 15, *) {
-            Toggle("", isOn: $isOn)
-                .labelsHidden()
-                .tint(Color.dash.switchTrackFillOn as Color?)
-        } else {
-            Toggle("", isOn: $isOn)
-                .labelsHidden()
-                .accentColor(Color.dash.switchTrackFillOn)
-        }
+        Toggle("", isOn: $isOn)
+            .labelsHidden()
+            .tint(Color.dash.switchTrackFillOn as Color?)
     }
 }
 
 #if DEBUG
 
-@available(iOS 17, *)
 #Preview {
     @Previewable @State var on = true
     VStack(spacing: 20) {

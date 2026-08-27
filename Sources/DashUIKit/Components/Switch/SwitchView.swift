@@ -7,7 +7,6 @@
 
 import SwiftUI
 
-@available(iOS 14, macOS 11, *)
 public struct SwitchView: View {
 
     private struct Constants {
@@ -43,19 +42,9 @@ public struct SwitchView: View {
         .animation(.easeInOut(duration: Constants.animationDuration), value: isOn)
         .contentShape(Rectangle())
         .onTapGesture { isOn.toggle() }
-        .accessibilityAddTraits(toggleTrait)
+        .accessibilityAddTraits(.isToggle)
         .accessibilityValue(Text(isOn ? Constants.onValue : Constants.offValue))
         .accessibilityAction { isOn.toggle() }
-    }
-
-    /// `.isToggle` is iOS 17, and this component must stay usable on iOS 14, so the
-    /// older path keeps the button trait.
-    private var toggleTrait: AccessibilityTraits {
-        if #available(iOS 17, macOS 14, *) {
-            return .isToggle
-        } else {
-            return .isButton
-        }
     }
 
     private var trackFill: Color {
@@ -70,7 +59,6 @@ public struct SwitchView: View {
 
 #if DEBUG
 
-@available(iOS 17, macOS 14, *)
 #Preview("States") {
     VStack(alignment: .leading, spacing: 20) {
         SwitchView(isOn: .constant(true))
@@ -81,7 +69,6 @@ public struct SwitchView: View {
     .padding()
 }
 
-@available(iOS 17, macOS 14, *)
 #Preview("Interactive") {
     @Previewable @State var isOn = false
     SwitchView(isOn: $isOn)

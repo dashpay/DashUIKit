@@ -6,7 +6,7 @@ Status, progress, and notification visuals.
 
 ## Toast
 
-File `Components/Toast.swift` · `@available(iOS 14, macOS 11, *)` · **UIKit only**
+File `Components/Toast.swift` · **UIKit only**
 (`#if canImport(UIKit)`)
 
 A blurred, rounded toast: leading status icon, message, and an optional dismiss (✕)
@@ -36,7 +36,7 @@ responsibility (e.g. overlay it and drive visibility yourself).
 
 ## SystemMessageView
 
-File `Components/SystemMessageView.swift` · `@available(iOS 14, macOS 11, *)`
+File `Components/SystemMessageView.swift`
 
 An icon-led system banner with optional subtitle, up to two action buttons, and an
 optional close button. The default icon is the bundled `warning_triangle` asset, and the
@@ -59,7 +59,7 @@ one or two of them.
 
 ## LoadingIllustration / LoadingSpinner
 
-File `Components/Illustrations/LoadingIllustration.swift` · `@available(iOS 14, macOS 11, *)`
+File `Components/Illustrations/LoadingIllustration.swift`
 
 `LoadingSpinner` is an iOS-style activity indicator built from `spokeCount` capsules in a
 ring. The spokes are static; a bright "head" steps clockwise while the others fade
@@ -84,7 +84,7 @@ Defaults: `size: 61.73`, `color: LoadingSpinner.defaultColor` (DS blue), `contai
 ## SuccessIllustration / ErrorIllustration
 
 Files `Components/Illustrations/SuccessIllustration.swift`,
-`Components/Illustrations/ErrorIllustration.swift` · `@available(iOS 14, macOS 11, *)`
+`Components/Illustrations/ErrorIllustration.swift`
 
 90×90 circular status badges — a green circle with a checkmark, and a red circle with an
 ✕ (both from bundled assets). No parameters.
@@ -98,7 +98,7 @@ ErrorIllustration()
 
 ## InfoRoundIcon
 
-File `Components/Icons/InfoRoundIcon.swift` · `@available(iOS 14, macOS 11, *)` · public
+File `Components/Icons/InfoRoundIcon.swift` · public
 
 A code-drawn round "i" — a filled disc with a white glyph — for the "there is more to say
 about this" affordance. Geometry is normalized from a 19×19 SVG, so stem and dot keep
@@ -117,7 +117,7 @@ follow the palette instead of a baked-in hex. `MenuItem` renders it for
 
 ## XmarkIcon
 
-File `Components/Icons/XmarkIcon.swift` · `@available(iOS 14, macOS 11, *)` · public
+File `Components/Icons/XmarkIcon.swift` · public
 
 A code-drawn "✕" close icon (a `Shape` with two round-capped diagonals, mirroring a 9×9
 SVG), so it scales cleanly to any size without an asset. Used by `Toast`'s dismiss button.
@@ -136,7 +136,7 @@ XmarkIcon(size: 24, color: .white, lineWidth: 2)
 
 ## CheckmarkIcon
 
-File `Components/Icons/CheckmarkIcon.swift` · `@available(iOS 14, macOS 11, *)` · public
+File `Components/Icons/CheckmarkIcon.swift` · public
 
 A code-drawn "✓" selection mark (a `Shape` stroking the polyline of a 15×12 SVG, round
 caps and joins). Backs `MenuItemAccessory.selection`.
@@ -154,7 +154,7 @@ CheckmarkIcon(size: 24, color: .white, lineWidth: 3)
 
 ## ChevronIcon
 
-File `Components/Icons/ChevronIcon.swift` · `@available(iOS 14, macOS 11, *)` · public
+File `Components/Icons/ChevronIcon.swift` · public
 
 A code-drawn chevron, in any of the four directions (a `Shape` stroking the polyline of a
 7×12 SVG, round caps and joins). `ConverterCard` puts one on every row that carries an

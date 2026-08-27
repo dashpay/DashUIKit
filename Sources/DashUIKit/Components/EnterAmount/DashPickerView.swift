@@ -17,14 +17,12 @@
 
 import SwiftUI
 
-@available(iOS 14, macOS 11, *)
 private enum Layout {
     static let hPadding: CGFloat = 6
     static let vPadding: CGFloat = 3
     static let cornerRadius: CGFloat = 6
 }
 
-@available(iOS 14, macOS 11, *)
 public struct DashPickerView<Option: Hashable>: View {
 
     public let options: [Option]
@@ -63,7 +61,6 @@ public struct DashPickerView<Option: Hashable>: View {
 
 #if DEBUG
 
-@available(iOS 17, macOS 14, *)
 #Preview {
     DashPickerView(
         options: ["US$", "DASH", "BTC"],

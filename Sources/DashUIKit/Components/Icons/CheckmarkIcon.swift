@@ -27,7 +27,6 @@ import SwiftUI
 /// The default colour is `Color.dash.blue`, which is the `#008DE4` the SVG
 /// strokes with; naming the token rather than the hex keeps it following the
 /// palette.
-@available(iOS 14, macOS 11, *)
 public struct CheckmarkIcon: View {
     public var size: CGFloat = 15
     public var color: Color = Color.dash.blue
@@ -57,7 +56,6 @@ public struct CheckmarkIcon: View {
 
 /// The tick polyline, normalized from the 15×12 source viewBox so it keeps its
 /// proportions at any size.
-@available(iOS 14, macOS 11, *)
 private struct CheckmarkShape: Shape {
     private static let viewBox = CGSize(width: 15, height: 12)
 
@@ -88,7 +86,6 @@ private struct CheckmarkShape: Shape {
 
 #if DEBUG
 
-@available(iOS 17, macOS 14, *)
 #Preview {
     VStack(spacing: 24) {
         CheckmarkIcon()

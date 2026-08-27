@@ -21,7 +21,6 @@ import UIKit
 
 // MARK: - BackgroundBlurView
 
-@available(iOS 14, *)
 struct BackgroundBlurView: UIViewRepresentable {
     func makeUIView(context: Context) -> UIVisualEffectView {
         UIVisualEffectView(effect: UIBlurEffect(style: .systemUltraThinMaterialDark))
@@ -42,7 +41,6 @@ struct BackgroundBlurView: UIViewRepresentable {
 ///   toast-success.imageset
 ///   toast-copied.imageset
 ///   toast-loading.imageset   (optional — `loading` uses `LoadingSpinner`)
-@available(iOS 14, macOS 11, *)
 public enum ToastStyle {
     case warning, info, error, success, copied, loading, noInternet
 
@@ -64,7 +62,6 @@ public enum ToastStyle {
 
 // MARK: - Toast
 
-@available(iOS 14, macOS 11, *)
 public struct Toast: View {
 
     private let style: ToastStyle
@@ -138,7 +135,6 @@ public struct Toast: View {
 
 #if DEBUG
 
-@available(iOS 17, macOS 14, *)
 #Preview {
     VStack(spacing: 12) {
         Toast(style: .warning, message: "Sgome coins are not available", onDismiss: {})

@@ -5,7 +5,8 @@ let package = Package(
     name: "DashUIKit",
     defaultLocalization: "en",
     platforms: [
-        .iOS(.v14)
+        .iOS(.v18),
+        .macOS(.v15)
     ],
     products: [
         .library(name: "DashUIKit", targets: ["DashUIKit"]),

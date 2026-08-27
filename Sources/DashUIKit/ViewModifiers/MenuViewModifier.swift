@@ -17,7 +17,6 @@
 
 import SwiftUI
 
-@available(iOS 14, macOS 11, *)
 public struct MenuViewModifier: ViewModifier {
     var shadowRadius: CGFloat
     var innerPadding: CGFloat

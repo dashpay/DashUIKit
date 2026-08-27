@@ -26,7 +26,6 @@ import SwiftUI
 /// The amount is a raw duff value (`Int64`, 10⁸ per Dash) rendered via `DashAmount`, mirroring
 /// `ConverterCardItem.dashBalance`. Icons are `DashIconSource` (asset in the DashUIKit bundle, an
 /// SF Symbol, or a runtime `UIImage`); pass `iconView` for a custom / remotely-loaded main icon.
-@available(iOS 14, macOS 11, *)
 public struct TransactionView: View {
 
     private enum Layout {
@@ -238,7 +237,6 @@ public struct TransactionView: View {
 
 #if DEBUG
 
-@available(iOS 17, macOS 14, *)
 #Preview("Received") {
     TransactionView(
         icon: .system("arrow.down.circle.fill"),
@@ -252,7 +250,6 @@ public struct TransactionView: View {
     .background(Color.dash.primaryBackground)
 }
 
-@available(iOS 17, macOS 14, *)
 #Preview("Sent + badge") {
     TransactionView(
         icon: .system("arrow.up.circle.fill"),
@@ -268,7 +265,6 @@ public struct TransactionView: View {
     .background(Color.dash.primaryBackground)
 }
 
-@available(iOS 17, macOS 14, *)
 #Preview("Grouped set") {
     TransactionView(
         icon: .system("circle.grid.2x2.fill"),
@@ -282,7 +278,6 @@ public struct TransactionView: View {
     .background(Color.dash.primaryBackground)
 }
 
-@available(iOS 17, macOS 14, *)
 #Preview("Internal transfer — amount accessory") {
     TransactionView(
         icon: .system("arrow.forward.circle.fill"),
@@ -297,7 +292,6 @@ public struct TransactionView: View {
     .background(Color.dash.primaryBackground)
 }
 
-@available(iOS 17, macOS 14, *)
 #Preview("Locked reward") {
     TransactionView(
         icon: DashIcon.Transaction.mining.source,

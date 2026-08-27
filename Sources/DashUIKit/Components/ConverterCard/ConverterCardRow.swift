@@ -46,7 +46,6 @@ struct ConverterRowHeightKey: PreferenceKey {
 /// The chrome swallows touches by default: a row is display-only, and the badge drawn over the
 /// seam is the card's only control. A row that carries its own action opts back in with
 /// `isInteractive` — without it the button inside the content would never see the tap.
-@available(iOS 14, macOS 11, *)
 struct ConverterCardRow<Content: View>: View {
     let slot: ConverterRowSlot
     var isInteractive: Bool = false

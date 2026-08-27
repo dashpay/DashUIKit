@@ -22,14 +22,12 @@ import UIKit
 public typealias UIImage = Never
 #endif
 
-@available(iOS 14, macOS 11, *)
 public enum DashIconSource {
     case system(_ name: String)
     case custom(_ name: String, bundle: Bundle? = nil)
     case uiImage(_ image: UIImage)
 }
 
-@available(iOS 14, macOS 11, *)
 public extension Image {
     /// Resolves a Dash icon source into a plain `Image`. The caller applies all
     /// styling (`.resizable()`, `.foregroundStyle()`, sizing, etc.).

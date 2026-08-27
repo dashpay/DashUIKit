@@ -22,7 +22,6 @@ import SwiftUI
 /// Trailing balance for the convert source row: a symbol-free Dash amount followed by the Dash
 /// symbol, with the fiat value beneath. Both strings come from the view model
 /// (`dashBalanceFormatted` / `dashBalanceFiat`); pass `fiat: nil` to hide the fiat line.
-@available(iOS 14, macOS 11, *)
 public struct DashBalanceView: View {
     /// Symbol-free formatted balance, e.g. "1.5".
     public let balance: String
@@ -63,7 +62,6 @@ public struct DashBalanceView: View {
 
 #if DEBUG
 
-@available(iOS 17, macOS 14, *)
 #Preview {
     VStack(spacing: 16) {
         DashBalanceView(balance: "1.5", fiat: "$ 150.00")

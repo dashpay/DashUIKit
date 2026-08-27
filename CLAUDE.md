@@ -10,24 +10,23 @@ the host passes in.
 - Assets live in `Sources/DashUIKit/Resources/Media.xcassets` and are reached via
   `Bundle.module` / `Bundle.dashUIKit`.
 
-## ⚠️ Hard constraint: must support iOS 14
+## Deployment target: iOS 18
 
-**This library must remain available on iOS 14.** The package deployment target is
-`iOS(.v14)` (see `Package.swift`) and this is non-negotiable — every public component
-must be usable from an iOS 14 host.
+The package targets **iOS 18 / macOS 15** (see `Package.swift`), matching dashwallet-ios,
+the only consumer. Everything SwiftUI shipped up to iOS 17 — `@FocusState`,
+`presentationDetents`, `presentationBackground`, the `#Preview` macro, `.isToggle` — is
+available unconditionally, so components carry no `@available` annotation and no fallback
+branch for it.
 
 When writing or changing code:
 
-- Annotate public API with `@available(iOS 14, macOS 11, *)` (or `macOS 10.15` for
-  Foundation-level token types). **Do not** make a component's *minimum* availability
-  higher than iOS 14.
-- If you need a SwiftUI API introduced after iOS 14 (e.g. `@FocusState` 15,
-  `presentationDetents` 16, `#Preview` macro 17), **gate it with `if #available(...)`
-  and provide an iOS 14 fallback path** — never raise the whole component's floor.
-  See `SearchBar` (15+ focus path + 14 legacy path), `BottomSheet` / `selfSizingSheet`
-  (16+ detents, no-op below), and `AddressFieldView` (17 axis field + older fallback).
-- It is fine for `#Preview`-only code to require iOS 17 — previews are `#if DEBUG` and
-  never ship — but the component itself must still build and run on iOS 14.
+- **Do not** add `@available(iOS …)` for anything at or below the floor; the package
+  declares it once. Annotate only what genuinely needs a *higher* version than the
+  floor, and then gate it with `if #available(...)` plus a path that works below it —
+  `selfSizingSheet` does this for the iOS 26 corner styling (`#unavailable(iOS 26.0)`).
+- Raising the floor again is a package-level decision, not a per-component one. If a
+  component cannot work at the declared floor, say so in review rather than annotating
+  around it.
 
 ## Where things are
 
@@ -56,9 +55,8 @@ Sources/DashUIKit/
   or `Font.dash.subhead` when you only need the font. Tokens defined in `DashTextStyle.swift`.
 - **Icons:** pass a `DashIconSource` (`.system` / `.custom(name, bundle:)` / `.uiImage`) and
   render with `Image(dash: source)`. Custom assets resolve from `.dashUIKit`/`.module`.
-- **Availability:** annotate public API with `@available(iOS 14, macOS 11, *)` (or higher only
-  when a newer SwiftUI feature requires it, with an iOS 14 fallback path — see `SearchBar`,
-  `BottomSheet`).
+- **Availability:** don't annotate. The floor is declared in `Package.swift`; annotate only
+  an API that needs something *newer* than it, and gate that with `if #available(...)`.
 - **UIKit-only files** are wrapped in `#if canImport(UIKit)` (e.g. `SearchBar`, `Toast`,
   `AddressFieldView`, `DashSwitch`).
 - **Localization:** user-facing strings use `NSLocalizedString(_, bundle: .module, comment:)`.
@@ -68,8 +66,7 @@ Sources/DashUIKit/
 ## Build / preview
 
 - This is a plain SwiftPM library — `swift build` compiles it; there is no app target.
-- Develop visually with Xcode SwiftUI **#Previews** (open a file, use the canvas). Previews
-  require iOS 17 for the `#Preview` macro; older `PreviewProvider` previews work back further.
+- Develop visually with Xcode SwiftUI **#Previews** (open a file, use the canvas).
 
 ## Component catalog
 
