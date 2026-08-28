@@ -101,4 +101,60 @@ final class NumericKeyboardLocaleSupportTests: XCTestCase {
         XCTAssertEqual(afterGroupingSeparator, "1234")
         XCTAssertEqual(afterDelete, "123")
     }
+
+    func testTypedCharacterMapsToTheKeyTheKeypadWouldSend() {
+        let enUS = locale("en_US")
+        XCTAssertEqual(NumericKeyboardLocaleSupport.key(forTyped: "0", locale: enUS), "0")
+        XCTAssertEqual(NumericKeyboardLocaleSupport.key(forTyped: "9", locale: enUS), "9")
+        XCTAssertNil(NumericKeyboardLocaleSupport.key(forTyped: "a", locale: enUS))
+        XCTAssertNil(NumericKeyboardLocaleSupport.key(forTyped: "-", locale: enUS))
+        XCTAssertNil(NumericKeyboardLocaleSupport.key(forTyped: " ", locale: enUS))
+    }
+
+    func testTypedDecimalKeyFollowsTheLocale() {
+        XCTAssertEqual(NumericKeyboardLocaleSupport.key(forTyped: ".", locale: locale("en_US")), ".")
+        XCTAssertEqual(NumericKeyboardLocaleSupport.key(forTyped: ",", locale: locale("de_DE")), ",")
+
+        // Neither separator in this locale (`de_CH` groups with "’"), so the
+        // key still means "decimal" rather than being dropped.
+        let deCH = locale("de_CH")
+        XCTAssertNotEqual(deCH.groupingSeparator, ",")
+        XCTAssertEqual(NumericKeyboardLocaleSupport.key(forTyped: ",", locale: deCH), ".")
+    }
+
+    /// The grouping separator is handed through unchanged so `applyKeyPress`
+    /// can drop it — typing "1,000" in `en_US` must not become "1.000".
+    func testTypingAGroupedAmountKeepsItsMagnitude() {
+        let locale = locale("en_US")
+        var value = ""
+
+        for character in "1,000.5" {
+            guard let key = NumericKeyboardLocaleSupport.key(forTyped: character, locale: locale) else { continue }
+            value = NumericKeyboardLocaleSupport.applyKeyPress(
+                value: value,
+                key: key,
+                showDecimalSeparator: true,
+                locale: locale
+            )
+        }
+
+        XCTAssertEqual(value, "1000.5")
+    }
+
+    func testTypingAGroupedAmountKeepsItsMagnitudeInAGermanLocale() {
+        let locale = locale("de_DE")
+        var value = ""
+
+        for character in "1.000,5" {
+            guard let key = NumericKeyboardLocaleSupport.key(forTyped: character, locale: locale) else { continue }
+            value = NumericKeyboardLocaleSupport.applyKeyPress(
+                value: value,
+                key: key,
+                showDecimalSeparator: true,
+                locale: locale
+            )
+        }
+
+        XCTAssertEqual(value, "1000,5")
+    }
 }

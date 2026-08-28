@@ -18,10 +18,24 @@
 import Foundation
 import SwiftUI
 
-enum NumericKeyboardLocaleSupport {
-    static func decimalSeparator(for locale: Locale) -> String {
+/// The keypad's input rules, shared by the on-screen buttons and by hosts that
+/// route a physical keyboard into the same value.
+///
+/// `NumericKeyboardView` renders buttons and installs no text responder, so a
+/// host that wants hardware-keyboard support has to supply its own responder.
+/// It must not reimplement the rules while doing so: `applyKeyPress` owns the
+/// locale-sensitive parts (which separator is decimal, which is grouping and
+/// therefore dropped, single decimal separator, delete), and
+/// `key(forTyped:locale:)` translates a typed character into the key the
+/// on-screen keypad would have sent.
+public enum NumericKeyboardLocaleSupport {
+    public static func decimalSeparator(for locale: Locale) -> String {
         locale.decimalSeparator ?? "."
     }
+
+    /// The key the delete button sends; a host's Backspace handling passes this
+    /// to `applyKeyPress`.
+    public static var deleteKey: String { Layout.deleteKey }
 
     static func rows(showDecimalSeparator: Bool, locale: Locale) -> [[String]] {
         let lastRow: [String]
@@ -39,7 +53,33 @@ enum NumericKeyboardLocaleSupport {
         ]
     }
 
-    static func applyKeyPress(
+    /// Translates a character typed on a physical keyboard into the key the
+    /// on-screen keypad would have sent, or `nil` when the keypad has no such
+    /// key. Feed the result to `applyKeyPress`.
+    ///
+    /// A hardware decimal key stands for whatever this locale's decimal
+    /// separator is — a German layout emits "," and a US layout ".". The one
+    /// character deliberately passed through unchanged is the locale's
+    /// grouping separator, because dropping it is `applyKeyPress`'s rule to
+    /// apply, not this method's to duplicate.
+    public static func key(forTyped character: Character, locale: Locale) -> String? {
+        if let digit = character.wholeNumberValue, (0 ... 9).contains(digit) {
+            return String(digit)
+        }
+
+        guard character == "." || character == "," else { return nil }
+
+        let typed = String(character)
+        let groupingSeparator = locale.groupingSeparator ?? ","
+        let decimalSeparator = decimalSeparator(for: locale)
+
+        if typed == groupingSeparator, groupingSeparator != decimalSeparator {
+            return typed
+        }
+        return decimalSeparator
+    }
+
+    public static func applyKeyPress(
         value: String,
         key: String,
         showDecimalSeparator: Bool,
