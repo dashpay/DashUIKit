@@ -75,7 +75,14 @@ public struct BottomSheet<Content: View>: View {
 
         Group {
             if fillsHeight {
-                sheet.edgesIgnoringSafeArea(.bottom)
+                // `.container` rather than every region: the point is to let the
+                // sheet's background run under the home indicator, and
+                // `edgesIgnoringSafeArea` — like `ignoresSafeArea(.all)` — also
+                // swallows `.keyboard`, which switches off SwiftUI's keyboard
+                // avoidance for the whole sheet. Hosts with a text field then
+                // find their content pinned under the keyboard with no way to
+                // scroll to it.
+                sheet.ignoresSafeArea(.container, edges: .bottom)
             } else {
                 // Publish the natural content height for `.selfSizingSheet()`. The bottom safe area is
                 // intentionally NOT ignored here, so the measured height excludes the home-indicator
