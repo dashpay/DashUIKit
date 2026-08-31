@@ -39,8 +39,12 @@ struct ConverterArrowBadge: View {
                     badge(iconName: "diagonal-up-down", iconRotation: rotation)
                 }
                 .buttonStyle(.plain)
+                .accessibilityLabel(Text(NSLocalizedString("Swap direction", bundle: .module, comment: "DashUIKit")))
             } else {
+                // Decorative — the card's row order already conveys the direction,
+                // and without this the icon announces its asset name.
                 badge(iconName: "arrow-down", iconRotation: 0)
+                    .accessibilityHidden(true)
             }
         }
         .frame(height: 35)

@@ -104,6 +104,7 @@ public struct Toast: View {
                         .background(Circle().fill(Color.dash.whiteAlpha10))
                 }
                 .buttonStyle(.plain)
+                .accessibilityLabel(Text(NSLocalizedString("Close", bundle: .module, comment: "DashUIKit")))
             }
         }
         .padding(.leading, 12)

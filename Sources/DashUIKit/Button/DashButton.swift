@@ -133,6 +133,10 @@ public struct DashButton: View {
 
     public var size: DashButtonSize = .large
     public var style: DashButtonStyle = .filledBlue
+    /// VoiceOver label for a button whose content doesn't announce itself —
+    /// an icon-only button has no text, so without this it reads as the icon's
+    /// asset name. Ignored when nil; `text` then remains the announcement.
+    public var accessibilityLabel: String? = nil
     public var action: () -> Void = {}
 
     public init(
@@ -144,6 +148,7 @@ public struct DashButton: View {
         fillsWidth: Bool = false,
         size: DashButtonSize,
         style: DashButtonStyle,
+        accessibilityLabel: String? = nil,
         action: @escaping () -> Void = {}
     ) {
         self.text = text
@@ -154,10 +159,20 @@ public struct DashButton: View {
         self.fillsWidth = fillsWidth
         self.size = size
         self.style = style
+        self.accessibilityLabel = accessibilityLabel
         self.action = action
     }
 
     public var body: some View {
+        if let accessibilityLabel {
+            coreButton
+                .accessibilityLabel(Text(accessibilityLabel))
+        } else {
+            coreButton
+        }
+    }
+
+    private var coreButton: some View {
         Button(action: action) {
             styledContent
         }
