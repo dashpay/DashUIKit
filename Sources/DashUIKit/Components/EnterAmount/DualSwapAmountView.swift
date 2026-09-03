@@ -78,7 +78,14 @@ internal struct DualSwapAmountView: View {
         .accessibilityAction { onSwap() }
     }
 
-    /// Both amounts with their currency names, in visual order (primary first).
+    /// Both amounts with their currency names, primary first.
+    ///
+    /// That is the logical order, not necessarily the visual one: the animated
+    /// layout offsets the A and B rows past each other, so with
+    /// `isPrimaryLarge == false` the secondary amount is the one drawn on top.
+    /// Each amount carries its own currency name, so the announcement stays
+    /// unambiguous either way.
+    ///
     /// The B row's error message stands in for the secondary amount when present,
     /// mirroring what the view draws.
     private var accessibilityDescription: String {
