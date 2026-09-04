@@ -177,6 +177,8 @@ public struct SwapAmountView: View {
                         .frame(width: 10, height: 5)
                 }
                 .buttonStyle(.plain)
+                .accessibilityLabel(Text(NSLocalizedString("Select currency", bundle: .module, comment: "DashUIKit")))
+                .accessibilityValue(Text(currencyAccessibilityValue))
             }
         }
         .scaleToFitWidth()
@@ -243,6 +245,13 @@ public struct SwapAmountView: View {
         guard let s = secondaryText, !s.isEmpty else { return "0" }
         if let first = s.first, first == "." || first == "," { return "0" + s }
         return s
+    }
+
+    /// What the currency picker currently holds, as VoiceOver reads it:
+    /// the row's symbol, or "Dash" when the row shows the Dash logo instead.
+    private var currencyAccessibilityValue: String {
+        if let sym = symbol, !sym.isEmpty { return sym }
+        return showDashLogo ? "Dash" : ""
     }
 }
 
@@ -393,6 +402,8 @@ private struct AnimatedSwapLayout: View {
                             .frame(width: chevronSize.width, height: chevronSize.height)
                     }
                     .buttonStyle(.plain)
+                    .accessibilityLabel(Text(NSLocalizedString("Select currency", bundle: .module, comment: "DashUIKit")))
+                    .accessibilityValue(Text(secondaryCurrencyAccessibilityValue))
                 }
             }
             .foregroundColor(fontPrimary ? Color.dash.tertiaryText : Color.dash.primaryText)
@@ -476,6 +487,13 @@ private struct AnimatedSwapLayout: View {
         guard let s = secondaryText, !s.isEmpty else { return "0" }
         if let first = s.first, first == "." || first == "," { return "0" + s }
         return s
+    }
+
+    /// What the B row's currency picker currently holds, as VoiceOver reads it:
+    /// the row's symbol, or "Dash" when the row shows the Dash logo instead.
+    private var secondaryCurrencyAccessibilityValue: String {
+        if let sym = secondarySymbol, !sym.isEmpty { return sym }
+        return showSecondaryDashLogo ? "Dash" : ""
     }
 }
 
@@ -660,6 +678,9 @@ private struct SwapAmountAnimatedPreview: View {
             )
             .contentShape(Rectangle())
             .onTapGesture { isPrimarySelected.toggle() }
+            .accessibilityElement(children: .combine)
+            .accessibilityAddTraits(.isButton)
+            .accessibilityAction { isPrimarySelected.toggle() }
 
             Button("Tap to swap") { isPrimarySelected.toggle() }
                 .dashFont(.footnote)

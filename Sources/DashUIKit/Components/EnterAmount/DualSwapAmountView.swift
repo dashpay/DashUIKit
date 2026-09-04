@@ -64,6 +64,39 @@ internal struct DualSwapAmountView: View {
         .contentShape(Rectangle())
         .onTapGesture { onSwap() }
         .dashPasteContextMenu(onPaste: onPaste)
+        // The swap lives on a bare tap gesture, so VoiceOver gets an explicit
+        // element: one button announcing both amounts, activated to swap. The
+        // chevron button inside survives `.combine` as a custom action.
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel(Text(accessibilityDescription))
+        .accessibilityAddTraits(.isButton)
+        .accessibilityHint(Text(NSLocalizedString(
+            "Switches which currency you enter the amount in",
+            bundle: .module,
+            comment: "DashUIKit"
+        )))
+        .accessibilityAction { onSwap() }
+    }
+
+    /// Both amounts with their currency names, primary first.
+    ///
+    /// That is the logical order, not necessarily the visual one: the animated
+    /// layout offsets the A and B rows past each other, so with
+    /// `isPrimaryLarge == false` the secondary amount is the one drawn on top.
+    /// Each amount carries its own currency name, so the announcement stays
+    /// unambiguous either way.
+    ///
+    /// The B row's error message stands in for the secondary amount when present,
+    /// mirroring what the view draws.
+    private var accessibilityDescription: String {
+        let primary = "\(primaryAmount.isEmpty ? "0" : primaryAmount) \(primaryCurrency.displayName)"
+        let secondary: String
+        if let secondaryErrorMessage {
+            secondary = secondaryErrorMessage
+        } else {
+            secondary = "\(secondaryAmount.isEmpty ? "0" : secondaryAmount) \(secondaryCurrency.displayName)"
+        }
+        return "\(primary), \(secondary)"
     }
 }
 
