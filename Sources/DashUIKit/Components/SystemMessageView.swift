@@ -29,6 +29,10 @@ public struct SystemMessageView: View {
     public let secondaryButtonName: String?
     public let onSecondaryAction: (() -> Void)?
     public let onClose: (() -> Void)?
+    /// Look of the primary action. A filled pill is right when the message
+    /// asks for something; a message that merely points somewhere else reads
+    /// better with `.plainBlue`, which is a link rather than a call to action.
+    public let buttonStyle: DashButtonStyle
     public init(
         title: String,
         subtitle: String? = nil,
@@ -38,8 +42,10 @@ public struct SystemMessageView: View {
         onAction: (() -> Void)? = nil,
         secondaryButtonName: String? = nil,
         onSecondaryAction: (() -> Void)? = nil,
-        onClose: (() -> Void)? = nil
+        onClose: (() -> Void)? = nil,
+        buttonStyle: DashButtonStyle = .filledBlue
     ) {
+        self.buttonStyle = buttonStyle
         self.title = title
         self.subtitle = subtitle
         self.icon = icon
@@ -58,7 +64,7 @@ public struct SystemMessageView: View {
                 .scaledToFit()
                 .frame(width: 30, height: 30)
 
-            VStack(alignment: .leading, spacing: 20) {
+            VStack(alignment: .leading, spacing: isLinkAction ? 6 : 20) {
                 VStack(alignment: .leading, spacing: 0) {
                     Text(title)
                         .dashFont(.subhead)
@@ -78,7 +84,7 @@ public struct SystemMessageView: View {
                             DashUIKit.DashButton(
                                 text: buttonName,
                                 size: .small,
-                                style: .filledBlue,
+                                style: buttonStyle,
                                 action: onAction
                             )
                         }
@@ -91,7 +97,12 @@ public struct SystemMessageView: View {
                             )
                         }
                     }
-                    .padding(.bottom, 14)
+                    // A link belongs against the text it follows: `DashButton`
+                    // pads every style for a tappable pill, which leaves a
+                    // plain label visibly indented from the sentence above it,
+                    // and the 20pt stack gap reads as a gap between sections.
+                    .padding(.horizontal, isLinkAction ? -DashButtonSize.small.hPadding : 0)
+                    .padding(.bottom, isLinkAction ? 4 : 14)
                 }
             }
             .padding(.vertical, 5)
@@ -109,6 +120,17 @@ public struct SystemMessageView: View {
         .padding(10)
         .background(backgroundColor)
         .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+    }
+
+    /// The primary action is a link rather than a pill — it points somewhere
+    /// instead of asking to be pressed, and is spaced accordingly.
+    private var isLinkAction: Bool {
+        switch buttonStyle {
+        case .plainBlue, .plainBlack, .plainRed, .plainWhite:
+            return true
+        default:
+            return false
+        }
     }
 }
 

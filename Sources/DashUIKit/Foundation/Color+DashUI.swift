@@ -260,6 +260,7 @@ public enum DashColors {
     public static var red: Color { dashAsset("Red") }
     public static var redAlpha5: Color { dashAsset("RedAlpha5") }
     public static var redAlpha10: Color { dashAsset("RedAlpha10") }
+    public static var redAlpha20: Color { dashAsset("RedAlpha20") }
 
     // MARK: Tokens / White
 

@@ -41,6 +41,7 @@ and callbacks; they render and report intent. They require `import DashUIKit` an
 | `ConverterCard` | [Lists & rows](lists-and-rows.md#convertercard) |
 | `ConverterCardItem` | [Lists & rows](lists-and-rows.md#convertercarditem) |
 | `ConverterCardRow` | [Lists & rows](lists-and-rows.md#convertercardrow) |
+| `Criteria` (`Criterion`, `CriterionState`) | [Buttons & inputs](buttons-and-inputs.md#criteria) |
 | `CurrencyOption` | [Amount & currency](amount-and-currency.md#currencyoption) |
 | `DashAmount` | [Amount & currency](amount-and-currency.md#dashamount) |
 | `DashBalanceView` | [Amount & currency](amount-and-currency.md#dashbalanceview) |

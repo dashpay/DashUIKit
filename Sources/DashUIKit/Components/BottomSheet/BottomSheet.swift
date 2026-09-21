@@ -67,7 +67,9 @@ public struct BottomSheet<Content: View>: View {
             grabber
                 .frame(maxWidth: .infinity, minHeight: 18, maxHeight: 18, alignment: .center)
 
-            header
+            if hasHeaderContent {
+                header
+            }
 
             contentSection
         }
@@ -120,6 +122,15 @@ public struct BottomSheet<Content: View>: View {
             isCloseButtonEnabled: isCloseButtonEnabled,
             isDismissalEnabled: isDismissalEnabled,
             hasCustomCloseAction: onClose != nil)
+    }
+
+    /// A header with no title, no back button and no close button is 64pt of
+    /// nothing: it pushes the content down, and on a self-sizing sheet that
+    /// blank strip becomes part of the sheet's own measured height. Collapse
+    /// it rather than reserve it. Any one of the three brings it back, and the
+    /// binding means a sheet can gain the header mid-flight.
+    private var hasHeaderContent: Bool {
+        !title.isEmpty || showBackButton || showsCloseButton
     }
 
     private var header: some View {
