@@ -132,13 +132,22 @@ public struct Criteria: View {
     /// same text and no explicit id — would give SwiftUI two rows with one
     /// identity, and updates could land on the wrong one. The first
     /// occurrence keeps its bare `id`, so a row with a stable explicit id
-    /// still animates in place; only later repeats get a suffix.
+    /// still animates in place; a later repeat takes the lowest `#n` suffix
+    /// that is neither another row's own id nor already handed out, so no
+    /// generated key can collide with an explicit one (`["A", "A", "A#1"]`
+    /// renders as `A`, `A#2`, `A#1`).
     private var renderIdentities: [(key: String, item: Criterion)] {
-        var seen: [String: Int] = [:]
+        var used = Set(items.map(\.id))
+        var firstSeen = Set<String>()
         return items.map { item in
-            let count = seen[item.id, default: 0]
-            seen[item.id] = count + 1
-            return (count == 0 ? item.id : "\(item.id)#\(count)", item)
+            if firstSeen.insert(item.id).inserted {
+                return (item.id, item)
+            }
+            var n = 1
+            while used.contains("\(item.id)#\(n)") { n += 1 }
+            let key = "\(item.id)#\(n)"
+            used.insert(key)
+            return (key, item)
         }
     }
 }
