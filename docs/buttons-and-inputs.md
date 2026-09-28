@@ -186,6 +186,47 @@ identical once scaled.
 
 ---
 
+## SimpleSelect
+
+File `Components/SimpleSelect.swift` · `@available(iOS 14, macOS 11, *)`
+
+One option in a short list the user picks from: a title, an optional line saying what picking
+it means, and a card that carries the selection itself. The card *is* the control — there is no
+trailing radio or checkmark — so the description sits inside the hit target.
+
+```swift
+VStack(spacing: 20) {
+    SimpleSelect(
+        title: "Shielded balance",
+        description: "Keeps your username private",
+        isSelected: selection == .shielded,
+        action: { selection = .shielded })
+    SimpleSelect(
+        title: "Dash balance",
+        description: "Funds will be traceable to your username",
+        isSelected: selection == .core,
+        action: { selection = .core })
+}
+```
+
+`init(title: String, description: String? = nil, isSelected: Bool, action: @escaping () -> Void)`
+— stateless: the host owns the selection and passes `isSelected` for each option.
+
+| State | Border | Fill |
+|---|---|---|
+| selected | `blue`, 1.5pt | `blueAlpha5` |
+| unselected | `gray300Alpha30`, 1.5pt | none |
+
+The card takes the full width it is offered (options are compared in a column), has a 16pt
+corner radius and 20 × 12pt padding; the title is `.subheadMedium`, the description `.footnote`
+in `secondaryText`. The whole card is tappable, including an unselected card with no fill.
+VoiceOver reads it as a button, with the selected trait on the chosen option.
+
+For a row with an icon, a trailing value or an explicit radio/checkbox mark, use
+[`RadioButtonRow`](lists-and-rows.md#radiobuttonrow).
+
+---
+
 ## NumericKeyboardView
 
 File `Components/NumericKeyboardView.swift` · `@available(iOS 14, macOS 11, *)`
