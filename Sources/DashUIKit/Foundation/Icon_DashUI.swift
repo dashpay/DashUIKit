@@ -167,6 +167,7 @@ public enum DashIcon {
         case flexa = "menu-flexa"
         case floppyDisk = "menu-floppy-disk"
         case gPay = "menu-g-pay"
+        case identities = "menu-identities"
         case importPrivateKey = "menu-import-private-key"
         case infoRect = "menu-info-rect"
         case invitation = "menu-invitation"
@@ -216,6 +217,7 @@ public enum DashIcon {
         case uphold = "menu-uphold"
         case userSearch = "menu-user-search"
         case usernameVoting = "menu-username-voting"
+        case voting = "menu-voting"
         case wallet = "menu-wallet"
         case zenledger = "menu-zenledger"
     }
