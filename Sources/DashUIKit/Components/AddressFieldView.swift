@@ -26,6 +26,10 @@ private enum Layout {
     static let iconSize: CGFloat = 17
     static let cornerRadius: CGFloat = 16
     static let actionTapArea: CGFloat = 40
+    /// Width of the focus / error ring, drawn hard-edged outside the field —
+    /// Figma's `shadow: 0 0 0 3px`, which is a 3pt spread with no blur and no
+    /// offset.
+    static let ringWidth: CGFloat = 3
 }
 
 @available(iOS 15, macOS 12, *)
@@ -44,6 +48,20 @@ public struct AddressFieldView<Accessory: View>: View {
     /// something that describes the field rather than acts on it; the
     /// controls that act live inside the field itself.
     private let accessory: Accessory
+    /// Lets the host raise and dismiss the keyboard — focus on appear, blur
+    /// before presenting a sheet. The field still owns its `@FocusState`; this
+    /// mirrors it in both directions so the host does not need one. `nil` means
+    /// the field is the only one deciding, which is what every existing caller
+    /// does.
+    private var isFocused: Binding<Bool>?
+    /// Whether the trailing ✕ is offered once there is text. A long address
+    /// needs it; a short field the user can clear by hand does not, and there
+    /// it is only one more thing to hit by accident.
+    private let showsClearButton: Bool
+    /// The content has passed whatever the host validates it against, so the
+    /// field stops asking for attention: the focus ring is dropped. An error
+    /// still overrides it — a name can be well-formed and still refused.
+    private let isAccepted: Bool
 
     @FocusState private var isTextFieldFocused: Bool
 
@@ -56,6 +74,9 @@ public struct AddressFieldView<Accessory: View>: View {
         isDisabled: Bool = false,
         onScanQR: (() -> Void)? = nil,
         onPaste: (() -> Void)? = nil,
+        isFocused: Binding<Bool>? = nil,
+        showsClearButton: Bool = true,
+        isAccepted: Bool = false,
         @ViewBuilder accessory: () -> Accessory
     ) {
         self._text = text
@@ -66,6 +87,9 @@ public struct AddressFieldView<Accessory: View>: View {
         self.isDisabled = isDisabled
         self.onScanQR = onScanQR
         self.onPaste = onPaste
+        self.isFocused = isFocused
+        self.showsClearButton = showsClearButton
+        self.isAccepted = isAccepted
         self.accessory = accessory()
     }
 
@@ -107,12 +131,34 @@ public struct AddressFieldView<Accessory: View>: View {
                 RoundedRectangle(cornerRadius: Layout.cornerRadius)
                     .stroke(borderColor, lineWidth: borderWidth)
             )
+            // Not `.shadow`: with no blur and no offset a shadow lands exactly
+            // under the field and is never seen, and in the focused state the
+            // background is clear, so what little showed would be cast by the
+            // text rather than by the field's outline. A stroke on the outward
+            // inset is the ring the design draws.
+            .overlay(
+                RoundedRectangle(cornerRadius: Layout.cornerRadius + Layout.ringWidth / 2, style: .continuous)
+                    .inset(by: -Layout.ringWidth / 2)
+                    .stroke(ringColor, lineWidth: Layout.ringWidth)
+            )
 
             if let errorText {
                 Text(errorText)
                     .dashFont(.footnote)
                     .foregroundStyle(Color.dash.errorText)
             }
+        }
+        .onAppear {
+            // A host that wants the keyboard up on entry sets its flag before
+            // this field exists, so the mirror below never fires for it.
+            if isFocused?.wrappedValue == true { isTextFieldFocused = true }
+        }
+        .onChange(of: isTextFieldFocused) { focused in
+            if isFocused?.wrappedValue != focused { isFocused?.wrappedValue = focused }
+        }
+        .onChange(of: isFocused?.wrappedValue) { requested in
+            guard let requested, requested != isTextFieldFocused else { return }
+            isTextFieldFocused = requested
         }
     }
 
@@ -130,7 +176,10 @@ public extension AddressFieldView where Accessory == EmptyView {
         errorText: String? = nil,
         isDisabled: Bool = false,
         onScanQR: (() -> Void)? = nil,
-        onPaste: (() -> Void)? = nil
+        onPaste: (() -> Void)? = nil,
+        isFocused: Binding<Bool>? = nil,
+        showsClearButton: Bool = true,
+        isAccepted: Bool = false
     ) {
         self.init(
             text: text,
@@ -141,6 +190,9 @@ public extension AddressFieldView where Accessory == EmptyView {
             isDisabled: isDisabled,
             onScanQR: onScanQR,
             onPaste: onPaste,
+            isFocused: isFocused,
+            showsClearButton: showsClearButton,
+            isAccepted: isAccepted,
             accessory: { EmptyView() })
     }
 }
@@ -197,14 +249,20 @@ extension AddressFieldView {
     private var actionButton: some View {
         Group {
             if text.isEmpty {
-                Button(action: { onScanQR?() }) {
-                    DashIcon.Other.textFieldQR.image
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: Layout.iconSize, height: Layout.iconSize)
+                // Only when there is somewhere for the tap to go. A field for
+                // something that has no QR form — a username, say — passes no
+                // handler, and drawing the glyph anyway offered a control that
+                // did nothing.
+                if let onScanQR {
+                    Button(action: onScanQR) {
+                        DashIcon.Other.textFieldQR.image
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: Layout.iconSize, height: Layout.iconSize)
+                    }
+                    .accessibilityLabel(NSLocalizedString("Scan QR code", bundle: .module, comment: "DashUIKit"))
                 }
-                .accessibilityLabel(NSLocalizedString("Scan QR code", bundle: .module, comment: "DashUIKit"))
-            } else {
+            } else if showsClearButton {
                 Button(action: { text = "" }) {
                     DashIcon.Other.textFieldClear.image
                         .renderingMode(.template)
@@ -216,8 +274,18 @@ extension AddressFieldView {
                 .accessibilityLabel(NSLocalizedString("Clear address", bundle: .module, comment: "DashUIKit"))
             }
         }
-        .frame(width: Layout.actionTapArea, height: Layout.actionTapArea)
+        // The tap area is reserved rather than sized to whichever control is
+        // showing, so the field's width does not shift as the user types. A
+        // field that can never show either control reserves nothing.
+        .frame(
+            width: hasTrailingControl ? Layout.actionTapArea : 0,
+            height: Layout.actionTapArea)
         .contentShape(Rectangle())
+    }
+
+    /// Whether any trailing control can appear in this field's configuration.
+    private var hasTrailingControl: Bool {
+        onScanQR != nil || showsClearButton
     }
 
     // MARK: - Styling
@@ -234,6 +302,17 @@ extension AddressFieldView {
 
     private var borderWidth: CGFloat {
         isFocusedState ? 1 : 0
+    }
+
+    /// The ring around the field, as the design system draws it: red while
+    /// something is wrong, blue while the user is working in the field, and
+    /// nothing once the content has been accepted — at that point the field
+    /// has no more to say and a glow would keep drawing the eye to a question
+    /// already answered.
+    private var ringColor: Color {
+        if hasError { return Color.dash.redAlpha20 }
+        if isFocusedState, !isAccepted { return Color.dash.blueAlpha20 }
+        return .clear
     }
 
     private var isFocusedState: Bool {
@@ -261,6 +340,32 @@ extension AddressFieldView {
         placeholder: "BTC address",
         hasError: false, errorText: nil,
         onScanQR: {}
+    )
+    .padding()
+}
+
+@available(iOS 17, macOS 14, *)
+#Preview("Empty, no scan handler") {
+    // Nothing to scan — a username, a label, a note. No trailing glyph is
+    // drawn, where before an inert QR button was.
+    AddressFieldView(
+        text: .constant(""),
+        label: "Username",
+        placeholder: "Enter a username",
+        hasError: false, errorText: nil
+    )
+    .padding()
+}
+
+@available(iOS 17, macOS 14, *)
+#Preview("Accepted — no ring, no clear button") {
+    AddressFieldView(
+        text: .constant("satoshi"),
+        label: "Username",
+        placeholder: "Enter a username",
+        hasError: false, errorText: nil,
+        showsClearButton: false,
+        isAccepted: true
     )
     .padding()
 }

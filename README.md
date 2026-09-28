@@ -68,7 +68,8 @@ a component already exists before building your own.
 | `DashButton` | Themed button — 4 sizes × 11 styles, icons, loading, full-width | [Buttons & inputs](docs/buttons-and-inputs.md) |
 | `DashSwitch` | DS-tinted toggle | [Buttons & inputs](docs/buttons-and-inputs.md) |
 | `SearchBar` | Search field with animated cancel (iOS 15+) and iOS 14 fallback | [Buttons & inputs](docs/buttons-and-inputs.md) |
-| `AddressFieldView` | Crypto-address text field with QR / clear and error state | [Buttons & inputs](docs/buttons-and-inputs.md) |
+| `AddressFieldView` | Labeled text field (label / field / help text) with optional QR, clear and error state | [Buttons & inputs](docs/buttons-and-inputs.md) |
+| `Criteria` | Requirement check-list — `Criterion` rows in six states | [Buttons & inputs](docs/buttons-and-inputs.md) |
 | `NumericKeyboardView` | Locale-aware on-screen number pad with action button | [Buttons & inputs](docs/buttons-and-inputs.md) |
 | `EnterAmountView` | Amount-entry screen control — single & dual-swap modes | [Amount & currency](docs/amount-and-currency.md) |
 | `SwapAmountView` | Animated primary/secondary amount display | [Amount & currency](docs/amount-and-currency.md) |

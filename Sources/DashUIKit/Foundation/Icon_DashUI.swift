@@ -80,14 +80,20 @@ public enum DashIcon {
     /// come in a plain and a `-purple` variant — the plain one is tinted by
     /// the caller, the purple one carries its own colour.
     public enum Features: String, CaseIterable, DashIconAsset {
+        case friends = "feature-friends"
         case identity = "feature-identity"
         case instant = "feature-instant"
         case platform = "feature-platform"
         case platformPurple = "feature-platform-purple"
+        case profile = "feature-profile"
+        case recovery = "feature-recovery"
+        case selectedList = "feature-selected-list"
         case shield = "feature-shield"
         case shieldPurple = "feature-shield-purple"
         case timer = "feature-timer"
         case timerPurple = "feature-timer-purple"
+        case username = "feature-username"
+        case usernameBlock = "feature-username-block"
     }
 
     // MARK: - Checkbox

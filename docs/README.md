@@ -13,7 +13,7 @@ and callbacks; they render and report intent. They require `import DashUIKit` an
   (`Font.dash.*`, `.dashFont`, `DashTextStyle`), icons (`DashIconSource`, `Image(dash:)`),
   bundle access.
 - **[Buttons & inputs](buttons-and-inputs.md)** — `DashButton`, `DashSwitch`, `SearchBar`,
-  `AddressFieldView`, `NumericKeyboardView`.
+  `AddressFieldView`, `Criteria`, `SimpleSelect`, `NumericKeyboardView`.
 - **[Amount & currency](amount-and-currency.md)** — `EnterAmountView`, `SwapAmountView`,
   `ReceiveEstimateView`, `DashAmount`, `DashBalanceView`, `DashPickerView`,
   `CurrencyOption`.
@@ -41,6 +41,7 @@ and callbacks; they render and report intent. They require `import DashUIKit` an
 | `ConverterCard` | [Lists & rows](lists-and-rows.md#convertercard) |
 | `ConverterCardItem` | [Lists & rows](lists-and-rows.md#convertercarditem) |
 | `ConverterCardRow` | [Lists & rows](lists-and-rows.md#convertercardrow) |
+| `Criteria` (`Criterion`, `CriterionState`) | [Buttons & inputs](buttons-and-inputs.md#criteria) |
 | `CurrencyOption` | [Amount & currency](amount-and-currency.md#currencyoption) |
 | `DashAmount` | [Amount & currency](amount-and-currency.md#dashamount) |
 | `DashBalanceView` | [Amount & currency](amount-and-currency.md#dashbalanceview) |
@@ -63,6 +64,7 @@ and callbacks; they render and report intent. They require `import DashUIKit` an
 | `ScrollViewWithOnScrollChanged` | [Utilities](utilities.md#scrollviewwithonscrollchanged) |
 | `scaleToFitWidth` | [Utilities](utilities.md#scaletofitwidth) |
 | `SearchBar` | [Buttons & inputs](buttons-and-inputs.md#searchbar) |
+| `SimpleSelect` | [Buttons & inputs](buttons-and-inputs.md#simpleselect) |
 | `SuccessIllustration` | [Feedback](feedback.md#successillustration--errorillustration) |
 | `SwapAmountView` | [Amount & currency](amount-and-currency.md#swapamountview) |
 | `SystemMessageView` | [Feedback](feedback.md#systemmessageview) |
