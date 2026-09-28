@@ -64,7 +64,7 @@ public struct SystemMessageView: View {
                 .scaledToFit()
                 .frame(width: 30, height: 30)
 
-            VStack(alignment: .leading, spacing: isLinkAction ? 6 : 20) {
+            VStack(alignment: .leading, spacing: rendersPrimaryLink ? 6 : 20) {
                 VStack(alignment: .leading, spacing: 0) {
                     Text(title)
                         .dashFont(.subhead)
@@ -101,8 +101,8 @@ public struct SystemMessageView: View {
                     // pads every style for a tappable pill, which leaves a
                     // plain label visibly indented from the sentence above it,
                     // and the 20pt stack gap reads as a gap between sections.
-                    .padding(.horizontal, isLinkAction ? -DashButtonSize.small.hPadding : 0)
-                    .padding(.bottom, isLinkAction ? 4 : 14)
+                    .padding(.horizontal, rendersPrimaryLink ? -DashButtonSize.small.hPadding : 0)
+                    .padding(.bottom, rendersPrimaryLink ? 4 : 14)
                 }
             }
             .padding(.vertical, 5)
@@ -131,6 +131,13 @@ public struct SystemMessageView: View {
         default:
             return false
         }
+    }
+
+    /// The link layout only when the link is actually on screen. With a link
+    /// style but no primary button, the row holds just the secondary pill,
+    /// and pulling it out by the link's padding would misalign it.
+    private var rendersPrimaryLink: Bool {
+        isLinkAction && buttonName != nil && onAction != nil
     }
 }
 

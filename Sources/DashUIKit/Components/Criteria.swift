@@ -72,7 +72,8 @@ public struct Criterion: Identifiable {
     /// `id` defaults to `text`, which is what distinguishes the rows in
     /// practice; pass one explicitly when a row's text changes while the row
     /// stays the same (an availability line, say), so it animates in place
-    /// instead of being replaced.
+    /// instead of being replaced. Two rows that share an `id` still render
+    /// as two rows — ``Criteria`` tells repeats apart itself.
     public init(id: String? = nil, text: String, state: CriterionState) {
         self.id = id ?? text
         self.text = text
@@ -120,11 +121,25 @@ public struct Criteria: View {
 
     public var body: some View {
         VStack(alignment: .leading, spacing: spacing) {
-            ForEach(items) { item in
-                CriterionRow(criterion: item)
+            ForEach(renderIdentities, id: \.key) { entry in
+                CriterionRow(criterion: entry.item)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    /// Each item's `id`, made unique. A repeated `id` — two rules with the
+    /// same text and no explicit id — would give SwiftUI two rows with one
+    /// identity, and updates could land on the wrong one. The first
+    /// occurrence keeps its bare `id`, so a row with a stable explicit id
+    /// still animates in place; only later repeats get a suffix.
+    private var renderIdentities: [(key: String, item: Criterion)] {
+        var seen: [String: Int] = [:]
+        return items.map { item in
+            let count = seen[item.id, default: 0]
+            seen[item.id] = count + 1
+            return (count == 0 ? item.id : "\(item.id)#\(count)", item)
+        }
     }
 }
 
@@ -248,8 +263,12 @@ private struct CriterionRow: View {
             return NSLocalizedString("Checking", bundle: .module, comment: "DashUIKit")
         case .met:
             return NSLocalizedString("Met", bundle: .module, comment: "DashUIKit")
-        case .failed, .blocking:
+        case .failed:
             return NSLocalizedString("Not met", bundle: .module, comment: "DashUIKit")
+        case .blocking:
+            // Not just unmet: this is the rule that stops the user going on,
+            // which the red text says to a sighted user.
+            return NSLocalizedString("Not met, required to continue", bundle: .module, comment: "DashUIKit")
         case .warning:
             return NSLocalizedString("Met, with a warning", bundle: .module, comment: "DashUIKit")
         }
