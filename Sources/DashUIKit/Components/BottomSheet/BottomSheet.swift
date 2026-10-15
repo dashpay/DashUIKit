@@ -124,7 +124,7 @@ public struct BottomSheet<Content: View>: View {
             hasCustomCloseAction: onClose != nil)
     }
 
-    /// A header with no title, no back button and no close button is 64pt of
+    /// A header with no title, no back button and no close button is 74pt of
     /// nothing: it pushes the content down, and on a self-sizing sheet that
     /// blank strip becomes part of the sheet's own measured height. Collapse
     /// it rather than reserve it. Any one of the three brings it back, and the
@@ -142,7 +142,7 @@ public struct BottomSheet<Content: View>: View {
             },
             central: {
                 Text(title)
-                    .dashFont(.calloutMedium)
+                    .dashFont(.subheadMedium)
                     .foregroundColor(.dash.primaryText)
             },
             trailing: {

@@ -1,19 +1,8 @@
 {
   "images" : [
     {
-      "filename" : "navigationbar-close@1x.png",
-      "idiom" : "universal",
-      "scale" : "1x"
-    },
-    {
-      "filename" : "navigationbar-close@2x.png",
-      "idiom" : "universal",
-      "scale" : "2x"
-    },
-    {
-      "filename" : "navigationbar-close@3x.png",
-      "idiom" : "universal",
-      "scale" : "3x"
+      "filename" : "navigationbar-close.svg",
+      "idiom" : "universal"
     }
   ],
   "info" : {
@@ -21,7 +10,7 @@
     "version" : 1
   },
   "properties" : {
-    "localizable" : true,
+    "preserves-vector-representation" : true,
     "template-rendering-intent" : "template"
   }
 }
