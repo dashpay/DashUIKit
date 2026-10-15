@@ -46,7 +46,7 @@ public struct NavigationBar<Leading: View, Central: View, Trailing: View>: View 
 
             central
         }
-        .frame(maxWidth: .infinity, minHeight: 64)
+        .frame(maxWidth: .infinity, minHeight: 74)
     }
 }
 
@@ -99,17 +99,33 @@ public enum NavigationBarElement: String {
     case plus = "navigationbar-plus"
     case info = "navigationbar-info"
 
+    /// The element as drawn in the bar. `back`, `close` and `plus` are a glyph
+    /// centred in a stroked circle; `info` is a self-contained icon.
+    @ViewBuilder
     public var icon: some View {
+        switch self {
+        case .back, .close, .plus:
+            glyph
+                .foregroundColor(.dash.toolbarRoundContent)
+                .frame(width: 34, height: 34)
+                .overlay(
+                    Circle()
+                        .strokeBorder(Color.dash.toolbarRoundBorder, lineWidth: 1.5)
+                )
+        case .info:
+            glyph
+        }
+    }
+
+    private var glyph: some View {
         Image(dash: .custom(rawValue, bundle: .module))
-            .resizable()
-            .scaledToFit()
+            .fixedSize()
     }
 
     public func button(action: @escaping () -> Void) -> some View {
         Button(action: action) {
             icon
-                .fixedSize()
-                .frame(width: 44, height: 44, alignment: .center)
+                .frame(height: 44)
                 .contentShape(Rectangle())
         }
         .buttonStyle(NavigationBarButtonStyle())

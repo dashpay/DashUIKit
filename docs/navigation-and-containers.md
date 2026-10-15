@@ -11,7 +11,7 @@ File `Components/NavigationBar.swift` · `@available(iOS 14, macOS 11, *)`
 A custom three-slot top bar: **leading**, **central**, **trailing**, each a
 `@ViewBuilder`. The leading/trailing pair is laid out in an `HStack` with a `Spacer`
 between; the central content is overlaid centered (so a long title stays centered
-regardless of side content). Min height 64.
+regardless of side content). Min height 74.
 
 ```swift
 NavigationBar(
@@ -31,8 +31,11 @@ Convenience initializers let you omit any slot (e.g. only `leading`, or `central
 **`NavigationBarElement`** — bundled icon buttons backed by the nav assets:
 `.back`, `.close`, `.plus`, `.info`. Each provides:
 
-- `.icon` — the resizable `Image`.
-- `.button(action:)` — a 44×44 tappable button with a press animation
+- `.icon` — the element as drawn. `.back`, `.close` and `.plus` are a vector glyph
+  (`Color.dash.toolbarRoundContent`) centred in a 34×34 circle with a 1.5pt
+  `Color.dash.toolbarRoundBorder` stroke, so both adapt to light/dark mode.
+  `.info` is a self-contained 24×24 icon.
+- `.button(action:)` — the icon in a tappable area 44pt tall and as wide as the icon, with a press animation
   (scale 0.88 + opacity 0.7).
 
 ---
