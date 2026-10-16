@@ -38,6 +38,16 @@ Convenience initializers let you omit any slot (e.g. only `leading`, or `central
 - `.button(action:)` — the icon in a tappable area 44pt tall and as wide as the icon, with a press animation
   (scale 0.88 + opacity 0.7).
 
+**`NavigationBarCircleIcon { glyph }`** — the same 34pt token circle around any glyph, for a bar
+action with no bundled element (e.g. a `Menu` label). **`NavigationBarCircleButton(accessibilityLabel:action:glyph:)`**
+is that circle as a bar button, with the same touch area and press animation:
+
+```swift
+NavigationBarCircleButton(accessibilityLabel: "Refresh", action: reload) {
+    Image(systemName: "arrow.clockwise").font(.system(size: 14, weight: .semibold))
+}
+```
+
 ---
 
 ## TopIntroView

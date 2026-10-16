@@ -101,27 +101,23 @@ public enum NavigationBarElement: String {
 
     /// The element as drawn in the bar. `back`, `close` and `plus` are a glyph
     /// centred in a stroked circle; `info` is a self-contained icon.
-    @ViewBuilder
+    @MainActor @ViewBuilder
     public var icon: some View {
         switch self {
         case .back, .close, .plus:
-            glyph
-                .foregroundColor(.dash.toolbarRoundContent)
-                .frame(width: 34, height: 34)
-                .overlay(
-                    Circle()
-                        .strokeBorder(Color.dash.toolbarRoundBorder, lineWidth: 1.5)
-                )
+            NavigationBarCircleIcon { glyph }
         case .info:
             glyph
         }
     }
 
+    @MainActor
     private var glyph: some View {
         Image(dash: .custom(rawValue, bundle: .module))
             .fixedSize()
     }
 
+    @MainActor
     public func button(action: @escaping () -> Void) -> some View {
         Button(action: action) {
             icon
@@ -143,6 +139,58 @@ public enum NavigationBarElement: String {
         case .info:
             return NSLocalizedString("Info", bundle: .module, comment: "DashUIKit navigation bar")
         }
+    }
+}
+
+/// The bar's round element: any glyph centred in a 34pt circle with a 1.5pt
+/// `toolbarRoundBorder` stroke, tinted `toolbarRoundContent`. `back`, `close`
+/// and `plus` are drawn with it; use it directly for a bar action that has no
+/// bundled element (refresh, a `Menu` label).
+@available(iOS 14, macOS 11, *)
+public struct NavigationBarCircleIcon<Glyph: View>: View {
+    private let glyph: Glyph
+
+    public init(@ViewBuilder glyph: () -> Glyph) {
+        self.glyph = glyph()
+    }
+
+    public var body: some View {
+        glyph
+            .foregroundColor(.dash.toolbarRoundContent)
+            .frame(width: 34, height: 34)
+            .overlay(
+                Circle()
+                    .strokeBorder(Color.dash.toolbarRoundBorder, lineWidth: 1.5)
+            )
+    }
+}
+
+/// A `NavigationBarCircleIcon` as a bar button: the same 44pt-tall touch area
+/// and press animation as `NavigationBarElement.button(action:)`.
+@available(iOS 14, macOS 11, *)
+public struct NavigationBarCircleButton<Glyph: View>: View {
+    private let accessibilityLabel: String
+    private let action: () -> Void
+    private let glyph: Glyph
+
+    public init(
+        accessibilityLabel: String,
+        action: @escaping () -> Void,
+        @ViewBuilder glyph: () -> Glyph
+    ) {
+        self.accessibilityLabel = accessibilityLabel
+        self.action = action
+        self.glyph = glyph()
+    }
+
+    public var body: some View {
+        Button(action: action) {
+            NavigationBarCircleIcon { glyph }
+                .frame(height: 44)
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(NavigationBarButtonStyle())
+        .accessibilityLabel(Text(accessibilityLabel))
     }
 }
 
@@ -215,6 +263,28 @@ private struct NavigationBarButtonStyle: ButtonStyle {
         NavigationBar(
             leading: { NavigationBarElement.back.button { } },
             trailing: { NavigationBarElement.plus.button { } }
+        )
+
+        NavigationBar(
+            leading: { NavigationBarElement.back.button { } },
+            trailing: {
+                HStack(spacing: 8) {
+                    NavigationBarCircleButton(accessibilityLabel: "Refresh", action: { }) {
+                        Image(systemName: "arrow.clockwise")
+                            .font(.system(size: 14, weight: .semibold))
+                    }
+                    Menu {
+                        Button("Action") { }
+                    } label: {
+                        NavigationBarCircleIcon {
+                            Image(systemName: "ellipsis")
+                                .font(.system(size: 14, weight: .semibold))
+                        }
+                        .frame(height: 44)
+                    }
+                    .accessibilityLabel(Text("More"))
+                }
+            }
         )
     }
 }
