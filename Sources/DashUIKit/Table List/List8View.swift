@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Roman Chornyi
 //  Copyright © 2026 Dash Core Group. All rights reserved.
 //
@@ -14,7 +14,6 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 //
-
 
 import SwiftUI
 
