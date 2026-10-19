@@ -30,7 +30,8 @@ import SwiftUI
 /// Both texts stay on one line. When they do not fit together they share the width, so the
 /// value never disappears behind a long label. The value truncates in the middle by default,
 /// keeping the end of a username that may be what tells two recipients apart; pass
-/// `truncationMode: .tail` for a display name.
+/// `truncationMode: .tail` for a display name. The value sets its own mode, so a
+/// `.truncationMode(_:)` modifier on the row reaches only the label.
 @available(iOS 14, macOS 11, *)
 public struct List8View<Avatar: View>: View {
 
@@ -98,11 +99,10 @@ public extension List8View where Avatar == EmptyView {
         }
         List8View(label: "To", value: "username")
         // An avatar builder that produces no view lays out like the no-avatar row above.
-        // `Bool(false)`, not `false`, keeps the compiler from warning about dead code.
         List8View(label: "To", value: "a-very-long-username-that-does-not-fit-the-row") {
-            if Bool(false) { Circle().fill(Color.dash.gray300) }
+            if false { Circle().fill(Color.dash.gray300) }
         }
-        List8View(label: "To", value: "Alexandra Konstantinopoulou-Whitfield", truncationMode: .tail) {
+        List8View(label: "To", value: "Alexandra Konstantinopoulou-Whitfield of the Treasury Reserve", truncationMode: .tail) {
             Circle().fill(Color.dash.gray300)
         }
         List8View(label: "To", value: "a-very-long-username-that-does-not-fit-the-row") {

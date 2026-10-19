@@ -217,6 +217,6 @@ display name ("Alexandra Kon…"). With an avatar, label and value are centred o
 the row is 48 pt tall; without one it is the text's height plus 12 pt above and below.
 VoiceOver reads the row as one element ("To, username") and skips the avatar.
 
-Without an avatar it differs from `List1View` on purpose: the value keeps one line (truncating
-in the middle) and the row is one VoiceOver element. Use `List8View` for a recipient or other
+Without an avatar it differs from `List1View` on purpose: the value keeps one line (truncating,
+in the middle by default) and the row is one VoiceOver element. Use `List8View` for a recipient or other
 identifier, `List1View` for a value that should wrap.
