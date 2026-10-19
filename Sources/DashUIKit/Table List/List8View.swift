@@ -23,7 +23,7 @@ import SwiftUI
 /// The avatar is the caller's view, laid out in a fixed 24 × 24 frame and clipped round; pass
 /// a view that fills its frame (a `resizable()` image, a shape). It is hidden from VoiceOver,
 /// which reads the row as one element, "label, value". Without one — `List8View(label:value:)`,
-/// or a builder that produces no view (an `if` without an `else`, `{ if let image { … } }`) —
+/// or a builder that produces no view (`EmptyView()`, an `if` without an `else`) —
 /// the value stands alone at the trailing edge and the row takes no avatar space. A view that
 /// produces something invisible (`Color.clear`) still takes the slot.
 ///
