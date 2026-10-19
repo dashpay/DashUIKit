@@ -28,18 +28,26 @@ import SwiftUI
 /// produces something invisible (`Color.clear`) still takes the slot.
 ///
 /// Both texts stay on one line. When they do not fit together they share the width, so the
-/// value never disappears behind a long label; the value truncates in the middle, keeping the
-/// end of a username that may be what tells two recipients apart.
+/// value never disappears behind a long label. The value truncates in the middle by default,
+/// keeping the end of a username that may be what tells two recipients apart; pass
+/// `truncationMode: .tail` for a display name.
 @available(iOS 14, macOS 11, *)
 public struct List8View<Avatar: View>: View {
 
     public var label: String
     public var value: String
+    public var truncationMode: Text.TruncationMode
     private let avatar: Avatar
 
-    public init(label: String, value: String, @ViewBuilder avatar: () -> Avatar) {
+    public init(
+        label: String,
+        value: String,
+        truncationMode: Text.TruncationMode = .middle,
+        @ViewBuilder avatar: () -> Avatar
+    ) {
         self.label = label
         self.value = value
+        self.truncationMode = truncationMode
         self.avatar = avatar()
     }
 
@@ -62,7 +70,7 @@ public struct List8View<Avatar: View>: View {
                     .dashFont(.subhead)
                     .foregroundColor(Color.dash.primaryText)
                     .lineLimit(1)
-                    .truncationMode(.middle)
+                    .truncationMode(truncationMode)
             }
         }
         .padding(.horizontal, 14)
@@ -75,8 +83,8 @@ public struct List8View<Avatar: View>: View {
 public extension List8View where Avatar == EmptyView {
 
     /// A row without an avatar.
-    init(label: String, value: String) {
-        self.init(label: label, value: value) { EmptyView() }
+    init(label: String, value: String, truncationMode: Text.TruncationMode = .middle) {
+        self.init(label: label, value: value, truncationMode: truncationMode) { EmptyView() }
     }
 }
 
@@ -89,8 +97,13 @@ public extension List8View where Avatar == EmptyView {
             Circle().fill(Color.dash.gray300)
         }
         List8View(label: "To", value: "username")
+        // An avatar builder that produces no view lays out like the no-avatar row above.
+        // `Bool(false)`, not `false`, keeps the compiler from warning about dead code.
         List8View(label: "To", value: "a-very-long-username-that-does-not-fit-the-row") {
             if Bool(false) { Circle().fill(Color.dash.gray300) }
+        }
+        List8View(label: "To", value: "Alexandra Konstantinopoulou-Whitfield", truncationMode: .tail) {
+            Circle().fill(Color.dash.gray300)
         }
         List8View(label: "To", value: "a-very-long-username-that-does-not-fit-the-row") {
             Circle().fill(Color.dash.gray300)

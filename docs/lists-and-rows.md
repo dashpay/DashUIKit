@@ -211,8 +211,9 @@ the 24 pt slot. For an avatar that is still loading, draw a placeholder instead 
 the value moves 32 pt left when the image arrives.
 
 Both texts stay on one line. When they do not fit together they share the width, so the value
-never disappears behind a long label; the value truncates in the middle ("alice-of…ments"),
-keeping the end of a username visible. With an avatar, label and value are centred on it and
+never disappears behind a long label. The value truncates in the middle by default
+("alice-of…ments"), keeping the end of a username visible; pass `truncationMode: .tail` for a
+display name ("Alexandra Kon…"). With an avatar, label and value are centred on it and
 the row is 48 pt tall; without one it is the text's height plus 12 pt above and below.
 VoiceOver reads the row as one element ("To, username") and skips the avatar.
 
