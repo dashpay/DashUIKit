@@ -21,8 +21,9 @@ import SwiftUI
 /// A label ↔ value row with a round 24 pt avatar before the value — the design system's
 /// `list-8`, for "who" rows such as the recipient on a payment confirmation.
 ///
-/// The avatar is the caller's view: the row sizes it to 24 × 24 and clips it round. It is
-/// hidden from VoiceOver, which reads the row as one element, "label, value".
+/// The avatar is the caller's view: the row sizes it to a fixed 24 × 24, as the design does,
+/// and clips it round. It is hidden from VoiceOver, which reads the row as one element,
+/// "label, value". A row with no avatar is a `List1View`.
 @available(iOS 14, macOS 11, *)
 public struct List8View<Avatar: View>: View {
 
@@ -37,12 +38,12 @@ public struct List8View<Avatar: View>: View {
     }
 
     public var body: some View {
-        HStack(alignment: .top, spacing: 20) {
+        HStack(spacing: 20) {
             Text(label)
                 .dashFont(.subheadMedium)
                 .foregroundColor(Color.dash.tertiaryText)
                 .lineLimit(1)
-                .fixedSize()
+                .layoutPriority(1)
 
             HStack(spacing: 8) {
                 avatar
@@ -54,19 +55,19 @@ public struct List8View<Avatar: View>: View {
                     .dashFont(.subhead)
                     .foregroundColor(Color.dash.primaryText)
                     .lineLimit(1)
-                    .truncationMode(.tail)
             }
             .frame(maxWidth: .infinity, alignment: .trailing)
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 12)
-        .frame(minHeight: 46)
         .accessibilityElement(children: .combine)
     }
 }
 
+#if DEBUG
+
 @available(iOS 17, macOS 14, *)
-#Preview {
+#Preview("Every state") {
     VStack(spacing: 0) {
         List8View(label: "To", value: "username") {
             Circle().fill(Color.dash.gray300)
@@ -74,5 +75,10 @@ public struct List8View<Avatar: View>: View {
         List8View(label: "To", value: "a-very-long-username-that-does-not-fit-the-row") {
             Circle().fill(Color.dash.gray300)
         }
+        List8View(label: "A longer translated label", value: "a-very-long-username") {
+            Circle().fill(Color.dash.gray300)
+        }
     }
 }
+
+#endif

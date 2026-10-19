@@ -18,7 +18,7 @@ and callbacks; they render and report intent. They require `import DashUIKit` an
   `ReceiveEstimateView`, `DashAmount`, `DashBalanceView`, `DashPickerView`,
   `CurrencyOption`.
 - **[Lists & rows](lists-and-rows.md)** — `CoinSelector`, `MenuItem`,
-  `ConverterCard`, `TransactionView`, `RadioButtonRow`, `List1View`.
+  `ConverterCard`, `TransactionView`, `RadioButtonRow`, `List1View`, `List8View`.
 - **[Navigation & containers](navigation-and-containers.md)** — `NavigationBar`,
   `NavigationBarElement`, `TopIntroView`, `BottomSheet`, `MenuViewModifier`.
 - **[Feedback](feedback.md)** — `Toast`, `SystemMessageView`,
@@ -53,6 +53,7 @@ and callbacks; they render and report intent. They require `import DashUIKit` an
 | `EnterAmountView` (`EnterAmountStyle`) | [Amount & currency](amount-and-currency.md#enteramountview) |
 | `ErrorIllustration` | [Feedback](feedback.md#successillustration--errorillustration) |
 | `List1View` | [Lists & rows](lists-and-rows.md#list1view) |
+| `List8View` | [Lists & rows](lists-and-rows.md#list8view) |
 | `LoadingIllustration` / `LoadingSpinner` | [Feedback](feedback.md#loadingillustration--loadingspinner) |
 | `MenuItem` (`MenuItemAccessory`, `MenuItemInfo`) | [Lists & rows](lists-and-rows.md#menuitem) |
 | `MenuViewModifier` | [Navigation & containers](navigation-and-containers.md#menuviewmodifier) |

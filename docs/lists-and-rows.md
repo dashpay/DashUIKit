@@ -198,5 +198,7 @@ List8View(label: "To", value: "username") {
 }
 ```
 
-The label never truncates; the value stays on one line and truncates with `…`. VoiceOver
-reads the row as one element ("To, username") and skips the avatar.
+Both texts stay on one line; the value truncates first, the label only when it alone is too
+wide. Label and value are centred on the avatar. The avatar keeps its 24 pt at every text
+size. VoiceOver reads the row as one element ("To, username") and skips the avatar. For a
+row with no avatar, use `List1View`.
