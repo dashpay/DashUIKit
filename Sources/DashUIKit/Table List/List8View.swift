@@ -21,9 +21,13 @@ import SwiftUI
 /// A label ↔ value row with a round 24 pt avatar before the value — the design system's
 /// `list-8`, for "who" rows such as the recipient on a payment confirmation.
 ///
-/// The avatar is the caller's view: the row sizes it to a fixed 24 × 24, as the design does,
-/// and clips it round. It is hidden from VoiceOver, which reads the row as one element,
-/// "label, value". A row with no avatar is a `List1View`.
+/// The avatar is the caller's view, laid out in a fixed 24 × 24 frame and clipped round; pass
+/// a view that fills its frame (a `resizable()` image, a shape). It is hidden from VoiceOver,
+/// which reads the row as one element, "label, value". A row with no avatar is a `List1View`.
+///
+/// Both texts stay on one line. When they do not fit together they share the width, so the
+/// value never disappears behind a long label; the value truncates in the middle, keeping the
+/// end of a username that may be what tells two recipients apart.
 @available(iOS 14, macOS 11, *)
 public struct List8View<Avatar: View>: View {
 
@@ -43,7 +47,6 @@ public struct List8View<Avatar: View>: View {
                 .dashFont(.subheadMedium)
                 .foregroundColor(Color.dash.tertiaryText)
                 .lineLimit(1)
-                .layoutPriority(1)
 
             HStack(spacing: 8) {
                 avatar
@@ -55,6 +58,7 @@ public struct List8View<Avatar: View>: View {
                     .dashFont(.subhead)
                     .foregroundColor(Color.dash.primaryText)
                     .lineLimit(1)
+                    .truncationMode(.middle)
             }
             .frame(maxWidth: .infinity, alignment: .trailing)
         }
