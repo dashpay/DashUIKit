@@ -188,19 +188,21 @@ List1View(label: "Network", value: "Dash")
 
 File `Table List/List8View.swift` · `@available(iOS 14, macOS 11, *)`
 
-A label ↔ value row with a round avatar before the value — for "who" rows, such as the
-recipient on a payment confirmation. Generic over the avatar view, which the row lays out in a
-fixed 24 × 24 frame and clips round; pass a view that fills its frame (a `resizable()` image,
-a shape). The library does not load images itself.
+A label ↔ value row with an optional round avatar before the value — for "who" rows, such as
+the recipient on a payment confirmation. Generic over the avatar view, which the row lays out
+in a fixed 24 × 24 frame and clips round; pass a view that fills its frame (a `resizable()`
+image, a shape). The library does not load images itself.
 
 ```swift
 List8View(label: "To", value: "username") {
     Image("avatar").resizable().scaledToFill()   // @ViewBuilder avatar
 }
+
+List8View(label: "To", value: "username")         // no avatar
 ```
 
 Both texts stay on one line. When they do not fit together they share the width, so the value
 never disappears behind a long label; the value truncates in the middle ("alice-of…ments"),
 keeping the end of a username visible. Label and value are centred on the avatar, which makes
-the row 48 pt tall — 4 pt taller than a one-line `List1View`. VoiceOver reads the row as one element
-("To, username") and skips the avatar. For a row with no avatar, use `List1View`.
+the row 48 pt tall (44 pt without an avatar, like a one-line `List1View`). VoiceOver reads the
+row as one element ("To, username") and skips the avatar.

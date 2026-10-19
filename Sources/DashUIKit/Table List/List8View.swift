@@ -20,9 +20,10 @@ import SwiftUI
 /// A label ↔ value row with a round 24 pt avatar before the value — the design system's
 /// `list-8`, for "who" rows such as the recipient on a payment confirmation.
 ///
-/// The avatar is the caller's view, laid out in a fixed 24 × 24 frame and clipped round; pass
-/// a view that fills its frame (a `resizable()` image, a shape). It is hidden from VoiceOver,
-/// which reads the row as one element, "label, value". A row with no avatar is a `List1View`.
+/// The avatar is optional. When given, it is the caller's view, laid out in a fixed 24 × 24
+/// frame and clipped round; pass a view that fills its frame (a `resizable()` image, a shape).
+/// It is hidden from VoiceOver, which reads the row as one element, "label, value". Without
+/// one (`List8View(label:value:)`) the value stands alone at the trailing edge.
 ///
 /// Both texts stay on one line. When they do not fit together they share the width, so the
 /// value never disappears behind a long label; the value truncates in the middle, keeping the
@@ -32,7 +33,7 @@ public struct List8View<Avatar: View>: View {
 
     public var label: String
     public var value: String
-    private let avatar: Avatar
+    private let avatar: Avatar?
 
     public init(label: String, value: String, @ViewBuilder avatar: () -> Avatar) {
         self.label = label
@@ -50,10 +51,12 @@ public struct List8View<Avatar: View>: View {
             Spacer(minLength: 20)
 
             HStack(spacing: 8) {
-                avatar
-                    .frame(width: 24, height: 24)
-                    .clipShape(Circle())
-                    .accessibilityHidden(true)
+                if let avatar {
+                    avatar
+                        .frame(width: 24, height: 24)
+                        .clipShape(Circle())
+                        .accessibilityHidden(true)
+                }
 
                 Text(value)
                     .dashFont(.subhead)
@@ -68,6 +71,17 @@ public struct List8View<Avatar: View>: View {
     }
 }
 
+@available(iOS 14, macOS 11, *)
+public extension List8View where Avatar == EmptyView {
+
+    /// A row without an avatar.
+    init(label: String, value: String) {
+        self.label = label
+        self.value = value
+        self.avatar = nil
+    }
+}
+
 #if DEBUG
 
 @available(iOS 17, macOS 14, *)
@@ -76,6 +90,7 @@ public struct List8View<Avatar: View>: View {
         List8View(label: "To", value: "username") {
             Circle().fill(Color.dash.gray300)
         }
+        List8View(label: "To", value: "username")
         List8View(label: "To", value: "a-very-long-username-that-does-not-fit-the-row") {
             Circle().fill(Color.dash.gray300)
         }

@@ -39,7 +39,7 @@ Sources/DashUIKit/
     Geometry/        Layout readers + scale-to-fit helpers
     Icons/           Code-drawn icons (XmarkIcon, CheckmarkIcon, ChevronIcon, InfoRoundIcon)
     Illustrations/   Loading / success / error illustrations
-  Table List/        List1View (label/value row), List8View (label/avatar + value row)
+  Table List/        List1View (label/value row), List8View (label/value row, optional avatar)
   ViewModifiers/     MenuViewModifier (card chrome)
   Foundation/        Color / Font / DashTextStyle / Image / line-height / Bundle
   Resources/         Media.xcassets (colors, icons, illustrations)
