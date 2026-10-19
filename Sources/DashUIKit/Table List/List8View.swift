@@ -42,11 +42,13 @@ public struct List8View<Avatar: View>: View {
     }
 
     public var body: some View {
-        HStack(spacing: 20) {
+        HStack(spacing: 0) {
             Text(label)
                 .dashFont(.subheadMedium)
                 .foregroundColor(Color.dash.tertiaryText)
                 .lineLimit(1)
+
+            Spacer(minLength: 20)
 
             HStack(spacing: 8) {
                 avatar
@@ -60,7 +62,6 @@ public struct List8View<Avatar: View>: View {
                     .lineLimit(1)
                     .truncationMode(.middle)
             }
-            .frame(maxWidth: .infinity, alignment: .trailing)
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 12)
@@ -77,6 +78,9 @@ public struct List8View<Avatar: View>: View {
             Circle().fill(Color.dash.gray300)
         }
         List8View(label: "To", value: "a-very-long-username-that-does-not-fit-the-row") {
+            Circle().fill(Color.dash.gray300)
+        }
+        List8View(label: "A longer translated label", value: "bob") {
             Circle().fill(Color.dash.gray300)
         }
         List8View(label: "A longer translated label", value: "a-very-long-username") {
