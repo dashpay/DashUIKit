@@ -17,13 +17,14 @@
 
 import SwiftUI
 
-/// A label ↔ value row with a round 24 pt avatar before the value — the design system's
+/// A label ↔ value row with an optional round avatar before the value — the design system's
 /// `list-8`, for "who" rows such as the recipient on a payment confirmation.
 ///
-/// The avatar is optional. When given, it is the caller's view, laid out in a fixed 24 × 24
-/// frame and clipped round; pass a view that fills its frame (a `resizable()` image, a shape).
-/// It is hidden from VoiceOver, which reads the row as one element, "label, value". Without
-/// one (`List8View(label:value:)`) the value stands alone at the trailing edge.
+/// The avatar is the caller's view, laid out in a fixed 24 × 24 frame and clipped round; pass
+/// a view that fills its frame (a `resizable()` image, a shape). It is hidden from VoiceOver,
+/// which reads the row as one element, "label, value". Without one — `List8View(label:value:)`,
+/// or `avatar: nil` when only some recipients have one — the value stands alone at the
+/// trailing edge and the row takes no avatar space.
 ///
 /// Both texts stay on one line. When they do not fit together they share the width, so the
 /// value never disappears behind a long label; the value truncates in the middle, keeping the
@@ -39,6 +40,13 @@ public struct List8View<Avatar: View>: View {
         self.label = label
         self.value = value
         self.avatar = avatar()
+    }
+
+    /// A row whose avatar is decided at runtime: `nil` lays the row out without one.
+    public init(label: String, value: String, avatar: Avatar?) {
+        self.label = label
+        self.value = value
+        self.avatar = avatar
     }
 
     public var body: some View {
@@ -91,6 +99,7 @@ public extension List8View where Avatar == EmptyView {
             Circle().fill(Color.dash.gray300)
         }
         List8View(label: "To", value: "username")
+        List8View(label: "To", value: "a-very-long-username-that-does-not-fit-the-row", avatar: Circle?.none)
         List8View(label: "To", value: "a-very-long-username-that-does-not-fit-the-row") {
             Circle().fill(Color.dash.gray300)
         }
