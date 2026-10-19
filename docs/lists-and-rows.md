@@ -181,3 +181,22 @@ on the right (value is right-aligned and can wrap). Useful for detail / summary 
 ```swift
 List1View(label: "Network", value: "Dash")
 ```
+
+---
+
+## List8View
+
+File `Table List/List8View.swift` · `@available(iOS 14, macOS 11, *)`
+
+A label ↔ value row with a round avatar before the value — for "who" rows, such as the
+recipient on a payment confirmation. Generic over the avatar view, which the row sizes to
+24 × 24 and clips round; the library does not load images itself.
+
+```swift
+List8View(label: "To", value: "username") {
+    Image("avatar").resizable().scaledToFill()   // @ViewBuilder avatar
+}
+```
+
+The label never truncates; the value stays on one line and truncates with `…`. VoiceOver
+reads the row as one element ("To, username") and skips the avatar.

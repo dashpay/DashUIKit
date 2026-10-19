@@ -81,6 +81,7 @@ a component already exists before building your own.
 | `MenuItem` | Settings/menu row with flexible trailing accessory | [Lists & rows](docs/lists-and-rows.md) |
 | `RadioButtonRow` | Selectable row — radio or checkbox style | [Lists & rows](docs/lists-and-rows.md) |
 | `List1View` | Simple label ↔ value row | [Lists & rows](docs/lists-and-rows.md) |
+| `List8View` | Label ↔ avatar + value row | [Lists & rows](docs/lists-and-rows.md) |
 | `NavigationBar` | Custom three-slot nav bar + `NavigationBarElement` buttons | [Navigation & containers](docs/navigation-and-containers.md) |
 | `BottomSheet` | Sheet chrome (grabber + nav bar) with self-sizing support | [Navigation & containers](docs/navigation-and-containers.md) |
 | `MenuViewModifier` | Card chrome — rounded background + shadow | [Navigation & containers](docs/navigation-and-containers.md) |
@@ -99,7 +100,7 @@ a component already exists before building your own.
 Sources/DashUIKit/
   Button/            DashButton
   Components/        Components (EnterAmount/, Geometry/, Icons/, Illustrations/)
-  Table List/        List1View
+  Table List/        List1View, List8View
   ViewModifiers/     MenuViewModifier
   Foundation/        Color / Font / typography / Image / Bundle helpers
   Resources/         Media.xcassets (colors, icons, illustrations)

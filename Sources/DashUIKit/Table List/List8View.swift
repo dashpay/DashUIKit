@@ -1,0 +1,78 @@
+//  
+//  Created by Roman Chornyi
+//  Copyright © 2026 Dash Core Group. All rights reserved.
+//
+//  Licensed under the MIT License (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//  https://opensource.org/licenses/MIT
+//
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
+//
+
+
+import SwiftUI
+
+/// A label ↔ value row with a round 24 pt avatar before the value — the design system's
+/// `list-8`, for "who" rows such as the recipient on a payment confirmation.
+///
+/// The avatar is the caller's view: the row sizes it to 24 × 24 and clips it round. It is
+/// hidden from VoiceOver, which reads the row as one element, "label, value".
+@available(iOS 14, macOS 11, *)
+public struct List8View<Avatar: View>: View {
+
+    public var label: String
+    public var value: String
+    private let avatar: Avatar
+
+    public init(label: String, value: String, @ViewBuilder avatar: () -> Avatar) {
+        self.label = label
+        self.value = value
+        self.avatar = avatar()
+    }
+
+    public var body: some View {
+        HStack(alignment: .top, spacing: 20) {
+            Text(label)
+                .dashFont(.subheadMedium)
+                .foregroundColor(Color.dash.tertiaryText)
+                .lineLimit(1)
+                .fixedSize()
+
+            HStack(spacing: 8) {
+                avatar
+                    .frame(width: 24, height: 24)
+                    .clipShape(Circle())
+                    .accessibilityHidden(true)
+
+                Text(value)
+                    .dashFont(.subhead)
+                    .foregroundColor(Color.dash.primaryText)
+                    .lineLimit(1)
+                    .truncationMode(.tail)
+            }
+            .frame(maxWidth: .infinity, alignment: .trailing)
+        }
+        .padding(.horizontal, 14)
+        .padding(.vertical, 12)
+        .frame(minHeight: 46)
+        .accessibilityElement(children: .combine)
+    }
+}
+
+@available(iOS 17, macOS 14, *)
+#Preview {
+    VStack(spacing: 0) {
+        List8View(label: "To", value: "username") {
+            Circle().fill(Color.dash.gray300)
+        }
+        List8View(label: "To", value: "a-very-long-username-that-does-not-fit-the-row") {
+            Circle().fill(Color.dash.gray300)
+        }
+    }
+}
