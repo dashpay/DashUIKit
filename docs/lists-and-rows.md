@@ -200,17 +200,17 @@ List8View(label: "To", value: "username") {
 
 List8View(label: "To", value: "username")         // no avatar
 
-List8View(label: "To", value: name,                // avatar decided at runtime
-          avatar: image.map { Image(uiImage: $0).resizable() })
+List8View(label: "To", value: name) {             // only some recipients have one
+    if let image { Image(uiImage: image).resizable().scaledToFill() }
+}
 ```
 
-Use the `avatar:` value init, not an `if` inside the builder, when only some recipients have
-an avatar: a builder that draws nothing still reserves the 24 pt slot, while `nil` removes it.
+A builder that draws nothing takes no space: the row lays out as if it had no avatar.
 
 Both texts stay on one line. When they do not fit together they share the width, so the value
 never disappears behind a long label; the value truncates in the middle ("alice-of…ments"),
 keeping the end of a username visible. Label and value are centred on the avatar, which makes
-the row 48 pt tall (44 pt without an avatar, like a one-line `List1View`). VoiceOver reads the
+the row 48 pt tall; without an avatar it is as tall as a one-line `List1View`. VoiceOver reads the
 row as one element ("To, username") and skips the avatar.
 
 Without an avatar it differs from `List1View` on purpose: the value keeps one line (truncating
