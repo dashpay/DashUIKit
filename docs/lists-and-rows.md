@@ -205,12 +205,13 @@ List8View(label: "To", value: name) {             // only some recipients have o
 }
 ```
 
-A builder that draws nothing takes no space: the row lays out as if it had no avatar.
+A builder that produces no view (an `if` without an `else`) takes no space: the row lays out as
+if it had no avatar. A view that is merely invisible (`Color.clear`) still takes the 24 pt slot.
 
 Both texts stay on one line. When they do not fit together they share the width, so the value
 never disappears behind a long label; the value truncates in the middle ("alice-of…ments"),
 keeping the end of a username visible. Label and value are centred on the avatar, which makes
-the row 48 pt tall; without an avatar it is as tall as a one-line `List1View`. VoiceOver reads the
+the row 48 pt tall; without an avatar it is the text's height plus the 12 pt padding. VoiceOver reads the
 row as one element ("To, username") and skips the avatar.
 
 Without an avatar it differs from `List1View` on purpose: the value keeps one line (truncating

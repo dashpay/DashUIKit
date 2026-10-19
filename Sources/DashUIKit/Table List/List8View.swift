@@ -23,8 +23,9 @@ import SwiftUI
 /// The avatar is the caller's view, laid out in a fixed 24 × 24 frame and clipped round; pass
 /// a view that fills its frame (a `resizable()` image, a shape). It is hidden from VoiceOver,
 /// which reads the row as one element, "label, value". Without one — `List8View(label:value:)`,
-/// or a builder that draws nothing (`{ if let image { … } }`) — the value stands alone at the
-/// trailing edge and the row takes no avatar space.
+/// or a builder that produces no view (an `if` without an `else`, `{ if let image { … } }`) —
+/// the value stands alone at the trailing edge and the row takes no avatar space. A view that
+/// produces something invisible (`Color.clear`) still takes the slot.
 ///
 /// Both texts stay on one line. When they do not fit together they share the width, so the
 /// value never disappears behind a long label; the value truncates in the middle, keeping the
@@ -88,7 +89,9 @@ public extension List8View where Avatar == EmptyView {
             Circle().fill(Color.dash.gray300)
         }
         List8View(label: "To", value: "username")
-        List8View(label: "To", value: "a-very-long-username-that-does-not-fit-the-row", )
+        List8View(label: "To", value: "a-very-long-username-that-does-not-fit-the-row") {
+            if Bool(false) { Circle().fill(Color.dash.gray300) }
+        }
         List8View(label: "To", value: "a-very-long-username-that-does-not-fit-the-row") {
             Circle().fill(Color.dash.gray300)
         }
