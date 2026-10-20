@@ -105,7 +105,7 @@ public enum NavigationBarElement: String {
     public var icon: some View {
         switch self {
         case .back, .close, .plus:
-            NavigationBarCircleIcon(source)
+            NavigationBarCircleIconContent(source: source)
         case .info:
             Image(dash: source)
                 .fixedSize()
@@ -194,7 +194,7 @@ public enum NavigationBarElement: String {
         NavigationBar(
             leading: { NavigationBarElement.back.button { } },
             trailing: {
-                HStack(spacing: 8) {
+                HStack(spacing: 10) {
                     NavigationBarCircleButton(.system("arrow.clockwise"), accessibilityLabel: Text("Refresh")) { }
                     NavigationBarCircleMenu(.system("ellipsis"), accessibilityLabel: Text("More")) {
                         Button("Action") { }

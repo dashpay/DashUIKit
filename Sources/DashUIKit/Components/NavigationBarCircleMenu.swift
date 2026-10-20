@@ -17,10 +17,10 @@
 import SwiftUI
 
 /// A `Menu` whose label is a `NavigationBarCircleIcon` (e.g. the ⋯ overflow),
-/// with the bar's touch area and disabled dimming. `accessibilityLabel` is a
+/// with the bar's touch area, press animation (iOS 16+) and disabled dimming. `accessibilityLabel` is a
 /// `Text` — see `NavigationBarCircleButton`.
 @available(iOS 14, macOS 11, *)
-nonisolated public struct NavigationBarCircleMenu<Content: View>: View {
+public struct NavigationBarCircleMenu<Content: View>: View {
     private let icon: DashIconSource
     private let accessibilityLabel: Text
     private let content: Content
@@ -37,15 +37,28 @@ nonisolated public struct NavigationBarCircleMenu<Content: View>: View {
         self.content = content()
     }
 
+    @ViewBuilder
     public var body: some View {
-        Menu {
+        let menu = Menu {
             content
         } label: {
             NavigationBarCircleIcon(icon)
                 .navigationBarTouchArea()
         }
-        .navigationBarDisabledDimming(isEnabled)
-        .accessibilityLabel(accessibilityLabel)
+
+        if #available(iOS 16, macOS 13, *) {
+            // The bar's ButtonStyle draws the label, so the menu gets the
+            // same press animation and disabled dimming as the circle
+            // buttons beside it.
+            menu
+                .menuStyle(.button)
+                .buttonStyle(NavigationBarButtonStyle())
+                .accessibilityLabel(accessibilityLabel)
+        } else {
+            menu
+                .navigationBarDisabledDimming(isEnabled)
+                .accessibilityLabel(accessibilityLabel)
+        }
     }
 }
 

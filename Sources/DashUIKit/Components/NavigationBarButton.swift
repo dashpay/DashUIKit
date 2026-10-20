@@ -55,11 +55,15 @@ extension View {
             .contentShape(NavigationBarHitShape())
     }
 
-    /// Dims a bar element while it is disabled.
+    /// Dims a bar element while it is disabled — the one place the bar's
+    /// disabled look is defined.
     nonisolated func navigationBarDisabledDimming(_ isEnabled: Bool) -> some View {
-        opacity(isEnabled ? 1 : 0.4)
+        opacity(isEnabled ? 1 : navigationBarDisabledOpacity)
     }
 }
+
+/// Opacity of a disabled bar element (button, menu, `BottomSheet` close).
+let navigationBarDisabledOpacity: Double = 0.35
 
 /// The element's frame, widened symmetrically to at least 44pt.
 @available(iOS 14, macOS 11, *)
@@ -71,7 +75,7 @@ private struct NavigationBarHitShape: Shape {
 }
 
 @available(iOS 14, macOS 11, *)
-private struct NavigationBarButtonStyle: ButtonStyle {
+struct NavigationBarButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         NavigationBarButtonStyleBody(configuration: configuration)
     }

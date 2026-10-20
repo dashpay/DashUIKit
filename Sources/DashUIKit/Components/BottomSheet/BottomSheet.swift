@@ -155,7 +155,6 @@ public struct BottomSheet<Content: View>: View {
                         )
                     }
                     .disabled(!isCloseButtonActive)
-                    .opacity(isCloseButtonActive ? 1 : 0.35)
                 }
             }
         )

@@ -37,7 +37,7 @@ Convenience initializers let you omit any slot (e.g. only `leading`, or `central
   `.info` is a self-contained 24×24 icon.
 - `.button(action:)` — the icon as a button. The touch area is 44pt tall and at least 44pt wide
   for hit testing, while the element keeps its hug width in layout (so a circle stays on the
-  bar's 20pt inset). Press animation: scale 0.88 + opacity 0.7; dimmed to 0.4 opacity while
+  bar's 20pt inset). Press animation: scale 0.88 + opacity 0.7; dimmed to 0.35 opacity while
   `.disabled(true)`.
 
 ### Custom circle actions
@@ -52,13 +52,18 @@ File `Components/NavigationBarCircleButton.swift` — **`NavigationBarCircleButt
 a bar button with the same touch area, press animation and disabled dimming as
 `NavigationBarElement.button(action:)`:
 
+Each element's hit area is widened to at least 44pt beyond its 34pt circle (5pt per side), so
+put adjacent bar buttons **at least 10pt apart** (`HStack(spacing: 10)`) or the hit areas
+overlap and a tap between them goes to the later one.
+
 ```swift
 NavigationBarCircleButton(.system("arrow.clockwise"), accessibilityLabel: Text("Refresh"), action: reload)
     .disabled(isReloading)
 ```
 
 File `Components/NavigationBarCircleMenu.swift` — **`NavigationBarCircleMenu(_:accessibilityLabel:content:)`**,
-a `Menu` with the circle as its label (e.g. a ⋯ overflow):
+a `Menu` with the circle as its label (e.g. a ⋯ overflow). On iOS 16+ it uses the bar's button style, so its press
+animation and disabled dimming match the circle buttons:
 
 ```swift
 NavigationBarCircleMenu(.system("ellipsis"), accessibilityLabel: Text("More")) {
