@@ -83,6 +83,8 @@ a component already exists before building your own.
 | `List1View` | Simple label ↔ value row | [Lists & rows](docs/lists-and-rows.md) |
 | `List8View` | Label ↔ value row with an optional avatar | [Lists & rows](docs/lists-and-rows.md) |
 | `NavigationBar` | Custom three-slot nav bar + `NavigationBarElement` buttons | [Navigation & containers](docs/navigation-and-containers.md) |
+| `NavigationBarCircleButton` / `NavigationBarCircleMenu` | Bar button / menu in the nav circle, for actions with no bundled element | [Navigation & containers](docs/navigation-and-containers.md) |
+| `NavigationBarCircleIcon` | The nav bar's 34pt token circle around any icon | [Navigation & containers](docs/navigation-and-containers.md) |
 | `BottomSheet` | Sheet chrome (grabber + nav bar) with self-sizing support | [Navigation & containers](docs/navigation-and-containers.md) |
 | `MenuViewModifier` | Card chrome — rounded background + shadow | [Navigation & containers](docs/navigation-and-containers.md) |
 | `Toast` | Blurred toast — warning/info/error/success/copied/loading | [Feedback](docs/feedback.md) |

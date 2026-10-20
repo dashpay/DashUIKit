@@ -35,18 +35,41 @@ Convenience initializers let you omit any slot (e.g. only `leading`, or `central
   (`Color.dash.toolbarRoundContent`) centred in a 34×34 circle with a 1.5pt
   `Color.dash.toolbarRoundBorder` stroke, so both adapt to light/dark mode.
   `.info` is a self-contained 24×24 icon.
-- `.button(action:)` — the icon in a tappable area 44pt tall and as wide as the icon, with a press animation
-  (scale 0.88 + opacity 0.7).
+- `.button(action:)` — the icon as a button. The touch area is 44pt tall and at least 44pt wide
+  for hit testing, while the element keeps its hug width in layout (so a circle stays on the
+  bar's 20pt inset). Press animation: scale 0.88 + opacity 0.7; dimmed to 0.4 opacity while
+  `.disabled(true)`.
 
-**`NavigationBarCircleIcon { glyph }`** — the same 34pt token circle around any glyph, for a bar
-action with no bundled element (e.g. a `Menu` label). **`NavigationBarCircleButton(accessibilityLabel:action:glyph:)`**
-is that circle as a bar button, with the same touch area and press animation:
+### Custom circle actions
+
+For a bar action with no bundled element, use the same token circle with your own icon. All
+three take a `DashIconSource`: an SF Symbol (`.system`) is set in `Font.dash.subheadMedium`;
+a `.custom` / `.uiImage` asset renders at its own size, so draw it for a 34pt circle.
+`accessibilityLabel` is a `Text`, so `Text("Refresh")` is looked up in the host's string table
+like a SwiftUI `Button` title (`Text(verbatim:)` for an already-localized string).
+
+File `Components/NavigationBarCircleButton.swift` — **`NavigationBarCircleButton(_:accessibilityLabel:action:)`**,
+a bar button with the same touch area, press animation and disabled dimming as
+`NavigationBarElement.button(action:)`:
 
 ```swift
-NavigationBarCircleButton(accessibilityLabel: "Refresh", action: reload) {
-    Image(systemName: "arrow.clockwise").font(.system(size: 14, weight: .semibold))
+NavigationBarCircleButton(.system("arrow.clockwise"), accessibilityLabel: Text("Refresh"), action: reload)
+    .disabled(isReloading)
+```
+
+File `Components/NavigationBarCircleMenu.swift` — **`NavigationBarCircleMenu(_:accessibilityLabel:content:)`**,
+a `Menu` with the circle as its label (e.g. a ⋯ overflow):
+
+```swift
+NavigationBarCircleMenu(.system("ellipsis"), accessibilityLabel: Text("More")) {
+    Button("Select") { startSelecting() }
 }
 ```
+
+File `Components/NavigationBarCircleIcon.swift` — **`NavigationBarCircleIcon(_:)`**, the circle on its
+own (34×34, 1.5pt `toolbarRoundBorder` stroke, `toolbarRoundContent` tint, the whole circle
+hit-testable). `.back` / `.close` / `.plus` draw through it; reach for it only to build
+something the two above don't cover.
 
 ---
 

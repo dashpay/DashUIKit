@@ -99,33 +99,27 @@ public enum NavigationBarElement: String {
     case plus = "navigationbar-plus"
     case info = "navigationbar-info"
 
-    /// The element as drawn in the bar. `back`, `close` and `plus` are a glyph
-    /// centred in a stroked circle; `info` is a self-contained icon.
-    @MainActor @ViewBuilder
+    /// The element as drawn in the bar. `back`, `close` and `plus` are a
+    /// `NavigationBarCircleIcon`; `info` is a self-contained icon.
+    @ViewBuilder
     public var icon: some View {
         switch self {
         case .back, .close, .plus:
-            NavigationBarCircleIcon { glyph }
+            NavigationBarCircleIcon(source)
         case .info:
-            glyph
+            Image(dash: source)
+                .fixedSize()
         }
     }
 
-    @MainActor
-    private var glyph: some View {
-        Image(dash: .custom(rawValue, bundle: .module))
-            .fixedSize()
+    private var source: DashIconSource {
+        .custom(rawValue, bundle: .module)
     }
 
-    @MainActor
     public func button(action: @escaping () -> Void) -> some View {
-        Button(action: action) {
+        NavigationBarButton(accessibilityLabel: Text(accessibilityLabelText), action: action) {
             icon
-                .frame(height: 44)
-                .contentShape(Rectangle())
         }
-        .buttonStyle(NavigationBarButtonStyle())
-        .accessibilityLabel(Text(accessibilityLabelText))
     }
 
     var accessibilityLabelText: String {
@@ -138,74 +132,6 @@ public enum NavigationBarElement: String {
             return NSLocalizedString("Add", bundle: .module, comment: "DashUIKit navigation bar")
         case .info:
             return NSLocalizedString("Info", bundle: .module, comment: "DashUIKit navigation bar")
-        }
-    }
-}
-
-/// The bar's round element: any glyph centred in a 34pt circle with a 1.5pt
-/// `toolbarRoundBorder` stroke, tinted `toolbarRoundContent`. `back`, `close`
-/// and `plus` are drawn with it; use it directly for a bar action that has no
-/// bundled element (refresh, a `Menu` label).
-@available(iOS 14, macOS 11, *)
-public struct NavigationBarCircleIcon<Glyph: View>: View {
-    private let glyph: Glyph
-
-    public init(@ViewBuilder glyph: () -> Glyph) {
-        self.glyph = glyph()
-    }
-
-    public var body: some View {
-        glyph
-            .foregroundColor(.dash.toolbarRoundContent)
-            .frame(width: 34, height: 34)
-            .overlay(
-                Circle()
-                    .strokeBorder(Color.dash.toolbarRoundBorder, lineWidth: 1.5)
-            )
-    }
-}
-
-/// A `NavigationBarCircleIcon` as a bar button: the same 44pt-tall touch area
-/// and press animation as `NavigationBarElement.button(action:)`.
-@available(iOS 14, macOS 11, *)
-public struct NavigationBarCircleButton<Glyph: View>: View {
-    private let accessibilityLabel: String
-    private let action: () -> Void
-    private let glyph: Glyph
-
-    public init(
-        accessibilityLabel: String,
-        action: @escaping () -> Void,
-        @ViewBuilder glyph: () -> Glyph
-    ) {
-        self.accessibilityLabel = accessibilityLabel
-        self.action = action
-        self.glyph = glyph()
-    }
-
-    public var body: some View {
-        Button(action: action) {
-            NavigationBarCircleIcon { glyph }
-                .frame(height: 44)
-                .contentShape(Rectangle())
-        }
-        .buttonStyle(NavigationBarButtonStyle())
-        .accessibilityLabel(Text(accessibilityLabel))
-    }
-}
-
-@available(iOS 14, macOS 11, *)
-private struct NavigationBarButtonStyle: ButtonStyle {
-    @ViewBuilder
-    func makeBody(configuration: Configuration) -> some View {
-        let content = configuration.label
-            .scaleEffect(configuration.isPressed ? 0.88 : 1)
-            .opacity(configuration.isPressed ? 0.7 : 1)
-
-        if #available(iOS 15, macOS 12, *) {
-            content.animation(.easeInOut(duration: 0.12), value: configuration.isPressed)
-        } else {
-            content.animation(.easeInOut(duration: 0.12))
         }
     }
 }
@@ -269,21 +195,19 @@ private struct NavigationBarButtonStyle: ButtonStyle {
             leading: { NavigationBarElement.back.button { } },
             trailing: {
                 HStack(spacing: 8) {
-                    NavigationBarCircleButton(accessibilityLabel: "Refresh", action: { }) {
-                        Image(systemName: "arrow.clockwise")
-                            .font(.system(size: 14, weight: .semibold))
-                    }
-                    Menu {
+                    NavigationBarCircleButton(.system("arrow.clockwise"), accessibilityLabel: Text("Refresh")) { }
+                    NavigationBarCircleMenu(.system("ellipsis"), accessibilityLabel: Text("More")) {
                         Button("Action") { }
-                    } label: {
-                        NavigationBarCircleIcon {
-                            Image(systemName: "ellipsis")
-                                .font(.system(size: 14, weight: .semibold))
-                        }
-                        .frame(height: 44)
                     }
-                    .accessibilityLabel(Text("More"))
                 }
+            }
+        )
+
+        NavigationBar(
+            leading: { NavigationBarElement.back.button { } },
+            trailing: {
+                NavigationBarCircleButton(.system("arrow.clockwise"), accessibilityLabel: Text("Refresh")) { }
+                    .disabled(true)
             }
         )
     }
