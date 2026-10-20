@@ -181,3 +181,42 @@ on the right (value is right-aligned and can wrap). Useful for detail / summary 
 ```swift
 List1View(label: "Network", value: "Dash")
 ```
+
+---
+
+## List8View
+
+File `Table List/List8View.swift` · `@available(iOS 14, macOS 11, *)`
+
+A label ↔ value row with an optional round avatar before the value — for "who" rows, such as
+the recipient on a payment confirmation. Generic over the avatar view, which the row lays out
+in a fixed 24 × 24 frame and clips round; pass a view that fills its frame (a `resizable()`
+image, a shape). The library does not load images itself.
+
+```swift
+List8View(label: "To", value: "username") {
+    Image("avatar").resizable().scaledToFill()   // @ViewBuilder avatar
+}
+
+List8View(label: "To", value: "username")         // no avatar
+
+List8View(label: "To", value: name) {             // only some recipients have one
+    if let avatar { avatar.resizable().scaledToFill() }   // avatar: Image?
+}
+```
+
+A builder that produces no view (an `if` without an `else`, `EmptyView()`) takes no space: the
+row lays out as if it had no avatar. A view that is merely invisible (`Color.clear`) still takes
+the 24 pt slot. For an avatar that is still loading, draw a placeholder instead of nothing, or
+the value moves 32 pt left when the image arrives.
+
+Both texts stay on one line. When they do not fit together they share the width, so the value
+never disappears behind a long label. The value truncates in the middle by default
+("alice-of…ments"), keeping the end of a username visible; pass `truncationMode: .tail` for a
+display name ("Alexandra Kon…"). With an avatar, label and value are centred on it and
+the row is 48 pt tall; without one it is the text's height plus 12 pt above and below.
+VoiceOver reads the row as one element ("To, username") and skips the avatar.
+
+Without an avatar it differs from `List1View` on purpose: the value keeps one line (truncating,
+in the middle by default) and the row is one VoiceOver element. Use `List8View` for a recipient or other
+identifier, `List1View` for a value that should wrap.
