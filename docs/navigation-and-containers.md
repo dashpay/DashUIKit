@@ -52,14 +52,14 @@ File `Components/NavigationBarCircleButton.swift` — **`NavigationBarCircleButt
 a bar button with the same touch area, press animation and disabled dimming as
 `NavigationBarElement.button(action:)`:
 
-Each element's hit area is widened to at least 44pt beyond its 34pt circle (5pt per side), so
-put adjacent bar buttons **at least 10pt apart** (`HStack(spacing: 10)`) or the hit areas
-overlap and a tap between them goes to the later one.
-
 ```swift
 NavigationBarCircleButton(.system("arrow.clockwise"), accessibilityLabel: Text("Refresh"), action: reload)
     .disabled(isReloading)
 ```
+
+Each element's hit area is widened to at least 44pt beyond its 34pt circle (5pt per side), so
+put adjacent bar buttons **at least 10pt apart** (`HStack(spacing: 10)`) or the hit areas
+overlap and a tap between them goes to the later one.
 
 File `Components/NavigationBarCircleMenu.swift` — **`NavigationBarCircleMenu(_:accessibilityLabel:content:)`**,
 a `Menu` with the circle as its label (e.g. a ⋯ overflow). On iOS 16+ it uses the bar's button style, so its press
