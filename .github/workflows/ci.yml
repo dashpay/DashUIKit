@@ -1,22 +1,22 @@
 name: CI
 
+# After a stacked PR is retargeted (e.g. its feat/* base merged), push a commit or
+# close and reopen it: a base change fires only `edited`, which this workflow does not
+# listen to, because CodeRabbit's body edits would rebuild on every one of them.
 on:
   pull_request:
   push:
     branches:
       - master
-  workflow_dispatch:
 
 permissions:
   contents: read
 
 concurrency:
-  group: ci-${{ github.ref }}
+  # One group per commit on master, so a burst of merges does not cancel the
+  # queued run of the commit in the middle.
+  group: ci-${{ github.event_name == 'push' && github.sha || github.ref }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
-
-env:
-  # Swift tools 6.3 (Package.swift) needs Xcode 26.4 or newer.
-  XCODE_VERSION: "26.6"
 
 jobs:
   build:
@@ -28,23 +28,9 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Select Xcode
-        run: |
-          sudo xcode-select -s "/Applications/Xcode_${XCODE_VERSION}.app"
-          xcodebuild -version
-          swift --version
+      - uses: ./.github/actions/select-xcode
 
-      # The iOS deployment target is only enforced when building for iOS, so this is
-      # what catches a newer-iOS API inside a component annotated for an older floor.
-      # Debug also compiles the #if DEBUG previews; Release is what ships.
-      - name: Build Debug
-        run: |
-          xcodebuild -scheme DashUIKit \
-            -destination 'generic/platform=iOS Simulator' \
-            -configuration Debug \
-            CODE_SIGNING_ALLOWED=NO \
-            -quiet build
-
+      # Release is what ships. The Debug build (previews included) happens in Test.
       - name: Build Release
         run: |
           xcodebuild -scheme DashUIKit \
@@ -52,6 +38,11 @@ jobs:
             -configuration Release \
             CODE_SIGNING_ALLOWED=NO \
             -quiet build
+
+      # xcodebuild raises the deployment target to the SDK's minimum, so it misses
+      # APIs newer than the package's own floor; this checks against the floor.
+      - name: Type-check at the iOS deployment target
+        run: .github/scripts/typecheck-ios-floor.sh
 
   test:
     name: Test
@@ -62,45 +53,39 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Select Xcode
-        run: |
-          sudo xcode-select -s "/Applications/Xcode_${XCODE_VERSION}.app"
-          xcodebuild -version
-
-      - name: Pick an iPhone simulator
-        run: |
-          udid=$(xcrun simctl list devices available -j | jq -r '
-            [.devices | to_entries | sort_by(.key)[]
-              | select(.key | test("iOS"))
-              | .value[] | select(.name | startswith("iPhone"))]
-            | last | .udid // empty')
-          if [ -z "$udid" ]; then
-            echo "::error::No available iPhone simulator on this runner"
-            xcrun simctl list devices available
-            exit 1
-          fi
-          echo "Using simulator $udid"
-          echo "SIMULATOR_UDID=$udid" >> "$GITHUB_ENV"
+      - uses: ./.github/actions/select-xcode
 
       # On the simulator, not macOS: UIKit-only files are compiled out on macOS.
+      # Without -quiet so the failure reason and the executed-test count are in the log;
+      # no diagnostics collection, which adds ~10 minutes to every failing run.
       - name: Run tests
         run: |
+          udid=$(.github/scripts/pick-simulator.sh)
           xcodebuild -scheme DashUIKit \
-            -destination "platform=iOS Simulator,id=${SIMULATOR_UDID}" \
+            -destination "platform=iOS Simulator,id=${udid}" \
+            -collect-test-diagnostics never \
             CODE_SIGNING_ALLOWED=NO \
-            -quiet test
+            test
 
   actionlint:
     name: Lint workflows
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    env:
+      ACTIONLINT_VERSION: "1.7.12"
+      ACTIONLINT_SHA256: 8aca8db96f1b94770f1b0d72b6dddcb1ebb8123cb3712530b08cc387b349a3d8
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
 
-      # actionlint ships no action; its download script is pinned to the v1.7.12 commit.
-      - name: Run actionlint
+      # actionlint ships no action. Dependabot cannot see this pin: bump it by hand.
+      - name: Install actionlint
         run: |
-          bash <(curl -sSfL https://raw.githubusercontent.com/rhysd/actionlint/914e7df21a07ef503a81201c76d2b11c789d3fca/scripts/download-actionlint.bash) 1.7.12
-          ./actionlint -color
+          tarball="actionlint_${ACTIONLINT_VERSION}_linux_amd64.tar.gz"
+          curl -sSfLo "$tarball" "https://github.com/rhysd/actionlint/releases/download/v${ACTIONLINT_VERSION}/${tarball}"
+          echo "${ACTIONLINT_SHA256}  ${tarball}" | sha256sum -c -
+          tar xzf "$tarball" actionlint
+
+      - name: Run actionlint
+        run: ./actionlint -color

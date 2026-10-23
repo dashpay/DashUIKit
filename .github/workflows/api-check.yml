@@ -1,7 +1,9 @@
 name: API check
 
 # Separate from CI so that editing the PR title (adding or removing "!") re-runs only
-# this check, not the build and tests.
+# this check, not the build and tests. `edited` also fires on body edits (CodeRabbit
+# writes its summary there); a job-level `if` to skip those would report the skipped
+# run as a success over an earlier failure, so they run in full.
 on:
   pull_request:
     types:
@@ -15,11 +17,8 @@ permissions:
 
 concurrency:
   group: api-check-${{ github.ref }}
-  cancel-in-progress: true
-
-env:
-  # Swift tools 6.3 (Package.swift) needs Xcode 26.4 or newer.
-  XCODE_VERSION: "26.6"
+  # A body edit must not cancel a running check and leave the required check pending.
+  cancel-in-progress: false
 
 jobs:
   api:
@@ -29,29 +28,38 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          fetch-depth: 0
+          # The PR merge commit and its first parent, the base it was merged onto.
+          fetch-depth: 2
           persist-credentials: false
 
-      - name: Select Xcode
-        run: |
-          sudo xcode-select -s "/Applications/Xcode_${XCODE_VERSION}.app"
-          swift --version
+      - uses: ./.github/actions/select-xcode
 
       # A breaking change to the public API is allowed only when the PR title says so
       # with a conventional-commit "!" (e.g. "feat!: …", "feat(scope)!: …").
+      #
+      # Built for the iOS Simulator: on the macOS host every `#if canImport(UIKit)`
+      # file is compiled out, so their public API would never be compared.
+      # The baseline is HEAD^1, not origin/<base>: on a re-run the base may have moved
+      # past the merge commit under test, and its new API would read as removed.
       - name: Diagnose API breaking changes
         env:
           BASE_REF: ${{ github.base_ref }}
           PR_TITLE: ${{ github.event.pull_request.title }}
         run: |
+          sdk_path=$(xcrun --sdk iphonesimulator --show-sdk-path)
+          sdk_version=$(xcrun --sdk iphonesimulator --show-sdk-version)
+
           set +e
-          report=$(swift package diagnose-api-breaking-changes "origin/${BASE_REF}" 2>&1)
+          report=$(swift package \
+            --triple "arm64-apple-ios${sdk_version}-simulator" \
+            --sdk "$sdk_path" \
+            diagnose-api-breaking-changes HEAD^1 2>&1)
           status=$?
           set -e
           echo "$report"
 
           {
-            echo "## API compatibility vs \`${BASE_REF}\`"
+            echo "## API compatibility vs \`${BASE_REF}\` ($(git rev-parse --short HEAD^1))"
             echo '```'
             echo "$report"
             echo '```'
@@ -63,11 +71,12 @@ jobs:
           fi
 
           if ! grep -q "API breakage" <<< "$report"; then
-            echo "::error::diagnose-api-breaking-changes failed without reporting a breakage (see log)"
+            echo "::error::diagnose-api-breaking-changes failed without reporting a breakage. The base (${BASE_REF}) or this PR may not build for the iOS Simulator; see the log."
             exit "$status"
           fi
 
-          if grep -Eq '^[a-z]+(\([^)]*\))?!:' <<< "$PR_TITLE"; then
+          # Same shape the semantic PR title check parses: type, optional scope, "!: ".
+          if grep -Eq '^[A-Za-z0-9_]+(\(.*\))?!: ' <<< "$PR_TITLE"; then
             echo "Breaking change is declared in the PR title."
             exit 0
           fi
