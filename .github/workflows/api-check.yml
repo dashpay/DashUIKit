@@ -1,0 +1,56 @@
+name: Breaking changes
+
+# Separate from CI so that editing the PR title (adding or removing "!") re-runs only
+# this check, not the build and tests. `edited` also fires on body edits (CodeRabbit
+# writes its summary there); a job-level `if` to skip those would report the skipped
+# run as a success over an earlier failure, so they run in full.
+on:
+  pull_request:
+    types:
+      - opened
+      - edited
+      - synchronize
+      - reopened
+
+permissions:
+  contents: read
+  pull-requests: read
+
+concurrency:
+  group: api-check-${{ github.ref }}
+  # A new commit replaces the run for the old one; a body edit must not cancel a
+  # running check and leave the required check pending.
+  cancel-in-progress: ${{ github.event.action == 'synchronize' }}
+
+jobs:
+  api:
+    name: Public API, iOS floor, tools version
+    # `edited` also fires on closed PRs, whose merge ref is gone or stale. Nothing
+    # earlier on a closed PR can be hidden by this skip.
+    if: github.event.pull_request.state == 'open'
+    runs-on: macos-26
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # The PR merge commit and its first parent, the base it was merged onto.
+          fetch-depth: 2
+          persist-credentials: false
+
+      - uses: ./.github/actions/select-xcode
+
+      # Allowed only when the PR title declares it with "!" (see the script header).
+      # The title is read live: a re-run reuses the original event payload, whose
+      # title may have changed since.
+      - name: Diagnose breaking changes
+        env:
+          BASE_REF: ${{ github.base_ref }}
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          REPO: ${{ github.repository }}
+        run: |
+          PR_TITLE=$(gh api "repos/${REPO}/pulls/${PR_NUMBER}" --jq .title)
+          export PR_TITLE
+          # The build below runs PR code (manifest, macros); it needs no token.
+          unset GH_TOKEN
+          .github/scripts/api-check.sh

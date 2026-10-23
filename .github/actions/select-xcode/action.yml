@@ -1,0 +1,18 @@
+name: Select Xcode
+description: Select the Xcode that CI builds DashUIKit with.
+
+inputs:
+  version:
+    # Swift tools 6.3 (Package.swift) needs Xcode 26.4 or newer.
+    description: Xcode version, as in /Applications/Xcode_<version>.app on the runner image.
+    default: "26.6"
+
+runs:
+  using: composite
+  steps:
+    - name: Select Xcode
+      shell: bash
+      env:
+        XCODE_VERSION: ${{ inputs.version }}
+      # The logic lives in a script so the shellcheck step covers it.
+      run: '"${GITHUB_ACTION_PATH}/../../scripts/select-xcode.sh" "$XCODE_VERSION"'

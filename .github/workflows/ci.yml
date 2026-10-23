@@ -1,0 +1,95 @@
+name: CI
+
+# After a stacked PR is retargeted (e.g. its feat/* base merged), push a commit or
+# close and reopen it: a base change fires only `edited`, which this workflow does not
+# listen to, because CodeRabbit's body edits would rebuild on every one of them.
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+
+permissions:
+  contents: read
+
+concurrency:
+  # One group per commit on master, so a burst of merges does not cancel the
+  # queued run of the commit in the middle.
+  group: ci-${{ github.event_name == 'push' && github.sha || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  build:
+    name: "Build: iOS device + macOS"
+    runs-on: macos-26
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: ./.github/actions/select-xcode
+
+      # Release for devices is what ships. The Debug simulator build (previews
+      # included) happens in Test.
+      - name: Build Release
+        run: |
+          xcodebuild -scheme DashUIKit \
+            -destination 'generic/platform=iOS' \
+            -configuration Release \
+            CODE_SIGNING_ALLOWED=NO \
+            -quiet build
+
+      # The documented local build; also compiles the macOS/AppKit branches.
+      - name: Build for macOS
+        run: swift build
+
+  test:
+    name: Unit tests (iOS Simulator)
+    runs-on: macos-26
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: ./.github/actions/select-xcode
+
+      # On the simulator, not macOS: UIKit-only files are compiled out on macOS.
+      # Without -quiet so the failure reason and the executed-test count are in the log;
+      # no diagnostics collection, which adds ~10 minutes to every failing run.
+      - name: Run tests
+        run: |
+          udid=$(.github/scripts/pick-simulator.sh)
+          xcodebuild -scheme DashUIKit \
+            -destination "platform=iOS Simulator,id=${udid}" \
+            -collect-test-diagnostics never \
+            CODE_SIGNING_ALLOWED=NO \
+            test
+
+  actionlint:
+    name: Lint CI config (actionlint, shellcheck)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      ACTIONLINT_VERSION: "1.7.12"
+      ACTIONLINT_SHA256: 8aca8db96f1b94770f1b0d72b6dddcb1ebb8123cb3712530b08cc387b349a3d8
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      # actionlint ships no action. Dependabot cannot see this pin: bump it by hand.
+      - name: Install actionlint
+        run: |
+          tarball="actionlint_${ACTIONLINT_VERSION}_linux_amd64.tar.gz"
+          curl -sSfLo "$tarball" "https://github.com/rhysd/actionlint/releases/download/v${ACTIONLINT_VERSION}/${tarball}"
+          echo "${ACTIONLINT_SHA256}  ${tarball}" | sha256sum -c -
+          tar xzf "$tarball" actionlint
+
+      - name: Run actionlint
+        run: ./actionlint -color
+
+      # actionlint only checks inline run: blocks.
+      - name: Run shellcheck on scripts
+        run: shellcheck .github/scripts/*.sh
