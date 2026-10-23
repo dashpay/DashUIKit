@@ -1,39 +1,59 @@
 #!/usr/bin/env bash
 # Type-checks the library at the iOS floor declared in Package.swift.
 #
-# xcodebuild clamps the deployment target to the SDK's own minimum (iOS 15 on
-# Xcode 27), so an iOS 15-only API inside an iOS 14 component builds cleanly
-# there. swiftc accepts the real floor for a type-check, so run it directly,
-# once as Release and once with DEBUG to cover the previews.
+# xcodebuild raises the deployment target to the SDK's own minimum (iOS 15 on
+# current Xcodes), so an API newer than the package's floor can build cleanly
+# there. swiftc accepts the real floor for a type-check, so run it directly.
+#
+# The flags mirror what SwiftPM passes for this manifest. Package.swift shapes
+# they do not model fail here loudly instead of checking the wrong thing.
+# Xcode-generated asset symbols (ColorResource, ImageResource) do not exist here;
+# the library resolves assets by name (Color.dash, DashIcon), not through them.
 set -euo pipefail
 
-floor=$(grep -oE '\.iOS\(\.v[0-9]+' Package.swift | grep -oE '[0-9]+$' || true)
-if [ -z "$floor" ]; then
-  echo "::error::Could not read the iOS deployment target from Package.swift"
+scripts=$(cd "$(dirname "$0")" && pwd)
+
+manifest_body=$(grep -vE '^[[:space:]]*//' Package.swift)
+for construct in '.package(' 'swiftSettings' 'swiftLanguageModes' 'exclude:' 'path:' ' sources:'; do
+  if grep -qF -- "$construct" <<< "$manifest_body"; then
+    echo "::error::Package.swift uses '${construct# }', which typecheck-ios-floor.sh does not model; update the script" >&2
+    exit 1
+  fi
+done
+targets=$(grep -cE '\.target\(' <<< "$manifest_body" || true)
+if [ "$targets" -ne 1 ]; then
+  echo "::error::typecheck-ios-floor.sh expects one library target in Package.swift, found ${targets}" >&2
   exit 1
 fi
 
+floor=$("$scripts/ios-floor.sh" Package.swift)
+
 # SwiftPM generates Bundle.module for the resource bundle; swiftc alone does not.
+# No EXIT trap for cleanup: on bash 3.2 it turns an unbound-variable abort into exit 0.
 stub_dir=$(mktemp -d)
 stub="$stub_dir/BundleModule.swift"
 printf 'import Foundation\nextension Foundation.Bundle { static let module = Bundle.main }\n' > "$stub"
-trap 'rm -rf "$stub_dir"' EXIT
 
 sources=()
 while IFS= read -r -d '' file; do
   sources+=("$file")
 done < <(find Sources/DashUIKit -name '*.swift' -print0)
+if [ "${#sources[@]}" -eq 0 ]; then
+  echo "::error::No Swift sources found under Sources/DashUIKit" >&2
+  exit 1
+fi
 
-for config in Release Debug; do
-  defines=()
-  if [ "$config" = Debug ]; then
-    defines=(-DDEBUG)
-  fi
-  echo "Type-checking ${#sources[@]} files for iOS ${floor} (${config})"
-  xcrun --sdk iphonesimulator swiftc -typecheck \
-    -swift-version 6 \
-    -target "arm64-apple-ios${floor}.0-simulator" \
-    -module-name DashUIKit \
-    "${defines[@]+"${defines[@]}"}" \
-    "$stub" "${sources[@]}"
-done
+# DEBUG on: the previews are type-checked too, and no source has a release-only branch.
+echo "Type-checking ${#sources[@]} files for iOS ${floor}"
+xcrun --sdk iphonesimulator swiftc -typecheck \
+  -swift-version 6 \
+  -target "arm64-apple-ios${floor}-simulator" \
+  -module-name DashUIKit \
+  -package-name DashUIKit \
+  -parse-as-library \
+  -DSWIFT_PACKAGE \
+  -DSWIFT_MODULE_RESOURCE_BUNDLE_AVAILABLE \
+  -DDEBUG \
+  "$stub" "${sources[@]}"
+
+rm -rf "$stub_dir"

@@ -14,11 +14,13 @@ on:
 
 permissions:
   contents: read
+  pull-requests: read
 
 concurrency:
   group: api-check-${{ github.ref }}
-  # A body edit must not cancel a running check and leave the required check pending.
-  cancel-in-progress: false
+  # A new commit replaces the run for the old one; a body edit must not cancel a
+  # running check and leave the required check pending.
+  cancel-in-progress: ${{ github.event.action == 'synchronize' }}
 
 jobs:
   api:
@@ -34,52 +36,16 @@ jobs:
 
       - uses: ./.github/actions/select-xcode
 
-      # A breaking change to the public API is allowed only when the PR title says so
-      # with a conventional-commit "!" (e.g. "feat!: …", "feat(scope)!: …").
-      #
-      # Built for the iOS Simulator: on the macOS host every `#if canImport(UIKit)`
-      # file is compiled out, so their public API would never be compared.
-      # The baseline is HEAD^1, not origin/<base>: on a re-run the base may have moved
-      # past the merge commit under test, and its new API would read as removed.
-      - name: Diagnose API breaking changes
+      # Allowed only when the PR title declares it with "!" (see the script header).
+      # The title is read live: a re-run reuses the original event payload, whose
+      # title may have changed since.
+      - name: Diagnose breaking changes
         env:
           BASE_REF: ${{ github.base_ref }}
-          PR_TITLE: ${{ github.event.pull_request.title }}
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          REPO: ${{ github.repository }}
         run: |
-          sdk_path=$(xcrun --sdk iphonesimulator --show-sdk-path)
-          sdk_version=$(xcrun --sdk iphonesimulator --show-sdk-version)
-
-          set +e
-          report=$(swift package \
-            --triple "arm64-apple-ios${sdk_version}-simulator" \
-            --sdk "$sdk_path" \
-            diagnose-api-breaking-changes HEAD^1 2>&1)
-          status=$?
-          set -e
-          echo "$report"
-
-          {
-            echo "## API compatibility vs \`${BASE_REF}\` ($(git rev-parse --short HEAD^1))"
-            echo '```'
-            echo "$report"
-            echo '```'
-          } >> "$GITHUB_STEP_SUMMARY"
-
-          if [ "$status" -eq 0 ]; then
-            echo "No breaking changes."
-            exit 0
-          fi
-
-          if ! grep -q "API breakage" <<< "$report"; then
-            echo "::error::diagnose-api-breaking-changes failed without reporting a breakage. The base (${BASE_REF}) or this PR may not build for the iOS Simulator; see the log."
-            exit "$status"
-          fi
-
-          # Same shape the semantic PR title check parses: type, optional scope, "!: ".
-          if grep -Eq '^[A-Za-z0-9_]+(\(.*\))?!: ' <<< "$PR_TITLE"; then
-            echo "Breaking change is declared in the PR title."
-            exit 0
-          fi
-
-          echo "::error::This PR breaks the public API. Mark the title as breaking (e.g. \"feat!: …\") and describe it under \"Breaking Changes\" in the PR description."
-          exit 1
+          PR_TITLE=$(gh api "repos/${REPO}/pulls/${PR_NUMBER}" --jq .title)
+          export PR_TITLE
+          .github/scripts/api-check.sh

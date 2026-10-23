@@ -31,13 +31,19 @@ jobs:
       - uses: ./.github/actions/select-xcode
 
       # Release is what ships. The Debug build (previews included) happens in Test.
+      # arm64 only: the x86_64 simulator slice adds compile time and no coverage.
       - name: Build Release
         run: |
           xcodebuild -scheme DashUIKit \
             -destination 'generic/platform=iOS Simulator' \
             -configuration Release \
+            ARCHS=arm64 \
             CODE_SIGNING_ALLOWED=NO \
             -quiet build
+
+      # The documented local build; also compiles the macOS/AppKit branches.
+      - name: Build for macOS
+        run: swift build
 
       # xcodebuild raises the deployment target to the SDK's minimum, so it misses
       # APIs newer than the package's own floor; this checks against the floor.
@@ -89,3 +95,7 @@ jobs:
 
       - name: Run actionlint
         run: ./actionlint -color
+
+      # actionlint only checks inline run: blocks.
+      - name: Run shellcheck on scripts
+        run: shellcheck .github/scripts/*.sh
