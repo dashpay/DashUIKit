@@ -1,0 +1,106 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  # Swift tools 6.3 (Package.swift) needs Xcode 26.4 or newer.
+  XCODE_VERSION: "26.6"
+
+jobs:
+  build:
+    name: Build (iOS)
+    runs-on: macos-26
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Select Xcode
+        run: |
+          sudo xcode-select -s "/Applications/Xcode_${XCODE_VERSION}.app"
+          xcodebuild -version
+          swift --version
+
+      # The iOS deployment target is only enforced when building for iOS, so this is
+      # what catches a newer-iOS API inside a component annotated for an older floor.
+      # Debug also compiles the #if DEBUG previews; Release is what ships.
+      - name: Build Debug
+        run: |
+          xcodebuild -scheme DashUIKit \
+            -destination 'generic/platform=iOS Simulator' \
+            -configuration Debug \
+            CODE_SIGNING_ALLOWED=NO \
+            -quiet build
+
+      - name: Build Release
+        run: |
+          xcodebuild -scheme DashUIKit \
+            -destination 'generic/platform=iOS Simulator' \
+            -configuration Release \
+            CODE_SIGNING_ALLOWED=NO \
+            -quiet build
+
+  test:
+    name: Test
+    runs-on: macos-26
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Select Xcode
+        run: |
+          sudo xcode-select -s "/Applications/Xcode_${XCODE_VERSION}.app"
+          xcodebuild -version
+
+      - name: Pick an iPhone simulator
+        run: |
+          udid=$(xcrun simctl list devices available -j | jq -r '
+            [.devices | to_entries | sort_by(.key)[]
+              | select(.key | test("iOS"))
+              | .value[] | select(.name | startswith("iPhone"))]
+            | last | .udid // empty')
+          if [ -z "$udid" ]; then
+            echo "::error::No available iPhone simulator on this runner"
+            xcrun simctl list devices available
+            exit 1
+          fi
+          echo "Using simulator $udid"
+          echo "SIMULATOR_UDID=$udid" >> "$GITHUB_ENV"
+
+      # On the simulator, not macOS: UIKit-only files are compiled out on macOS.
+      - name: Run tests
+        run: |
+          xcodebuild -scheme DashUIKit \
+            -destination "platform=iOS Simulator,id=${SIMULATOR_UDID}" \
+            CODE_SIGNING_ALLOWED=NO \
+            -quiet test
+
+  actionlint:
+    name: Lint workflows
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      # actionlint ships no action; its download script is pinned to the v1.7.12 commit.
+      - name: Run actionlint
+        run: |
+          bash <(curl -sSfL https://raw.githubusercontent.com/rhysd/actionlint/914e7df21a07ef503a81201c76d2b11c789d3fca/scripts/download-actionlint.bash) 1.7.12
+          ./actionlint -color

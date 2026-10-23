@@ -1,0 +1,76 @@
+name: API check
+
+# Separate from CI so that editing the PR title (adding or removing "!") re-runs only
+# this check, not the build and tests.
+on:
+  pull_request:
+    types:
+      - opened
+      - edited
+      - synchronize
+      - reopened
+
+permissions:
+  contents: read
+
+concurrency:
+  group: api-check-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # Swift tools 6.3 (Package.swift) needs Xcode 26.4 or newer.
+  XCODE_VERSION: "26.6"
+
+jobs:
+  api:
+    name: API compatibility
+    runs-on: macos-26
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Select Xcode
+        run: |
+          sudo xcode-select -s "/Applications/Xcode_${XCODE_VERSION}.app"
+          swift --version
+
+      # A breaking change to the public API is allowed only when the PR title says so
+      # with a conventional-commit "!" (e.g. "feat!: …", "feat(scope)!: …").
+      - name: Diagnose API breaking changes
+        env:
+          BASE_REF: ${{ github.base_ref }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+        run: |
+          set +e
+          report=$(swift package diagnose-api-breaking-changes "origin/${BASE_REF}" 2>&1)
+          status=$?
+          set -e
+          echo "$report"
+
+          {
+            echo "## API compatibility vs \`${BASE_REF}\`"
+            echo '```'
+            echo "$report"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          if [ "$status" -eq 0 ]; then
+            echo "No breaking changes."
+            exit 0
+          fi
+
+          if ! grep -q "API breakage" <<< "$report"; then
+            echo "::error::diagnose-api-breaking-changes failed without reporting a breakage (see log)"
+            exit "$status"
+          fi
+
+          if grep -Eq '^[a-z]+(\([^)]*\))?!:' <<< "$PR_TITLE"; then
+            echo "Breaking change is declared in the PR title."
+            exit 0
+          fi
+
+          echo "::error::This PR breaks the public API. Mark the title as breaking (e.g. \"feat!: …\") and describe it under \"Breaking Changes\" in the PR description."
+          exit 1
