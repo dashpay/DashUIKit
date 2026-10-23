@@ -1,4 +1,4 @@
-name: API check
+name: Breaking changes
 
 # Separate from CI so that editing the PR title (adding or removing "!") re-runs only
 # this check, not the build and tests. `edited` also fires on body edits (CodeRabbit
@@ -24,7 +24,7 @@ concurrency:
 
 jobs:
   api:
-    name: API compatibility
+    name: Public API, iOS floor, tools version
     # `edited` also fires on closed PRs, whose merge ref is gone or stale. Nothing
     # earlier on a closed PR can be hidden by this skip.
     if: github.event.pull_request.state == 'open'

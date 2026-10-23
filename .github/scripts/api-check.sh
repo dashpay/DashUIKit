@@ -48,9 +48,12 @@ sdk_path=$(xcrun --sdk iphonesimulator --show-sdk-path)
 # No OS version in the triple: SwiftPM picks the deployment target (the package
 # floor, raised to the SDK's minimum where the floor is older).
 # Streamed through tee so a hung build still leaves a log.
+# swiftbuild explicitly: with the native build system (the default on Swift 6.3)
+# an iOS cross-build makes the digester fail with "Unable to parse empty data".
 log=$(mktemp)
 set +e
 swift package \
+  --build-system swiftbuild \
   --triple arm64-apple-ios-simulator \
   --sdk "$sdk_path" \
   diagnose-api-breaking-changes HEAD^1 2>&1 | tee "$log"
@@ -66,7 +69,7 @@ if [ -z "$verdict" ]; then
 fi
 
 {
-  echo "## API compatibility vs \`${BASE_REF:-base}\` (${base_short})"
+  echo "## Breaking changes vs \`${BASE_REF:-base}\` (${base_short})"
   echo
   echo "iOS deployment target: ${base_floor} → ${head_floor}, swift-tools-version: ${base_tools} → ${head_tools}"
   echo '```'
