@@ -72,8 +72,10 @@ SearchBar(text: $query, placeholder: "Search coins")   // placeholder optional
 
 Behavior:
 
-- Uses `@FocusState`; an animated **Cancel** button
-  slides in while editing (clears text + resigns focus on tap).
+- An animated **Cancel** button slides in while the field has focus (clears text + resigns
+  focus on tap).
+- Typed text is `.subhead` in `Color.dash.primaryText`, the same size as the placeholder.
+  Like every `Font.dash` token it is a fixed size and does not scale with Dynamic Type.
 
 Default placeholder is the localized "Search". Background uses `Color.dash.searchBackground`.
 
