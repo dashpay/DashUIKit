@@ -7,9 +7,13 @@ set -euo pipefail
 sdk=$(xcrun --sdk iphonesimulator --show-sdk-version)
 
 # Through files, not --argjson: the device list can outgrow the argument limit.
+work=$(mktemp -d)
+xcrun simctl list runtimes available -j > "$work/runtimes.json"
+xcrun simctl list devices available -j > "$work/devices.json"
+
 udid=$(jq -rn --arg sdk "$sdk" \
-  --slurpfile runtimes <(xcrun simctl list runtimes available -j) \
-  --slurpfile devices <(xcrun simctl list devices available -j) '
+  --slurpfile runtimes "$work/runtimes.json" \
+  --slurpfile devices "$work/devices.json" '
   def mm: split(".") | map(tonumber) | .[0:2];
   [$runtimes[0].runtimes[]
     | select(.platform == "iOS" and (.version | mm) <= ($sdk | mm))
@@ -19,6 +23,7 @@ udid=$(jq -rn --arg sdk "$sdk" \
     | {version: ($rt.version | split(".") | map(tonumber)), runtime: $rt.identifier, udid: (last | .udid)}]
   | sort_by(.version) | last
   | if . == null then empty else "\(.udid) \(.runtime)" end')
+rm -rf "$work"
 
 if [ -z "$udid" ]; then
   echo "::error::No iOS runtime <= SDK ${sdk} with an available iPhone simulator" >&2

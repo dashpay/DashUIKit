@@ -30,14 +30,13 @@ jobs:
 
       - uses: ./.github/actions/select-xcode
 
-      # Release is what ships. The Debug build (previews included) happens in Test.
-      # arm64 only: the x86_64 simulator slice adds compile time and no coverage.
+      # Release for devices is what ships. The Debug simulator build (previews
+      # included) happens in Test.
       - name: Build Release
         run: |
           xcodebuild -scheme DashUIKit \
-            -destination 'generic/platform=iOS Simulator' \
+            -destination 'generic/platform=iOS' \
             -configuration Release \
-            ARCHS=arm64 \
             CODE_SIGNING_ALLOWED=NO \
             -quiet build
 

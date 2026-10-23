@@ -25,6 +25,9 @@ concurrency:
 jobs:
   api:
     name: API compatibility
+    # `edited` also fires on closed PRs, whose merge ref is gone or stale. Nothing
+    # earlier on a closed PR can be hidden by this skip.
+    if: github.event.pull_request.state == 'open'
     runs-on: macos-26
     timeout-minutes: 30
     steps:
@@ -48,4 +51,6 @@ jobs:
         run: |
           PR_TITLE=$(gh api "repos/${REPO}/pulls/${PR_NUMBER}" --jq .title)
           export PR_TITLE
+          # The build below runs PR code (manifest, macros); it needs no token.
+          unset GH_TOKEN
           .github/scripts/api-check.sh

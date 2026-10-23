@@ -22,15 +22,16 @@ breaks=()
 
 base_floor=$(git show HEAD^1:Package.swift | "$scripts/ios-floor.sh" /dev/stdin "Package.swift at HEAD^1")
 head_floor=$("$scripts/ios-floor.sh" Package.swift)
-version_gt() {
+# version_raised OLD NEW: true when NEW is higher than OLD.
+version_raised() {
   awk -v a="$1" -v b="$2" 'BEGIN { split(a, x, "."); split(b, y, "."); for (i = 1; i <= 3; i++) { if (y[i] + 0 != x[i] + 0) exit !(y[i] + 0 > x[i] + 0) } exit 1 }'
 }
-if version_gt "$base_floor" "$head_floor"; then
+if version_raised "$base_floor" "$head_floor"; then
   breaks+=("iOS deployment target raised from ${base_floor} to ${head_floor}")
 fi
 
 tools_version() {
-  head -n 1 | grep -oE 'swift-tools-version: ?[0-9.]+' | grep -oE '[0-9.]+$' || true
+  head -n 1 | grep -ioE 'swift-tools-version:[[:space:]]*[0-9.]+' | grep -oE '[0-9.]+$' || true
 }
 base_tools=$(git show HEAD^1:Package.swift | tools_version)
 head_tools=$(tools_version < Package.swift)
@@ -38,7 +39,7 @@ if [ -z "$base_tools" ] || [ -z "$head_tools" ]; then
   echo "::error::Could not read swift-tools-version from Package.swift (base '${base_tools}', head '${head_tools}')"
   exit 1
 fi
-if version_gt "$base_tools" "$head_tools"; then
+if version_raised "$base_tools" "$head_tools"; then
   breaks+=("swift-tools-version raised from ${base_tools} to ${head_tools}")
 fi
 
@@ -79,8 +80,7 @@ if [ "$status" -ne 0 ]; then
     exit "$status"
   fi
   counted=$(grep 'API breakage:' <<< "$report" \
-    | grep -vE 'enumelement DashIcon\.[A-Za-z0-9_.]+ has been added as a new enum case' \
-    | sort -u || true)
+    | grep -vE 'enumelement DashIcon\.[A-Za-z0-9_.]+ has been added as a new enum case' || true)
   if [ -n "$counted" ]; then
     breaks+=("public API changed, see the report above")
   else
