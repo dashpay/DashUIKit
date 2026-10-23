@@ -13,8 +13,9 @@
 #      a namespace (names would gain a "Folder/" prefix);
 #   5. no color built from components (red:, white:, hue:, gray:, .sRGB, hex,
 #      #colorLiteral) outside Color+DashUI.swift, where tokens are defined;
-#   6. every NSLocalizedString / String(localized:) / AttributedString(localized:)
-#      call with a literal key passes the package bundle;
+#   6. every NSLocalizedString call, and every String(localized:) /
+#      AttributedString(localized:) call with a literal key, passes the package
+#      bundle;
 #   7. no @available / #available / #unavailable for an iOS or macOS version at or
 #      below the Package.swift floor: the floor already covers it. Newer versions
 #      may still be annotated or checked.
@@ -253,7 +254,11 @@ find "$src" -name '*.swift' -print0 | sort -z |
           if (platform ~ /^(iOS|macCatalyst)(ApplicationExtension)?$/) floor = ios_floor
           else if (platform ~ /^macOS(ApplicationExtension)?$/) floor = mac_floor
           else continue
-          if (le(version, floor))
+          if (!le(version, floor)) continue
+          # introduced: next to deprecated:/obsoleted:/… : only introduced: can go.
+          if (arg("deprecated") || arg("obsoleted") || arg("renamed") || arg("message"))
+            out(li, "introduced: " version " for " platform " is at or below the package floor (" floor "); remove only introduced:, keep the rest of the attribute")
+          else
             out(li, "availability check for " platform " " version " is at or below the package floor (" floor "), declared once in Package.swift; drop it (CLAUDE.md, Deployment target)")
         }
       }
@@ -373,9 +378,11 @@ awk -v f="$colors" '
   {
     line = $0
     sub(/[[:space:]]*\/\/.*$/, "", line)
-    while (match(line, /dashAsset\("[^"]+"\)/)) {
-      print substr(line, RSTART + 11, RLENGTH - 13) "\t" f "\t" FNR
+    while (match(line, /dashAsset[[:space:]]*\([[:space:]]*"[^"]+"[[:space:]]*\)/)) {
+      call = substr(line, RSTART, RLENGTH)
       line = substr(line, RSTART + RLENGTH)
+      match(call, /"[^"]+"/)
+      print substr(call, RSTART + 1, RLENGTH - 2) "\t" f "\t" FNR
     }
   }' "$colors" > "$color_tokens"
 color_used=$work/color-used

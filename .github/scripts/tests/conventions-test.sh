@@ -123,7 +123,7 @@ expect "no imagesets at all" fail 'no imageset found'
 fresh; dir=$(first_set colorset); cp -R "$dir" "${dir%/*}/OrphanColor.colorset"
 expect "orphan colorset" fail 'colorset "OrphanColor" is not referenced'
 
-fresh; echo 'let fixtureToken = dashAsset("NoSuchToken")' >> "$work/tree/$src/Foundation/Color+DashUI.swift"
+fresh; echo 'let fixtureToken = dashAsset( "NoSuchToken" )' >> "$work/tree/$src/Foundation/Color+DashUI.swift"
 expect "token without colorset" fail 'Color+DashUI.swift:' 'no colorset named "NoSuchToken"'
 
 fresh; echo "let fixtureToken = 1 // was dashAsset(\"NoSuchToken\")" >> "$work/tree/$src/Foundation/Color+DashUI.swift"
@@ -296,14 +296,17 @@ fresh; write_fixture \
   '    macOS 10.15, *)' \
   'struct D {}' \
   'func e() { if #available(iOS 13, *) {} }' \
-  'func f() { if #unavailable(iOS 13) {} }'
+  'func f() { if #unavailable(iOS 13) {} }' \
+  '@available(iOS, introduced: 13, deprecated: 99, message: "Use X")' \
+  'struct G {}'
 expect "@available at or below the floor" fail \
   "${fixture}:1: availability check for iOS 13 is at or below the package floor" \
   "${fixture}:3: availability check for iOS 13 is at or below" \
   "${fixture}:5: availability check for macCatalystApplicationExtension 13 is at or below" \
   "${fixture}:7: availability check for macOS 10.15 is at or below the package floor" \
   "${fixture}:10: availability check for iOS 13 is at or below" \
-  "${fixture}:11: availability check for iOS 13 is at or below"
+  "${fixture}:11: availability check for iOS 13 is at or below" \
+  "${fixture}:12: introduced: 13 for iOS is at or below the package floor"
 
 fresh; write_fixture \
   '@available(*, deprecated, message: "x")' \
