@@ -87,7 +87,7 @@ public struct RadioButtonRow: View {
                         .frame(width: isSelected ? 21 : 24, height: isSelected ? 21 : 24)
                         .padding(.trailing, isSelected ? 2 : 0)
                 case .checkbox:
-                    Image(dash: .custom(isSelected ? "icon_checkbox_square_checked" : "icon_checkbox_square", bundle: .dashUIKit))
+                    (isSelected ? DashIcon.Checkbox.checkmarkChecked : .checkmarkUnchecked).image
                         .resizable()
                         .frame(width: 24, height: 24)
                 }

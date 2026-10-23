@@ -166,8 +166,8 @@ RadioButtonRow(
 ```
 
 **`Style`** — `.radio` (a ring that thickens/fills blue when selected) or `.checkbox`
-(uses the bundled `icon_checkbox_square[_checked]` assets). Row min-height is 60 with a
-subtitle, otherwise 54; the whole row is the tap target.
+(draws `DashIcon.Checkbox.checkmarkChecked` / `.checkmarkUnchecked`). Row min-height is
+60 with a subtitle, otherwise 54; the whole row is the tap target.
 
 ---
 
