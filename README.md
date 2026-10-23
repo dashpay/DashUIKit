@@ -68,7 +68,8 @@ a component already exists before building your own.
 | `DashButton` | Themed button — 4 sizes × 11 styles, icons, loading, full-width | [Buttons & inputs](docs/buttons-and-inputs.md) |
 | `DashSwitch` | DS-tinted toggle | [Buttons & inputs](docs/buttons-and-inputs.md) |
 | `SearchBar` | Search field with an animated cancel button | [Buttons & inputs](docs/buttons-and-inputs.md) |
-| `AddressFieldView` | Crypto-address text field with QR / clear and error state | [Buttons & inputs](docs/buttons-and-inputs.md) |
+| `AddressFieldView` | Labeled text field (label / field / help text) with optional QR, clear and error state | [Buttons & inputs](docs/buttons-and-inputs.md) |
+| `Criteria` | Requirement check-list — `Criterion` rows in six states | [Buttons & inputs](docs/buttons-and-inputs.md) |
 | `NumericKeyboardView` | Locale-aware on-screen number pad with action button | [Buttons & inputs](docs/buttons-and-inputs.md) |
 | `EnterAmountView` | Amount-entry screen control — single & dual-swap modes | [Amount & currency](docs/amount-and-currency.md) |
 | `SwapAmountView` | Animated primary/secondary amount display | [Amount & currency](docs/amount-and-currency.md) |
@@ -80,7 +81,10 @@ a component already exists before building your own.
 | `MenuItem` | Settings/menu row with flexible trailing accessory | [Lists & rows](docs/lists-and-rows.md) |
 | `RadioButtonRow` | Selectable row — radio or checkbox style | [Lists & rows](docs/lists-and-rows.md) |
 | `List1View` | Simple label ↔ value row | [Lists & rows](docs/lists-and-rows.md) |
+| `List8View` | Label ↔ value row with an optional avatar | [Lists & rows](docs/lists-and-rows.md) |
 | `NavigationBar` | Custom three-slot nav bar + `NavigationBarElement` buttons | [Navigation & containers](docs/navigation-and-containers.md) |
+| `NavigationBarCircleButton` / `NavigationBarCircleMenu` | Bar button / menu in the nav circle, for actions with no bundled element | [Navigation & containers](docs/navigation-and-containers.md) |
+| `NavigationBarCircleIcon` | The nav bar's 34pt token circle around any icon | [Navigation & containers](docs/navigation-and-containers.md) |
 | `BottomSheet` | Sheet chrome (grabber + nav bar) with self-sizing support | [Navigation & containers](docs/navigation-and-containers.md) |
 | `MenuViewModifier` | Card chrome — rounded background + shadow | [Navigation & containers](docs/navigation-and-containers.md) |
 | `Toast` | Blurred toast — warning/info/error/success/copied/loading | [Feedback](docs/feedback.md) |
@@ -98,7 +102,7 @@ a component already exists before building your own.
 Sources/DashUIKit/
   Button/            DashButton
   Components/        Components (EnterAmount/, Geometry/, Icons/, Illustrations/)
-  Table List/        List1View
+  Table List/        List1View, List8View
   ViewModifiers/     MenuViewModifier
   Foundation/        Color / Font / typography / Image / Bundle helpers
   Resources/         Media.xcassets (colors, icons, illustrations)

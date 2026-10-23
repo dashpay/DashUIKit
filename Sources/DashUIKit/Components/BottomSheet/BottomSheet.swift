@@ -66,7 +66,9 @@ public struct BottomSheet<Content: View>: View {
             grabber
                 .frame(maxWidth: .infinity, minHeight: 18, maxHeight: 18, alignment: .center)
 
-            header
+            if hasHeaderContent {
+                header
+            }
 
             contentSection
         }
@@ -74,7 +76,14 @@ public struct BottomSheet<Content: View>: View {
 
         Group {
             if fillsHeight {
-                sheet.edgesIgnoringSafeArea(.bottom)
+                // `.container` rather than every region: the point is to let the
+                // sheet's background run under the home indicator, and
+                // `edgesIgnoringSafeArea` — like `ignoresSafeArea(.all)` — also
+                // swallows `.keyboard`, which switches off SwiftUI's keyboard
+                // avoidance for the whole sheet. Hosts with a text field then
+                // find their content pinned under the keyboard with no way to
+                // scroll to it.
+                sheet.ignoresSafeArea(.container, edges: .bottom)
             } else {
                 // Publish the natural content height for `.selfSizingSheet()`. The bottom safe area is
                 // intentionally NOT ignored here, so the measured height excludes the home-indicator
@@ -114,6 +123,15 @@ public struct BottomSheet<Content: View>: View {
             hasCustomCloseAction: onClose != nil)
     }
 
+    /// A header with no title, no back button and no close button is 74pt of
+    /// nothing: it pushes the content down, and on a self-sizing sheet that
+    /// blank strip becomes part of the sheet's own measured height. Collapse
+    /// it rather than reserve it. Any one of the three brings it back, and the
+    /// binding means a sheet can gain the header mid-flight.
+    private var hasHeaderContent: Bool {
+        !title.isEmpty || showBackButton || showsCloseButton
+    }
+
     private var header: some View {
         NavigationBar(
             leading: {
@@ -123,7 +141,7 @@ public struct BottomSheet<Content: View>: View {
             },
             central: {
                 Text(title)
-                    .dashFont(.calloutMedium)
+                    .dashFont(.subheadMedium)
                     .foregroundColor(.dash.primaryText)
             },
             trailing: {
@@ -136,7 +154,6 @@ public struct BottomSheet<Content: View>: View {
                         )
                     }
                     .disabled(!isCloseButtonActive)
-                    .opacity(isCloseButtonActive ? 1 : 0.35)
                 }
             }
         )

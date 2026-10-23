@@ -13,14 +13,15 @@ and callbacks; they render and report intent. They require `import DashUIKit` an
   (`Font.dash.*`, `.dashFont`, `DashTextStyle`), icons (`DashIconSource`, `Image(dash:)`),
   bundle access.
 - **[Buttons & inputs](buttons-and-inputs.md)** — `DashButton`, `DashSwitch`, `SearchBar`,
-  `AddressFieldView`, `NumericKeyboardView`.
+  `AddressFieldView`, `Criteria`, `SimpleSelect`, `NumericKeyboardView`.
 - **[Amount & currency](amount-and-currency.md)** — `EnterAmountView`, `SwapAmountView`,
   `ReceiveEstimateView`, `DashAmount`, `DashBalanceView`, `DashPickerView`,
   `CurrencyOption`.
 - **[Lists & rows](lists-and-rows.md)** — `CoinSelector`, `MenuItem`,
-  `ConverterCard`, `TransactionView`, `RadioButtonRow`, `List1View`.
+  `ConverterCard`, `TransactionView`, `RadioButtonRow`, `List1View`, `List8View`.
 - **[Navigation & containers](navigation-and-containers.md)** — `NavigationBar`,
-  `NavigationBarElement`, `TopIntroView`, `BottomSheet`, `MenuViewModifier`.
+  `NavigationBarElement`, `NavigationBarCircleButton`, `NavigationBarCircleMenu`,
+  `NavigationBarCircleIcon`, `TopIntroView`, `BottomSheet`, `MenuViewModifier`.
 - **[Feedback](feedback.md)** — `Toast`, `SystemMessageView`,
   `LoadingIllustration` / `LoadingSpinner`, `SuccessIllustration`, `ErrorIllustration`,
   `XmarkIcon`, `CheckmarkIcon`, `ChevronIcon`, `InfoRoundIcon`.
@@ -41,6 +42,7 @@ and callbacks; they render and report intent. They require `import DashUIKit` an
 | `ConverterCard` | [Lists & rows](lists-and-rows.md#convertercard) |
 | `ConverterCardItem` | [Lists & rows](lists-and-rows.md#convertercarditem) |
 | `ConverterCardRow` | [Lists & rows](lists-and-rows.md#convertercardrow) |
+| `Criteria` (`Criterion`, `CriterionState`) | [Buttons & inputs](buttons-and-inputs.md#criteria) |
 | `CurrencyOption` | [Amount & currency](amount-and-currency.md#currencyoption) |
 | `DashAmount` | [Amount & currency](amount-and-currency.md#dashamount) |
 | `DashBalanceView` | [Amount & currency](amount-and-currency.md#dashbalanceview) |
@@ -52,10 +54,14 @@ and callbacks; they render and report intent. They require `import DashUIKit` an
 | `EnterAmountView` (`EnterAmountStyle`) | [Amount & currency](amount-and-currency.md#enteramountview) |
 | `ErrorIllustration` | [Feedback](feedback.md#successillustration--errorillustration) |
 | `List1View` | [Lists & rows](lists-and-rows.md#list1view) |
+| `List8View` | [Lists & rows](lists-and-rows.md#list8view) |
 | `LoadingIllustration` / `LoadingSpinner` | [Feedback](feedback.md#loadingillustration--loadingspinner) |
 | `MenuItem` (`MenuItemAccessory`, `MenuItemInfo`) | [Lists & rows](lists-and-rows.md#menuitem) |
 | `MenuViewModifier` | [Navigation & containers](navigation-and-containers.md#menuviewmodifier) |
 | `NavigationBar` / `NavigationBarElement` | [Navigation & containers](navigation-and-containers.md#navigationbar) |
+| `NavigationBarCircleButton` | [Navigation & containers](navigation-and-containers.md#custom-circle-actions) |
+| `NavigationBarCircleIcon` | [Navigation & containers](navigation-and-containers.md#custom-circle-actions) |
+| `NavigationBarCircleMenu` | [Navigation & containers](navigation-and-containers.md#custom-circle-actions) |
 | `NumericKeyboardView` | [Buttons & inputs](buttons-and-inputs.md#numerickeyboardview) |
 | `RadioButtonRow` | [Lists & rows](lists-and-rows.md#radiobuttonrow) |
 | `readingFrame` / `readingLocation` | [Utilities](utilities.md#frame--location-readers) |
@@ -63,6 +69,7 @@ and callbacks; they render and report intent. They require `import DashUIKit` an
 | `ScrollViewWithOnScrollChanged` | [Utilities](utilities.md#scrollviewwithonscrollchanged) |
 | `scaleToFitWidth` | [Utilities](utilities.md#scaletofitwidth) |
 | `SearchBar` | [Buttons & inputs](buttons-and-inputs.md#searchbar) |
+| `SimpleSelect` | [Buttons & inputs](buttons-and-inputs.md#simpleselect) |
 | `SuccessIllustration` | [Feedback](feedback.md#successillustration--errorillustration) |
 | `SwapAmountView` | [Amount & currency](amount-and-currency.md#swapamountview) |
 | `SystemMessageView` | [Feedback](feedback.md#systemmessageview) |

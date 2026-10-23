@@ -45,7 +45,7 @@ public struct NavigationBar<Leading: View, Central: View, Trailing: View>: View 
 
             central
         }
-        .frame(maxWidth: .infinity, minHeight: 64)
+        .frame(maxWidth: .infinity, minHeight: 74)
     }
 }
 
@@ -91,21 +91,27 @@ public enum NavigationBarElement: String {
     case plus = "navigationbar-plus"
     case info = "navigationbar-info"
 
+    /// The element as drawn in the bar. `back`, `close` and `plus` are a
+    /// `NavigationBarCircleIcon`; `info` is a self-contained icon.
+    @ViewBuilder
     public var icon: some View {
-        Image(dash: .custom(rawValue, bundle: .module))
-            .resizable()
-            .scaledToFit()
+        switch self {
+        case .back, .close, .plus:
+            NavigationBarCircleIconContent(source: source)
+        case .info:
+            Image(dash: source)
+                .fixedSize()
+        }
+    }
+
+    private var source: DashIconSource {
+        .custom(rawValue, bundle: .module)
     }
 
     public func button(action: @escaping () -> Void) -> some View {
-        Button(action: action) {
+        NavigationBarButton(accessibilityLabel: Text(accessibilityLabelText), action: action) {
             icon
-                .fixedSize()
-                .frame(width: 44, height: 44, alignment: .center)
-                .contentShape(Rectangle())
         }
-        .buttonStyle(NavigationBarButtonStyle())
-        .accessibilityLabel(Text(accessibilityLabelText))
     }
 
     var accessibilityLabelText: String {
@@ -119,15 +125,6 @@ public enum NavigationBarElement: String {
         case .info:
             return NSLocalizedString("Info", bundle: .module, comment: "DashUIKit navigation bar")
         }
-    }
-}
-
-private struct NavigationBarButtonStyle: ButtonStyle {
-    func makeBody(configuration: Configuration) -> some View {
-        configuration.label
-            .scaleEffect(configuration.isPressed ? 0.88 : 1)
-            .opacity(configuration.isPressed ? 0.7 : 1)
-            .animation(.easeInOut(duration: 0.12), value: configuration.isPressed)
     }
 }
 
@@ -180,6 +177,26 @@ private struct NavigationBarButtonStyle: ButtonStyle {
         NavigationBar(
             leading: { NavigationBarElement.back.button { } },
             trailing: { NavigationBarElement.plus.button { } }
+        )
+
+        NavigationBar(
+            leading: { NavigationBarElement.back.button { } },
+            trailing: {
+                HStack(spacing: 10) {
+                    NavigationBarCircleButton(.system("arrow.clockwise"), accessibilityLabel: Text("Refresh")) { }
+                    NavigationBarCircleMenu(.system("ellipsis"), accessibilityLabel: Text("More")) {
+                        Button("Action") { }
+                    }
+                }
+            }
+        )
+
+        NavigationBar(
+            leading: { NavigationBarElement.back.button { } },
+            trailing: {
+                NavigationBarCircleButton(.system("arrow.clockwise"), accessibilityLabel: Text("Refresh")) { }
+                    .disabled(true)
+            }
         )
     }
 }

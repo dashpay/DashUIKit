@@ -77,14 +77,20 @@ public enum DashIcon {
     /// come in a plain and a `-purple` variant — the plain one is tinted by
     /// the caller, the purple one carries its own colour.
     public enum Features: String, CaseIterable, DashIconAsset {
+        case friends = "feature-friends"
         case identity = "feature-identity"
         case instant = "feature-instant"
         case platform = "feature-platform"
         case platformPurple = "feature-platform-purple"
+        case profile = "feature-profile"
+        case recovery = "feature-recovery"
+        case selectedList = "feature-selected-list"
         case shield = "feature-shield"
         case shieldPurple = "feature-shield-purple"
         case timer = "feature-timer"
         case timerPurple = "feature-timer-purple"
+        case username = "feature-username"
+        case usernameBlock = "feature-username-block"
     }
 
     // MARK: - Checkbox
@@ -158,6 +164,7 @@ public enum DashIcon {
         case flexa = "menu-flexa"
         case floppyDisk = "menu-floppy-disk"
         case gPay = "menu-g-pay"
+        case identities = "menu-identities"
         case importPrivateKey = "menu-import-private-key"
         case infoRect = "menu-info-rect"
         case invitation = "menu-invitation"
@@ -207,6 +214,7 @@ public enum DashIcon {
         case uphold = "menu-uphold"
         case userSearch = "menu-user-search"
         case usernameVoting = "menu-username-voting"
+        case voting = "menu-voting"
         case wallet = "menu-wallet"
         case zenledger = "menu-zenledger"
     }
