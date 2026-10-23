@@ -93,7 +93,7 @@ a component already exists before building your own.
 | `XmarkIcon` | Code-drawn close (✕) icon | [Feedback](docs/feedback.md) |
 | `CheckmarkIcon` | Code-drawn selection (✓) mark | [Feedback](docs/feedback.md) |
 | `ChevronIcon` | Code-drawn chevron, in any of the four directions | [Feedback](docs/feedback.md) |
-| Geometry helpers | `readingFrame`, `readingLocation`, `ScrollViewWithOnScrollChanged`, `scaleToFitWidth` | [Utilities](docs/utilities.md) |
+| Geometry helpers | `readingFrame`, `ScrollViewWithOnScrollChanged`, `scaleToFitWidth` | [Utilities](docs/utilities.md) |
 | Foundation | `Color.dash.*`, `Font.dash.*`, `.dashFont`, `DashIconSource` | [Foundation](docs/foundation.md) |
 
 ## Project layout
