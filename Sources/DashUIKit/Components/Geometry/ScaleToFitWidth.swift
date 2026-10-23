@@ -34,7 +34,6 @@ private struct ScaleToFitContentSizeKey: PreferenceKey {
 ///
 /// The modifier reserves the content's natural single-line height (constant) so it keeps the
 /// surrounding vertical layout stable while only the horizontal scale changes.
-@available(iOS 14, macOS 11, *)
 public struct ScaleToFitWidth: ViewModifier {
     public var minScale: CGFloat = 0.35
 
@@ -70,7 +69,6 @@ public struct ScaleToFitWidth: ViewModifier {
     }
 }
 
-@available(iOS 14, macOS 11, *)
 public extension View {
     /// Scales the view uniformly to fit the available width on one line, down to `minScale`.
     func scaleToFitWidth(minScale: CGFloat = 0.35) -> some View {

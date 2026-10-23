@@ -20,7 +20,6 @@ import SwiftUI
 /// Finite set of trailing accessories for `MenuItem`.
 /// Add a new case here — not a per-call-site font/color override — when a
 /// new trailing look is needed, to keep all rows consistent.
-@available(iOS 14, macOS 11, *)
 public enum MenuItemAccessory {
     case none
     case toggle(isOn: Binding<Bool>)
@@ -42,13 +41,11 @@ public enum MenuItemAccessory {
 ///
 /// `.round` is the design system's own info mark; `.icon` stays open for a row
 /// that needs to flag something else entirely.
-@available(iOS 14, macOS 11, *)
 public enum MenuItemInfo {
     case round(color: Color)
     case icon(DashIconSource)
 }
 
-@available(iOS 14, macOS 11, *)
 public struct MenuItem: View {
 
     public var leadingIcon: DashIconSource?
@@ -165,13 +162,11 @@ public struct MenuItem: View {
 
 #if DEBUG
 
-@available(iOS 17, macOS 14, *)
 #Preview("Title only") {
     MenuItem(title: "Notifications")
         .padding(.horizontal)
 }
 
-@available(iOS 17, macOS 14, *)
 #Preview("Title + helpText") {
     MenuItem(
         title: "Recovery phrase",
@@ -180,7 +175,6 @@ public struct MenuItem: View {
     .padding(.horizontal)
 }
 
-@available(iOS 17, macOS 14, *)
 #Preview("Title + info + helpText") {
     MenuItem(
         title: "Network fee",
@@ -191,7 +185,6 @@ public struct MenuItem: View {
     .padding(.horizontal)
 }
 
-@available(iOS 17, macOS 14, *)
 #Preview("Accessory: toggle") {
     @Previewable @State var isOn = true
     MenuItem(
@@ -201,7 +194,6 @@ public struct MenuItem: View {
     .padding(.horizontal)
 }
 
-@available(iOS 17, macOS 14, *)
 #Preview("Accessory: text") {
     MenuItem(
         title: "Balance",
@@ -210,7 +202,6 @@ public struct MenuItem: View {
     .padding(.horizontal)
 }
 
-@available(iOS 17, macOS 14, *)
 #Preview("Accessory: button") {
     MenuItem(
         title: "Withdraw",
@@ -224,7 +215,6 @@ public struct MenuItem: View {
     .padding(.horizontal)
 }
 
-@available(iOS 17, macOS 14, *)
 #Preview("Accessory: balance default (.negativeOnly)") {
     VStack(spacing: 0) {
         MenuItem(
@@ -240,7 +230,6 @@ public struct MenuItem: View {
     .padding(.horizontal)
 }
 
-@available(iOS 17, macOS 14, *)
 #Preview("Accessory: balance .always (transaction style)") {
     VStack(spacing: 0) {
         MenuItem(
@@ -256,7 +245,6 @@ public struct MenuItem: View {
     .padding(.horizontal)
 }
 
-@available(iOS 17, macOS 14, *)
 #Preview("Accessory: balance zero") {
     MenuItem(
         title: "Available",
@@ -265,7 +253,6 @@ public struct MenuItem: View {
     .padding(.horizontal)
 }
 
-@available(iOS 17, macOS 14, *)
 #Preview("Accessory: balance not available") {
     MenuItem(
         title: "Pending",
@@ -275,7 +262,6 @@ public struct MenuItem: View {
 }
 
 /// A picker list: one row marked, the rest holding the tick's slot empty.
-@available(iOS 17, macOS 14, *)
 #Preview("Accessory: selection") {
     VStack(spacing: 0) {
         MenuItem(
@@ -299,7 +285,6 @@ public struct MenuItem: View {
     .padding(.horizontal)
 }
 
-@available(iOS 17, macOS 14, *)
 #Preview("Enabled vs disabled") {
     VStack(spacing: 0) {
         MenuItem(

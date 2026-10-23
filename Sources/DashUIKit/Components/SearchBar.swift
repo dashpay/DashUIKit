@@ -18,12 +18,23 @@
 #if canImport(UIKit)
 import SwiftUI
 
-// MARK: - Public shell (iOS 14+)
-
-@available(iOS 14, *)
+/// A search field whose cancel button slides in while it has focus.
 public struct SearchBar: View {
+    private enum Layout {
+        static let fieldHeight: CGFloat = 40
+        static let fieldCornerRadius: CGFloat = 14
+        static let fieldHorizontalPadding: CGFloat = 14
+        static let fieldSpacing: CGFloat = 10
+        static let cancelHorizontalPadding: CGFloat = 12
+        static let cancelVerticalPadding: CGFloat = 6
+        static let animationDuration: TimeInterval = 0.25
+    }
+
     @Binding private var text: String
     private let placeholder: String
+
+    @FocusState private var isFocused: Bool
+    @State private var isEditing: Bool = false
 
     public init(
         text: Binding<String>,
@@ -35,35 +46,6 @@ public struct SearchBar: View {
     }
 
     public var body: some View {
-        if #available(iOS 15, *) {
-            SearchBarFocused(text: $text, placeholder: placeholder)
-        } else {
-            SearchBarLegacy(text: $text, placeholder: placeholder)
-        }
-    }
-}
-
-// MARK: - iOS 15+ (focus-driven cancel button)
-
-@available(iOS 15, *)
-private struct SearchBarFocused: View {
-    private enum Layout {
-        static let fieldHeight: CGFloat = 40
-        static let fieldCornerRadius: CGFloat = 14
-        static let fieldHorizontalPadding: CGFloat = 14
-        static let fieldSpacing: CGFloat = 10
-        static let cancelHorizontalPadding: CGFloat = 12
-        static let cancelVerticalPadding: CGFloat = 6
-        static let animationDuration: TimeInterval = 0.25
-    }
-
-    @Binding var text: String
-    let placeholder: String
-
-    @FocusState private var isFocused: Bool
-    @State private var isEditing: Bool = false
-
-    var body: some View {
         HStack(spacing: 0) {
             HStack(spacing: Layout.fieldSpacing) {
                 magnifyingGlass
@@ -85,7 +67,7 @@ private struct SearchBarFocused: View {
         .onAppear {
             isEditing = isFocused
         }
-        .onChange(of: isFocused) { focused in
+        .onChange(of: isFocused) { _, focused in
             withAnimation(.easeInOut(duration: Layout.animationDuration)) {
                 isEditing = focused
             }
@@ -133,85 +115,22 @@ private struct SearchBarFocused: View {
                     .padding(.vertical, Layout.cancelVerticalPadding)
             }
         )
-        .tint(Color.dash.primaryText as Color?)
+        .tint(Color.dash.primaryText)
     }
 
-    @ViewBuilder
     private var searchField: some View {
-        if #available(iOS 17.0, *) {
-            TextField(
-                text: $text,
-                // A prompt must stay a `Text`; `dashFont` returns `some View`, and a
-                // line height cannot be applied to `Text` anyway.
-                prompt: Text(placeholder)
-                    .font(Font.dash.subhead)
-                    .foregroundStyle(Color.dash.black1000Alpha30)
-            ) {
-                EmptyView()
-            }
-            .focused($isFocused)
-            .tint(Color.dash.primaryText as Color?)
-        } else {
-            TextField(placeholder, text: $text)
-                .focused($isFocused)
-                .tint(Color.dash.primaryText as Color?)
-                .foregroundColor(Color.dash.primaryText)
+        TextField(
+            text: $text,
+            // A prompt must stay a `Text`; `dashFont` returns `some View`, and a
+            // line height cannot be applied to `Text` anyway.
+            prompt: Text(placeholder)
+                .font(Font.dash.subhead)
+                .foregroundStyle(Color.dash.black1000Alpha30)
+        ) {
+            EmptyView()
         }
-    }
-}
-
-// MARK: - iOS 14 fallback (no focus state — static bar without cancel animation)
-
-@available(iOS 14, *)
-private struct SearchBarLegacy: View {
-    private enum Layout {
-        static let fieldHeight: CGFloat = 40
-        static let fieldCornerRadius: CGFloat = 14
-        static let fieldHorizontalPadding: CGFloat = 14
-        static let fieldSpacing: CGFloat = 10
-    }
-
-    @Binding var text: String
-    let placeholder: String
-
-    var body: some View {
-        HStack(spacing: Layout.fieldSpacing) {
-            magnifyingGlass
-            TextField(placeholder, text: $text)
-                .accentColor(Color.dash.primaryText)
-                .foregroundColor(Color.dash.primaryText)
-            clearButton
-        }
-        .padding(.horizontal, Layout.fieldHorizontalPadding)
-        .frame(height: Layout.fieldHeight)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color.dash.searchBackground)
-        .clipShape(RoundedRectangle(cornerRadius: Layout.fieldCornerRadius, style: .continuous))
-    }
-
-    private var magnifyingGlass: some View {
-        DashIcon.SearchBar.magnifyingglassIcon.image
-            .resizable()
-            .scaledToFit()
-            .frame(maxHeight: 15)
-    }
-
-    @ViewBuilder
-    private var clearButton: some View {
-        if !text.isEmpty {
-            Button(
-                action: { text = "" },
-                label: {
-                    DashIcon.SearchBar.xmarkIcon.image
-                        .resizable()
-                        .scaledToFit()
-                        .frame(maxHeight: 15)
-                        .frame(width: 44, height: 44)
-                        .contentShape(Rectangle())
-                }
-            )
-            .accessibilityLabel(Text(NSLocalizedString("Clear", bundle: .module, comment: "DashUIKit")))
-        }
+        .focused($isFocused)
+        .tint(Color.dash.primaryText)
     }
 }
 
@@ -219,7 +138,6 @@ private struct SearchBarLegacy: View {
 
 #if DEBUG
 
-@available(iOS 17, macOS 14, *)
 #Preview {
     @Previewable @State var text = ""
     SearchBar(text: $text)

@@ -17,7 +17,6 @@
 
 import SwiftUI
 
-@available(iOS 14, macOS 11, *)
 public struct SystemMessageView: View {
 
     public let title: String
@@ -145,7 +144,6 @@ public struct SystemMessageView: View {
 
 #if DEBUG
 
-@available(iOS 17, macOS 14, *)
 #Preview("Default (back-compat)") {
     SystemMessageView(
         title: "You have a balance on CrowdNode",
@@ -154,7 +152,6 @@ public struct SystemMessageView: View {
     .padding()
 }
 
-@available(iOS 17, macOS 14, *)
 #Preview("Custom icon + background + two buttons + close") {
     SystemMessageView(
         title: "Address Expired",

@@ -22,7 +22,6 @@ import UIKit
 import AppKit
 #endif
 
-@available(iOS 14, macOS 10.15, *)
 public extension View {
     /// Applies a design line height to text rendered with a fixed-size system font.
     ///
@@ -60,7 +59,6 @@ public extension View {
 
 #if DEBUG
 
-@available(iOS 17, macOS 14, *)
 #Preview("Footnote line height") {
     let sample = "Back up your wallet to keep your funds safe and recover it on a new device."
 

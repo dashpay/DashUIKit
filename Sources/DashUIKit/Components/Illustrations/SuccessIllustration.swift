@@ -17,7 +17,6 @@
 
 import SwiftUI
 
-@available(iOS 14, macOS 11, *)
 public struct SuccessIllustration: View {
 
     public init() {}
@@ -38,7 +37,6 @@ public struct SuccessIllustration: View {
 
 #if DEBUG
 
-@available(iOS 14, macOS 11, *)
 struct SuccessIllustration_Previews: PreviewProvider {
     static var previews: some View {
         SuccessIllustration()

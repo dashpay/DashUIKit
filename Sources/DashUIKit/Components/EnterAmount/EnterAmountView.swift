@@ -20,7 +20,6 @@ import SwiftUI
 // MARK: - EnterAmountStyle
 
 /// Controls which visual layout `EnterAmountView` renders.
-@available(iOS 14, macOS 11, *)
 public enum EnterAmountStyle {
     /// Single-amount input: Max button + `SwapAmountView` + `DashPickerView`. (default)
     case single
@@ -30,7 +29,6 @@ public enum EnterAmountStyle {
 
 // MARK: - EnterAmountView
 
-@available(iOS 14, macOS 11, *)
 public struct EnterAmountView: View {
 
     // MARK: State A (.single) — existing public API
@@ -271,7 +269,6 @@ public struct EnterAmountView: View {
 
 #if DEBUG
 
-@available(iOS 17, macOS 14, *)
 #Preview("Single state") {
     EnterAmountView(
         value: .constant("12.5"),
@@ -283,19 +280,16 @@ public struct EnterAmountView: View {
     .padding(20)
 }
 
-@available(iOS 17, macOS 14, *)
 #Preview("Dual swap — with Max button (interactive)") {
     DualSwapPreviewContainer(showMax: true)
         .background(Color.dash.secondaryBackground)
 }
 
-@available(iOS 17, macOS 14, *)
 #Preview("Dual swap — no Max button (interactive)") {
     DualSwapPreviewContainer(showMax: false)
         .background(Color.dash.secondaryBackground)
 }
 
-@available(iOS 17, macOS 14, *)
 #Preview("Dual swap — edge cases") {
     VStack(spacing: 28) {
         // Very long Dash value — amount should scale to fit
@@ -338,7 +332,6 @@ public struct EnterAmountView: View {
     .background(Color.dash.secondaryBackground)
 }
 
-@available(iOS 17, macOS 14, *)
 private struct DualSwapPreviewContainer: View {
     let showMax: Bool
     @State private var isPrimarySelected = true

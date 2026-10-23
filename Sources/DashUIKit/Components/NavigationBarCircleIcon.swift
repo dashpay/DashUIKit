@@ -27,7 +27,6 @@ import SwiftUI
 /// The icon is sized by the component: an SF Symbol (`.system`) is set in
 /// `Font.dash.subheadMedium`; a `.custom` / `.uiImage` asset renders at its own
 /// size, so it should be drawn for the circle (the bundled nav glyphs are).
-@available(iOS 14, macOS 11, *)
 public struct NavigationBarCircleIcon: View {
     private let source: DashIconSource
 
@@ -43,7 +42,6 @@ public struct NavigationBarCircleIcon: View {
 /// The drawing behind `NavigationBarCircleIcon`. `nonisolated` so the
 /// nonisolated `NavigationBarElement.icon` can build it without the public
 /// type committing to that isolation.
-@available(iOS 14, macOS 11, *)
 nonisolated struct NavigationBarCircleIconContent: View {
     let source: DashIconSource
 
@@ -72,7 +70,6 @@ nonisolated struct NavigationBarCircleIconContent: View {
 }
 
 #if DEBUG
-@available(iOS 17, macOS 14, *)
 #Preview("NavigationBarCircleIcon") {
     HStack(spacing: 10) {
         NavigationBarCircleIcon(.custom(NavigationBarElement.back.rawValue, bundle: .module))

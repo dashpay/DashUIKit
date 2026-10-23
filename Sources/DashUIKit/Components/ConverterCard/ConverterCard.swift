@@ -27,7 +27,6 @@ import SwiftUI
 ///
 /// A row given an `onTap` becomes a button and grows a trailing chevron, so a
 /// row that opens a picker reads as one at rest.
-@available(iOS 14, macOS 11, *)
 public struct ConverterCard: View {
 
     private enum Layout {
@@ -166,7 +165,6 @@ public struct ConverterCard: View {
 }
 
 #if DEBUG
-@available(iOS 14, macOS 11, *)
 struct ConverterCard_Previews: PreviewProvider {
     static var previews: some View {
         Group {
@@ -248,7 +246,6 @@ struct ConverterCard_Previews: PreviewProvider {
     }
 }
 
-@available(iOS 14, macOS 11, *)
 struct SwapPreview: View {
     @State private var swapped = false
 
@@ -273,6 +270,5 @@ struct SwapPreview: View {
     }
 }
 
-@available(iOS 17, macOS 14, *)
 #Preview("Swap animation") { SwapPreview() }
 #endif

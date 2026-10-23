@@ -20,13 +20,12 @@ import SwiftUI
 // MARK: - ScrollViewWithOnScrollChanged
 
 /// A drop-in `ScrollView` that reports its content offset as the user scrolls — useful for
-/// collapsing headers, scroll-driven shadows, parallax, etc., without depending on iOS 17's
-/// `onScrollGeometryChange`.
+/// collapsing headers, scroll-driven shadows, parallax, etc. It predates the library's iOS 18
+/// floor; new code can use the system `onScrollGeometryChange` instead.
 ///
 /// The trick: a zero-sized ``LocationReader`` rides at the very top of the content inside a
 /// private named coordinate space. As the content slides, the probe's position within that
 /// space is exactly the scroll offset, which is forwarded through `onScrollChanged`.
-@available(iOS 14, macOS 11, *)
 public struct ScrollViewWithOnScrollChanged<Content: View>: View {
 
     private let axes: Axis.Set
@@ -67,7 +66,6 @@ public struct ScrollViewWithOnScrollChanged<Content: View>: View {
 
 #if DEBUG
 
-@available(iOS 14, macOS 11, *)
 struct ScrollViewWithOnScrollChanged_Previews: PreviewProvider {
 
     private struct Demo: View {
@@ -88,7 +86,7 @@ struct ScrollViewWithOnScrollChanged_Previews: PreviewProvider {
             } onScrollChanged: { origin in
                 offsetY = origin.y
             }
-            .overlay(Text(String(format: "offset.y: %.1f", offsetY)).padding(), alignment: .top)
+            .overlay(alignment: .top) { Text(String(format: "offset.y: %.1f", offsetY)).padding() }
         }
     }
 

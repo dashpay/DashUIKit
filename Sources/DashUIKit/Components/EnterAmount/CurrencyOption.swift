@@ -35,7 +35,6 @@ enum DashCurrencySymbol {
 
 // MARK: - CurrencyOption
 
-@available(iOS 14, macOS 11, *)
 public enum CurrencyOption: Hashable {
     case fiat(String)
     case dash

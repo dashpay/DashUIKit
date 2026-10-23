@@ -17,7 +17,6 @@
 
 import SwiftUI
 
-@available(iOS 14, macOS 11, *)
 public struct RadioButtonRow: View {
 
     public enum Style {
@@ -104,7 +103,6 @@ public struct RadioButtonRow: View {
 
 #if DEBUG
 
-@available(iOS 14, macOS 11, *)
 struct RadioButtonRow_Previews: PreviewProvider {
     static var previews: some View {
         VStack(spacing: 0) {

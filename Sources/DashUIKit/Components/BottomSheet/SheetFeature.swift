@@ -27,7 +27,6 @@ import SwiftUI
 /// leading mark is not always an image — a tinted glyph, a badge or a coloured
 /// container all appear in this position. It is sized to 40×40 here so a column
 /// of features stays aligned whatever each row puts in it.
-@available(iOS 14, macOS 11, *)
 public struct SheetFeature<Icon: View>: View {
     public var title: String
     public var description: String
@@ -49,9 +48,9 @@ public struct SheetFeature<Icon: View>: View {
                 .frame(width: 40, height: 40)
 
             VStack(alignment: .leading, spacing: 2) {
-                // `.subheadMedium`, not `.subhead` + `.fontWeight`: the
-                // modifier is macOS 13, and the weight belongs to a type token
-                // anyway — the library carries both weights of this size.
+                // `.subheadMedium`, not `.subhead` + `.fontWeight`: the weight
+                // belongs to a type token — the library carries both weights
+                // of this size.
                 Text(title)
                     .dashFont(.subheadMedium)
                     .foregroundColor(Color.dash.primaryText)
@@ -66,7 +65,6 @@ public struct SheetFeature<Icon: View>: View {
     }
 }
 
-@available(iOS 14, macOS 11, *)
 public extension SheetFeature where Icon == AnyView {
     /// Convenience for an asset in the icon slot.
     ///
@@ -105,7 +103,6 @@ public extension SheetFeature where Icon == AnyView {
 
 #if DEBUG
 
-@available(iOS 17, macOS 14, *)
 #Preview("Feature list") {
     VStack(alignment: .leading, spacing: 16) {
         SheetFeature(
@@ -125,7 +122,6 @@ public extension SheetFeature where Icon == AnyView {
     .background(Color.dash.primaryBackground)
 }
 
-@available(iOS 17, macOS 14, *)
 #Preview("Custom icon slot") {
     SheetFeature(
         title: "Anything in the slot",

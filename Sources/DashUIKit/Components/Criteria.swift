@@ -36,7 +36,6 @@ private enum Layout {
 // MARK: - CriterionState
 
 /// How one requirement currently stands.
-@available(iOS 14, macOS 11, *)
 public enum CriterionState: Equatable {
     /// Stated but not evaluated yet — an empty ring.
     case pending
@@ -56,7 +55,6 @@ public enum CriterionState: Equatable {
 // MARK: - Criterion
 
 /// One requirement in a ``Criteria`` block.
-@available(iOS 14, macOS 11, *)
 public struct Criterion: Identifiable {
     /// What the row's mark slot holds — one of the standard discs, or the
     /// caller's own icon.
@@ -106,7 +104,6 @@ public struct Criterion: Identifiable {
 ///     Criterion(text: "Username available", state: .checking),
 /// ])
 /// ```
-@available(iOS 14, macOS 11, *)
 public struct Criteria: View {
     private let items: [Criterion]
     private let spacing: CGFloat
@@ -154,7 +151,6 @@ public struct Criteria: View {
 
 // MARK: - Row
 
-@available(iOS 14, macOS 11, *)
 private struct CriterionRow: View {
     let criterion: Criterion
 
@@ -293,7 +289,6 @@ private struct CriterionRow: View {
 /// source SVG (15×12, polyline aspect 0.746) while this tick is 5.43 × 4.52 —
 /// aspect 0.832. Scaled to the right width it would draw about a tenth
 /// flatter than the design.
-@available(iOS 14, macOS 11, *)
 private struct CheckShape: Shape {
     private static let viewBox: CGFloat = 19
     private static let points = [
@@ -322,7 +317,6 @@ private struct CheckShape: Shape {
 /// `Checkmark` only — there is no warning icon to mirror yet, so this one is
 /// drawn to match their weight and proportions in the same 19-unit box. Swap
 /// it for the artwork once the design system has it.
-@available(iOS 14, macOS 11, *)
 private struct ExclamationShape: Shape {
     private static let viewBox: CGFloat = 19
     /// The stem, top to bottom, and then the dot as a zero-length segment the
@@ -349,7 +343,6 @@ private struct ExclamationShape: Shape {
 
 #if DEBUG
 
-@available(iOS 17, macOS 14, *)
 #Preview("Every state") {
     Criteria([
         Criterion(text: "Pending — not evaluated yet", state: .pending),
@@ -363,7 +356,6 @@ private struct ExclamationShape: Shape {
     .background(Color.dash.secondaryBackground)
 }
 
-@available(iOS 17, macOS 14, *)
 #Preview("Username rules") {
     Criteria([
         Criterion(text: "Between 3 and 23 characters", state: .met),
@@ -375,7 +367,6 @@ private struct ExclamationShape: Shape {
     .background(Color.dash.secondaryBackground)
 }
 
-@available(iOS 17, macOS 14, *)
 #Preview("Wrapping") {
     Criteria([
         Criterion(
@@ -388,7 +379,6 @@ private struct ExclamationShape: Shape {
     .background(Color.dash.secondaryBackground)
 }
 
-@available(iOS 17, macOS 14, *)
 #Preview("Icon slot") {
     Criteria([
         Criterion(text: "Standard disc", state: .met),
@@ -398,7 +388,6 @@ private struct ExclamationShape: Shape {
     .background(Color.dash.secondaryBackground)
 }
 
-@available(iOS 17, macOS 14, *)
 #Preview("Dark") {
     Criteria([
         Criterion(text: "Between 3 and 23 characters", state: .met),

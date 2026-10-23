@@ -17,7 +17,6 @@
 
 import SwiftUI
 
-@available(iOS 14, macOS 11, *)
 public struct TopIntroView: View {
     private let title: String
     private let mainDescription: String?

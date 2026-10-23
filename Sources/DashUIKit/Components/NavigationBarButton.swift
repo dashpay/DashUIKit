@@ -19,7 +19,6 @@ import SwiftUI
 /// The one implementation of a navigation bar button: touch area, press and
 /// disabled styling, accessibility label. `NavigationBarElement.button(action:)`
 /// and `NavigationBarCircleButton` both render through it.
-@available(iOS 14, macOS 11, *)
 nonisolated struct NavigationBarButton<Label: View>: View {
     private let accessibilityLabel: Text
     private let action: () -> Void
@@ -44,7 +43,6 @@ nonisolated struct NavigationBarButton<Label: View>: View {
     }
 }
 
-@available(iOS 14, macOS 11, *)
 extension View {
     /// The bar's touch area: 44pt tall, and at least 44pt wide for hit
     /// testing. The extra width is hit area only — the element keeps its
@@ -66,7 +64,6 @@ extension View {
 let navigationBarDisabledOpacity: Double = 0.35
 
 /// The element's frame, widened symmetrically to at least 44pt.
-@available(iOS 14, macOS 11, *)
 private struct NavigationBarHitShape: Shape {
     func path(in rect: CGRect) -> Path {
         let outset = max(0, (44 - rect.width) / 2)
@@ -74,7 +71,6 @@ private struct NavigationBarHitShape: Shape {
     }
 }
 
-@available(iOS 14, macOS 11, *)
 struct NavigationBarButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         NavigationBarButtonStyleBody(configuration: configuration)
@@ -83,23 +79,16 @@ struct NavigationBarButtonStyle: ButtonStyle {
 
 /// A view, not inline in `makeBody`, so it can read `isEnabled`: a custom
 /// `ButtonStyle` gets no automatic disabled dimming.
-@available(iOS 14, macOS 11, *)
 private struct NavigationBarButtonStyleBody: View {
     let configuration: ButtonStyleConfiguration
 
     @Environment(\.isEnabled) private var isEnabled
 
-    @ViewBuilder
     var body: some View {
-        let content = configuration.label
+        configuration.label
             .scaleEffect(configuration.isPressed ? 0.88 : 1)
             .opacity(configuration.isPressed ? 0.7 : 1)
             .navigationBarDisabledDimming(isEnabled)
-
-        if #available(iOS 15, macOS 12, *) {
-            content.animation(.easeInOut(duration: 0.12), value: configuration.isPressed)
-        } else {
-            content.animation(.easeInOut(duration: 0.12))
-        }
+            .animation(.easeInOut(duration: 0.12), value: configuration.isPressed)
     }
 }

@@ -17,15 +17,12 @@
 import SwiftUI
 
 /// A `Menu` whose label is a `NavigationBarCircleIcon` (e.g. the ⋯ overflow),
-/// with the bar's touch area, press animation (iOS 16+) and disabled dimming. `accessibilityLabel` is a
+/// with the bar's touch area, press animation and disabled dimming. `accessibilityLabel` is a
 /// `Text` — see `NavigationBarCircleButton`.
-@available(iOS 14, macOS 11, *)
 public struct NavigationBarCircleMenu<Content: View>: View {
     private let icon: DashIconSource
     private let accessibilityLabel: Text
     private let content: Content
-
-    @Environment(\.isEnabled) private var isEnabled
 
     public init(
         _ icon: DashIconSource,
@@ -37,33 +34,22 @@ public struct NavigationBarCircleMenu<Content: View>: View {
         self.content = content()
     }
 
-    @ViewBuilder
     public var body: some View {
-        let menu = Menu {
+        // The bar's ButtonStyle draws the label, so the menu gets the same
+        // press animation and disabled dimming as the circle buttons beside it.
+        Menu {
             content
         } label: {
             NavigationBarCircleIcon(icon)
                 .navigationBarTouchArea()
         }
-
-        if #available(iOS 16, macOS 13, *) {
-            // The bar's ButtonStyle draws the label, so the menu gets the
-            // same press animation and disabled dimming as the circle
-            // buttons beside it.
-            menu
-                .menuStyle(.button)
-                .buttonStyle(NavigationBarButtonStyle())
-                .accessibilityLabel(accessibilityLabel)
-        } else {
-            menu
-                .navigationBarDisabledDimming(isEnabled)
-                .accessibilityLabel(accessibilityLabel)
-        }
+        .menuStyle(.button)
+        .buttonStyle(NavigationBarButtonStyle())
+        .accessibilityLabel(accessibilityLabel)
     }
 }
 
 #if DEBUG
-@available(iOS 17, macOS 14, *)
 #Preview("NavigationBarCircleMenu") {
     NavigationBarCircleMenu(.system("ellipsis"), accessibilityLabel: Text("More")) {
         Button("Action") { }

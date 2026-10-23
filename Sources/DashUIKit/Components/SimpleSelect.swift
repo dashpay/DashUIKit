@@ -29,7 +29,6 @@ import SwiftUI
 ///
 /// For a row with an icon, a trailing value or an explicit radio/checkbox mark,
 /// use ``RadioButtonRow``.
-@available(iOS 14, macOS 11, *)
 public struct SimpleSelect: View {
     private let title: String
     private let description: String?
@@ -87,7 +86,6 @@ public struct SimpleSelect: View {
 
 #if DEBUG
 
-@available(iOS 17, macOS 14, *)
 #Preview("SimpleSelect") {
     struct Harness: View {
         @State private var selected = 0

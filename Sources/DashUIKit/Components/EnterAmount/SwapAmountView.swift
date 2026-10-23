@@ -22,7 +22,6 @@ import UIKit
 
 // MARK: - SwapAmountView
 
-@available(iOS 14, macOS 11, *)
 public struct SwapAmountView: View {
 
     // MARK: Primary row props
@@ -275,7 +274,6 @@ public struct SwapAmountView: View {
 ///
 /// Result: correct bold weight in the large slot, correct regular weight in the small slot,
 /// smooth size transition via `scaleEffect` bridging the font snap.
-@available(iOS 14, macOS 11, *)
 private struct AnimatedSwapLayout: View {
 
     // MARK: Content props
@@ -416,7 +414,7 @@ private struct AnimatedSwapLayout: View {
         }
         .frame(height: SwapAnimLayout.containerHeight)
         .frame(maxWidth: .infinity)
-        .onChange(of: isPrimaryLarge) { newValue in
+        .onChange(of: isPrimaryLarge) { _, newValue in
             // A rapid re-toggle must invalidate the previous change's still-pending callbacks,
             // otherwise a stale scale/offset update can run after the newer state (visible jump).
             swapGeneration &+= 1
@@ -499,7 +497,6 @@ private struct AnimatedSwapLayout: View {
 
 // MARK: - Paste Context Menu
 
-@available(iOS 14, macOS 11, *)
 extension View {
     /// Long-press to paste. Intentionally uses an `onLongPressGesture` and NOT `.contextMenu`:
     /// `.contextMenu` adds a `_UIReparentingView` to the host's view hierarchy, which is
@@ -527,7 +524,6 @@ extension View {
 // MARK: - Swap animation layout constants
 
 // Internal so DualSwapAmountView can read them if needed; private would hide from the module.
-@available(iOS 14, macOS 11, *)
 enum SwapAnimLayout {
     // Slot heights (reference: SendAmountAmountsStack)
     static let primaryHeight: CGFloat = 41
@@ -555,7 +551,6 @@ enum SwapAnimLayout {
 
 #if DEBUG
 
-@available(iOS 17, macOS 14, *)
 #Preview("Normal amounts") {
     VStack(spacing: 20) {
         SwapAmountView(
@@ -574,7 +569,6 @@ enum SwapAnimLayout {
     .padding(20)
 }
 
-@available(iOS 17, macOS 14, *)
 #Preview("Edge cases — scaling") {
     VStack(spacing: 20) {
         SwapAmountView(
@@ -597,7 +591,6 @@ enum SwapAnimLayout {
     .padding(20)
 }
 
-@available(iOS 17, macOS 14, *)
 #Preview("Edge cases — precision") {
     VStack(spacing: 20) {
         SwapAmountView(
@@ -621,7 +614,6 @@ enum SwapAnimLayout {
     .padding(20)
 }
 
-@available(iOS 17, macOS 14, *)
 #Preview("Leading zero — bare decimal") {
     VStack(spacing: 20) {
         SwapAmountView(
@@ -639,7 +631,6 @@ enum SwapAnimLayout {
     .padding(20)
 }
 
-@available(iOS 17, macOS 14, *)
 #Preview("Animated dual-swap (interactive)") {
     VStack {
         SwapAmountView(
@@ -655,7 +646,6 @@ enum SwapAnimLayout {
     }
 }
 
-@available(iOS 17, macOS 14, *)
 private struct SwapAmountAnimatedPreview: View {
     @State private var isPrimarySelected = true
 

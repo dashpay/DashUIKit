@@ -9,7 +9,7 @@ Every component is **presentational and value-driven**: it owns no business logi
 networking, or persistence. You pass in formatted strings, flags, bindings, and
 callbacks; the component renders and reports user intent back to you.
 
-- **Platforms:** iOS 14+ (some features light up on 15 / 16 / 17 with graceful fallbacks)
+- **Platforms:** iOS 18+ / macOS 15+
 - **Swift tools:** 6.3
 - **Module:** `import DashUIKit`
 
@@ -67,7 +67,7 @@ a component already exists before building your own.
 |---|---|---|
 | `DashButton` | Themed button — 4 sizes × 11 styles, icons, loading, full-width | [Buttons & inputs](docs/buttons-and-inputs.md) |
 | `DashSwitch` | DS-tinted toggle | [Buttons & inputs](docs/buttons-and-inputs.md) |
-| `SearchBar` | Search field with animated cancel (iOS 15+) and iOS 14 fallback | [Buttons & inputs](docs/buttons-and-inputs.md) |
+| `SearchBar` | Search field with an animated cancel button | [Buttons & inputs](docs/buttons-and-inputs.md) |
 | `AddressFieldView` | Labeled text field (label / field / help text) with optional QR, clear and error state | [Buttons & inputs](docs/buttons-and-inputs.md) |
 | `Criteria` | Requirement check-list — `Criterion` rows in six states | [Buttons & inputs](docs/buttons-and-inputs.md) |
 | `NumericKeyboardView` | Locale-aware on-screen number pad with action button | [Buttons & inputs](docs/buttons-and-inputs.md) |

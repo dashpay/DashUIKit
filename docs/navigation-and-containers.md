@@ -6,7 +6,7 @@ Structural chrome — nav bars, bottom sheets, and card styling.
 
 ## NavigationBar
 
-File `Components/NavigationBar.swift` · `@available(iOS 14, macOS 11, *)`
+File `Components/NavigationBar.swift`
 
 A custom three-slot top bar: **leading**, **central**, **trailing**, each a
 `@ViewBuilder`. The leading/trailing pair is laid out in an `HStack` with a `Spacer`
@@ -62,7 +62,7 @@ put adjacent bar buttons **at least 10pt apart** (`HStack(spacing: 10)`) or the 
 overlap and a tap between them goes to the later one.
 
 File `Components/NavigationBarCircleMenu.swift` — **`NavigationBarCircleMenu(_:accessibilityLabel:content:)`**,
-a `Menu` with the circle as its label (e.g. a ⋯ overflow). On iOS 16+ it uses the bar's button style, so its press
+a `Menu` with the circle as its label (e.g. a ⋯ overflow). It uses the bar's button style, so its press
 animation and disabled dimming match the circle buttons:
 
 ```swift
@@ -80,7 +80,7 @@ something the two above don't cover.
 
 ## TopIntroView
 
-File `Components/TopIntro/TopIntroView.swift` · `@available(iOS 14, macOS 11, *)`
+File `Components/TopIntro/TopIntroView.swift`
 
 A lightweight top-of-screen intro block: title plus up to two description lines, laid
 out as a leading-aligned text stack with extra trailing padding so it breathes beside
@@ -100,7 +100,7 @@ Use it for screen headers that sit above the main content rather than inside a n
 
 ## BottomSheet
 
-File `Components/BottomSheet/BottomSheet.swift` · `@available(iOS 14, macOS 11, *)`
+File `Components/BottomSheet/BottomSheet.swift`
 
 Sheet chrome to put **inside** a SwiftUI `.sheet { }`: a grabber, a `NavigationBar` header
 (optional back button + title + close), and your content. Two height modes.
@@ -123,7 +123,7 @@ Sheet chrome to put **inside** a SwiftUI `.sheet { }`: a grabber, a `NavigationB
 ```
 
 - **`fillsHeight: true`** (default) — content fills the sheet; pair with an explicit detent
-  on **iOS 16+** (`.large` / `.medium` / `.height`). Wraps content in a `NavigationView`.
+  (`.large` / `.medium` / `.height`). Wraps content in a `NavigationView`.
 - **`fillsHeight: false`** — natural height; pair with `.selfSizingSheet(…)` so the sheet
   snaps to its content.
 
@@ -150,8 +150,7 @@ no `onClose` — and `isCloseButtonEnabled: false` takes it away outright. An in
 visibly dimmed and exposes the disabled accessibility trait. Use `showsCloseButton: false`
 when the sheet should have no close affordance at all.
 
-Swipe blocking uses `interactiveDismissDisabled` on **iOS 15+** / **macOS 12+** and
-`UIViewController.isModalInPresentation` below that, so an iOS 14 host is protected too.
+Swipe blocking uses `interactiveDismissDisabled`.
 
 `onClose` covers the **close button only**: an interactive swipe dismisses the sheet
 without calling it. A host that has to hear about every dismissal should also pass
@@ -172,7 +171,7 @@ the modifier are applied together:
         fallback: 240,            // height before first measurement (avoids .medium flash)
         maxHeightFraction: 0.95,  // cap at 95% of window height (clip taller → use ScrollView)
         background: .dash.secondaryBackground, // also fills the home-indicator strip
-        cornerRadius: 24          // iOS 16.4..<26; iOS 26+ keeps system corners
+        cornerRadius: 24          // below iOS 26; iOS 26+ keeps system corners
     ) {
         MyContent()
     }
@@ -180,8 +179,8 @@ the modifier are applied together:
 ```
 
 `.selfSizingSheet(…)` (a `View` extension) measures the wrapped content directly via a
-`GeometryReader` and drives `presentationDetents([.height(measured)])`. **iOS 16+** only;
-a **no-op below iOS 16**. The measured content must have a finite intrinsic height (no
+`GeometryReader` and drives `presentationDetents([.height(measured)])`. The measured
+content must have a finite intrinsic height (no
 greedy `Spacer`/`maxHeight: .infinity`), or the measurement is wrong.
 `BottomSheetHeightPreferenceKey` is exposed for advanced cases.
 
@@ -192,7 +191,7 @@ background as a pale band along the bottom edge, whatever the content is styled 
 
 ## SheetFeature
 
-File `Components/BottomSheet/SheetFeature.swift` · `@available(iOS 14, macOS 11, *)` · public
+File `Components/BottomSheet/SheetFeature.swift` · public
 
 One "here is what this gives you" line for a `BottomSheet`: an icon beside a name and a
 sentence. Stack several to describe what a feature unlocks.
@@ -219,7 +218,7 @@ more than one colour keeps them, since a template flattens everything to a singl
 
 ## MenuViewModifier
 
-File `ViewModifiers/MenuViewModifier.swift` · `@available(iOS 14, macOS 11, *)`
+File `ViewModifiers/MenuViewModifier.swift`
 
 Card chrome: inner padding, a rounded (radius 20, continuous) `secondaryBackground` fill,
 and a soft DS shadow. Use it to wrap grouped content (e.g. a stack of `MenuItem`s) into a

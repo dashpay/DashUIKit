@@ -16,7 +16,6 @@
 
 import SwiftUI
 
-@available(iOS 14, macOS 11, *)
 public enum CoinSelectorTrailing {
     case price(String)
     case halted
@@ -31,7 +30,6 @@ private enum CoinSelectorLayout {
     static let badgeCornerRadius: CGFloat = 6
 }
 
-@available(iOS 14, macOS 11, *)
 public struct CoinSelector<Icon: View>: View {
 
     private let name: String
@@ -121,7 +119,6 @@ public struct CoinSelector<Icon: View>: View {
 
 #if DEBUG
 
-@available(iOS 14, macOS 11, *)
 struct CoinSelector_Previews: PreviewProvider {
 
     static var iconPlaceholder: some View {

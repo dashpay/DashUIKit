@@ -32,7 +32,6 @@ private enum Layout {
     static let ringWidth: CGFloat = 3
 }
 
-@available(iOS 15, macOS 12, *)
 public struct AddressFieldView<Accessory: View>: View {
 
     @Binding private var text: String
@@ -153,10 +152,10 @@ public struct AddressFieldView<Accessory: View>: View {
             // this field exists, so the mirror below never fires for it.
             if isFocused?.wrappedValue == true { isTextFieldFocused = true }
         }
-        .onChange(of: isTextFieldFocused) { focused in
+        .onChange(of: isTextFieldFocused) { _, focused in
             if isFocused?.wrappedValue != focused { isFocused?.wrappedValue = focused }
         }
-        .onChange(of: isFocused?.wrappedValue) { requested in
+        .onChange(of: isFocused?.wrappedValue) { _, requested in
             guard let requested, requested != isTextFieldFocused else { return }
             isTextFieldFocused = requested
         }
@@ -164,7 +163,6 @@ public struct AddressFieldView<Accessory: View>: View {
 
 }
 
-@available(iOS 15, macOS 12, *)
 public extension AddressFieldView where Accessory == EmptyView {
     /// No label accessory — the original shape, unchanged for callers that
     /// have nothing to put there.
@@ -197,7 +195,6 @@ public extension AddressFieldView where Accessory == EmptyView {
     }
 }
 
-@available(iOS 15, macOS 12, *)
 extension AddressFieldView {
     // MARK: - Subviews
 
@@ -214,36 +211,25 @@ extension AddressFieldView {
         )
     }
 
-    @ViewBuilder private var textField: some View {
-        if #available(iOS 17.0, *) {
-            TextField(
-                "",
-                text: $text,
-                // A prompt must stay a `Text`; `dashFont` returns `some View`, and a
-                // line height cannot be applied to `Text` anyway.
-                prompt: Text(placeholder)
-                    .font(Font.dash.subhead)
-                    .foregroundStyle(Color.dash.black1000Alpha30),
-                axis: .vertical
-            )
-            .lineLimit(1...2)
-            .dashFont(.subhead)
-            .textInputAutocapitalization(.never)
-            .disableAutocorrection(true)
-            .foregroundStyle(Color.dash.primaryText)
-            .tint(Color.dash.primaryText)
-            .focused($isTextFieldFocused)
-            .disabled(isDisabled)
-        } else {
-            TextField(placeholder, text: $text)
-                .dashFont(.subhead)
-                .textInputAutocapitalization(.never)
-                .disableAutocorrection(true)
-                .foregroundStyle(Color.dash.primaryText)
-                .tint(Color.dash.primaryText)
-                .focused($isTextFieldFocused)
-                .disabled(isDisabled)
-        }
+    private var textField: some View {
+        TextField(
+            "",
+            text: $text,
+            // A prompt must stay a `Text`; `dashFont` returns `some View`, and a
+            // line height cannot be applied to `Text` anyway.
+            prompt: Text(placeholder)
+                .font(Font.dash.subhead)
+                .foregroundStyle(Color.dash.black1000Alpha30),
+            axis: .vertical
+        )
+        .lineLimit(1...2)
+        .dashFont(.subhead)
+        .textInputAutocapitalization(.never)
+        .autocorrectionDisabled()
+        .foregroundStyle(Color.dash.primaryText)
+        .tint(Color.dash.primaryText)
+        .focused($isTextFieldFocused)
+        .disabled(isDisabled)
     }
 
     private var actionButton: some View {
@@ -332,7 +318,6 @@ extension AddressFieldView {
 
 #if DEBUG
 
-@available(iOS 17, macOS 14, *)
 #Preview("Empty") {
     AddressFieldView(
         text: .constant(""),
@@ -344,7 +329,6 @@ extension AddressFieldView {
     .padding()
 }
 
-@available(iOS 17, macOS 14, *)
 #Preview("Empty, no scan handler") {
     // Nothing to scan — a username, a label, a note. No trailing glyph is
     // drawn, where before an inert QR button was.
@@ -357,7 +341,6 @@ extension AddressFieldView {
     .padding()
 }
 
-@available(iOS 17, macOS 14, *)
 #Preview("Accepted — no ring, no clear button") {
     AddressFieldView(
         text: .constant("satoshi"),
@@ -370,7 +353,6 @@ extension AddressFieldView {
     .padding()
 }
 
-@available(iOS 17, macOS 14, *)
 #Preview("Empty with Paste button") {
     AddressFieldView(
         text: .constant(""),
@@ -383,7 +365,6 @@ extension AddressFieldView {
     .padding()
 }
 
-@available(iOS 17, macOS 14, *)
 #Preview("With Text") {
     AddressFieldView(
         text: .constant("bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh"),
@@ -395,7 +376,6 @@ extension AddressFieldView {
     .padding()
 }
 
-@available(iOS 17, macOS 14, *)
 #Preview("Multiline") {
     AddressFieldView(
         text: .constant("bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh\nbc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh"),
@@ -407,7 +387,6 @@ extension AddressFieldView {
     .padding()
 }
 
-@available(iOS 17, macOS 14, *)
 #Preview("Error") {
     AddressFieldView(
         text: .constant("invalid-address"),
@@ -419,7 +398,6 @@ extension AddressFieldView {
     .padding()
 }
 
-@available(iOS 17, macOS 14, *)
 #Preview("Filled") {
     AddressFieldView(
         text: .constant("bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh"),
@@ -431,7 +409,6 @@ extension AddressFieldView {
     .padding()
 }
 
-@available(iOS 17, macOS 14, *)
 #Preview("Blurred + filled (no action button)") {
     AddressFieldView(
         text: .constant("bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh"),
@@ -443,7 +420,6 @@ extension AddressFieldView {
     .padding()
 }
 
-@available(iOS 17, macOS 14, *)
 #Preview("Label accessory") {
     AddressFieldView(
         text: .constant("yV1D1ivvSUyKPJnbFmzSTVh1MyZ3JbeVkY"),

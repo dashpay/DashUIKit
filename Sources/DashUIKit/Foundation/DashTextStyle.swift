@@ -22,7 +22,6 @@ import SwiftUI
 ///
 /// `Font` alone cannot carry a line height (leading is applied by view modifiers, not
 /// the font), so this pairs the font metrics with the spec line height.
-@available(iOS 14, macOS 10.15, *)
 public struct DashTextStyle: Sendable {
     public let size: CGFloat
     public let weight: Font.Weight
@@ -40,7 +39,6 @@ public struct DashTextStyle: Sendable {
 
 // MARK: - Tokens (mirror `DashFonts`, with the documented line heights)
 
-@available(iOS 14, macOS 10.15, *)
 public extension DashTextStyle {
     static let largeTitle = DashTextStyle(size: 34, weight: .bold, lineHeight: 41)
     static let title1 = DashTextStyle(size: 28, weight: .bold, lineHeight: 34)
@@ -62,7 +60,6 @@ public extension DashTextStyle {
 
 // MARK: - Convenience accessor (`Font.dash.style.footnote`)
 
-@available(iOS 14, macOS 10.15, *)
 public extension Font {
     /// Namespace for Dash text *styles* (font + line height), e.g. `Font.dashStyle.footnote`.
     static var dashStyle: DashTextStyle.Type { DashTextStyle.self }
@@ -70,7 +67,6 @@ public extension Font {
 
 // MARK: - View modifier
 
-@available(iOS 14, macOS 10.15, *)
 public extension View {
     /// Applies a Dash text style: sets the font **and** its documented line height in
     /// one call.
@@ -87,7 +83,6 @@ public extension View {
 
 #if DEBUG
 
-@available(iOS 17, macOS 14, *)
 #Preview("dashFont") {
     let sample = "Back up your wallet to keep your funds safe and recover it on a new device."
 

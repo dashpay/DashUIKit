@@ -33,7 +33,6 @@ import SwiftUI
 ///
 /// The default colour is `Color.dash.gray300Alpha90` — the palette entry for
 /// the `#B0B6BC` at 90% the SVG strokes with.
-@available(iOS 14, macOS 11, *)
 public struct ChevronIcon: View {
 
     /// Where the chevron points.
@@ -103,7 +102,6 @@ public struct ChevronIcon: View {
 
 /// The chevron polyline, normalized from the 7×12 source viewBox so it keeps
 /// its proportions at any size. Points right; `ChevronIcon` rotates it.
-@available(iOS 14, macOS 11, *)
 private struct ChevronShape: Shape {
     private static let viewBox = CGSize(width: 7, height: 12)
 
@@ -135,7 +133,6 @@ private struct ChevronShape: Shape {
 
 #if DEBUG
 
-@available(iOS 17, macOS 14, *)
 #Preview("Four directions") {
     HStack(spacing: 32) {
         ChevronIcon(direction: .left)
@@ -149,7 +146,6 @@ private struct ChevronShape: Shape {
 
 /// Each one drawn on its own bounds, so the frame the rotation reports is
 /// visible: left/right are tall, up/down are wide.
-@available(iOS 17, macOS 14, *)
 #Preview("Measured bounds") {
     HStack(spacing: 24) {
         ForEach([ChevronIcon.Direction.left, .right, .up, .down], id: \.angle.degrees) { direction in
@@ -161,7 +157,6 @@ private struct ChevronShape: Shape {
     .background(Color.dash.primaryBackground)
 }
 
-@available(iOS 17, macOS 14, *)
 #Preview("Dark") {
     HStack(spacing: 32) {
         ChevronIcon(direction: .left)

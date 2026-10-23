@@ -23,7 +23,6 @@ import SwiftUI
 /// `accessibilityLabel` is a `Text`, so `Text("Refresh")` is looked up in the
 /// host's string table like a SwiftUI `Button` title; pass
 /// `Text(verbatim:)` for an already-localized string.
-@available(iOS 14, macOS 11, *)
 public struct NavigationBarCircleButton: View {
     private let icon: DashIconSource
     private let accessibilityLabel: Text
@@ -47,7 +46,6 @@ public struct NavigationBarCircleButton: View {
 }
 
 #if DEBUG
-@available(iOS 17, macOS 14, *)
 #Preview("NavigationBarCircleButton") {
     HStack(spacing: 10) {
         NavigationBarCircleButton(.system("arrow.clockwise"), accessibilityLabel: Text("Refresh")) { }

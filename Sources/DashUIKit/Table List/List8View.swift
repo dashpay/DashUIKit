@@ -32,7 +32,6 @@ import SwiftUI
 /// keeping the end of a username that may be what tells two recipients apart; pass
 /// `truncationMode: .tail` for a display name. The value sets its own mode, so a
 /// `.truncationMode(_:)` modifier on the row reaches only the label.
-@available(iOS 14, macOS 11, *)
 public struct List8View<Avatar: View>: View {
 
     public var label: String
@@ -80,7 +79,6 @@ public struct List8View<Avatar: View>: View {
     }
 }
 
-@available(iOS 14, macOS 11, *)
 public extension List8View where Avatar == EmptyView {
 
     /// A row without an avatar.
@@ -91,7 +89,6 @@ public extension List8View where Avatar == EmptyView {
 
 #if DEBUG
 
-@available(iOS 17, macOS 14, *)
 #Preview("Every state") {
     VStack(spacing: 0) {
         List8View(label: "To", value: "username") {

@@ -24,7 +24,6 @@ import SwiftUI
 /// Drawn rather than shipped as an asset, for the same reason `XmarkIcon` is:
 /// it stays crisp at any size, and the disc takes the `Blue` token instead of
 /// baking `#008DE4` into a PDF that would then miss a palette change.
-@available(iOS 14, macOS 11, *)
 public struct InfoRoundIcon: View {
     public var size: CGFloat = 19
     public var color: Color = Color.dash.blue
@@ -70,7 +69,6 @@ public struct InfoRoundIcon: View {
 /// The dot is a 0.01-long segment rather than a circle — with a round cap that
 /// renders as a dot of exactly the stem's weight, which is how the source
 /// draws it and what keeps the two visually matched at every size.
-@available(iOS 14, macOS 11, *)
 private struct InfoGlyphShape: Shape {
     private let centerXRatio: CGFloat = 9.2998 / 19
     private let stemTopRatio: CGFloat = 9.30005 / 19
@@ -92,7 +90,6 @@ private struct InfoGlyphShape: Shape {
 
 #if DEBUG
 
-@available(iOS 17, macOS 14, *)
 #Preview("Sizes") {
     HStack(alignment: .center, spacing: 12) {
         InfoRoundIcon(size: 14)
@@ -103,7 +100,6 @@ private struct InfoGlyphShape: Shape {
     .padding()
 }
 
-@available(iOS 17, macOS 14, *)
 #Preview("Recoloured") {
     HStack(spacing: 12) {
         InfoRoundIcon(size: 32, color: Color.dash.gray300)

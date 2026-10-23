@@ -4,7 +4,6 @@ import SwiftUI
 import UIKit
 #endif
 
-@available(iOS 14, macOS 11, *)
 public struct BottomSheet<Content: View>: View {
     @Environment(\.presentationMode) private var presentationMode
 
@@ -106,7 +105,9 @@ public struct BottomSheet<Content: View>: View {
                     )
             }
         }
-        .modifier(BottomSheetDismissalModifier(isEnabled: isDismissalEnabled))
+        // Pass the flag rather than branching on it: an if/else is
+        // `_ConditionalContent`, which rebuilds the sheet and drops host state.
+        .interactiveDismissDisabled(!isDismissalEnabled)
     }
 
     private var grabber: some View {
@@ -180,7 +181,6 @@ public struct BottomSheet<Content: View>: View {
     }
 }
 
-@available(iOS 14, macOS 11, *)
 public struct BottomSheetHeightPreferenceKey: PreferenceKey {
     public static let defaultValue: CGFloat = 0
 
@@ -189,7 +189,6 @@ public struct BottomSheetHeightPreferenceKey: PreferenceKey {
     }
 }
 
-@available(iOS 14, macOS 11, *)
 public extension BottomSheet {
     /// Self-sizing bottom sheet: builds with `fillsHeight: false` and applies
     /// `.selfSizingSheet(...)` so the two can't be mismatched. Drop the result
@@ -228,7 +227,6 @@ public extension BottomSheet {
     }
 }
 
-@available(iOS 14, macOS 11, *)
 enum BottomSheetDismissalAction {
     /// The button is live while it still has something to do. Blocking dismissal only
     /// takes away what the sheet itself owns — the `dismiss()` it would call — so a host
@@ -252,99 +250,9 @@ enum BottomSheetDismissalAction {
     }
 }
 
-@available(iOS 14, macOS 11, *)
-private struct BottomSheetDismissalModifier: ViewModifier {
-    let isEnabled: Bool
-
-    // The branch is on `#available` alone, never on `isEnabled`. A `@ViewBuilder`
-    // if/else produces `_ConditionalContent`, and the two branches are different
-    // views to SwiftUI: switching between them tears the sheet down and rebuilds
-    // it, taking every piece of `@State` the host keeps inside `content()` with
-    // it — a half-typed field, the scroll position, the keyboard. `#available`
-    // cannot flip while the app runs, so this branch is decided once and the
-    // sheet keeps one identity for as long as it is on screen.
-    @ViewBuilder
-    func body(content: Content) -> some View {
-        if #available(iOS 15, macOS 12, *) {
-            content.interactiveDismissDisabled(!isEnabled)
-        } else {
-            content.modifier(LegacyInteractiveDismissModifier(isDismissDisabled: !isEnabled))
-        }
-    }
-}
-
-#if canImport(UIKit)
-
-/// `interactiveDismissDisabled` is iOS 15, and this library ships to 14. The flag
-/// it sets underneath — `UIViewController.isModalInPresentation` — is iOS 13, so
-/// the older systems can be given the same protection rather than none at all.
-@available(iOS 14, macOS 11, *)
-private struct LegacyInteractiveDismissModifier: ViewModifier {
-    let isDismissDisabled: Bool
-
-    func body(content: Content) -> some View {
-        content.background(
-            ModalInPresentationSetter(isModal: isDismissDisabled)
-                .frame(width: 0, height: 0)
-        )
-    }
-}
-
-@available(iOS 14, macOS 11, *)
-private struct ModalInPresentationSetter: UIViewControllerRepresentable {
-    let isModal: Bool
-
-    func makeUIViewController(context: Context) -> Controller {
-        Controller()
-    }
-
-    func updateUIViewController(_ controller: Controller, context: Context) {
-        controller.isModal = isModal
-    }
-
-    final class Controller: UIViewController {
-        var isModal = false {
-            didSet { applyToPresentedController() }
-        }
-
-        override func didMove(toParent parent: UIViewController?) {
-            super.didMove(toParent: parent)
-            applyToPresentedController()
-        }
-
-        override func viewWillAppear(_ animated: Bool) {
-            super.viewWillAppear(animated)
-            applyToPresentedController()
-        }
-
-        /// The swipe belongs to the controller that was actually presented, not to
-        /// this one: the representable sits in a background deep inside the sheet's
-        /// hosting controller, so walk up to the top of the containment chain.
-        private func applyToPresentedController() {
-            var controller: UIViewController = self
-            while let parent = controller.parent {
-                controller = parent
-            }
-            controller.isModalInPresentation = isModal
-        }
-    }
-}
-
-#else
-
-@available(iOS 14, macOS 11, *)
-private struct LegacyInteractiveDismissModifier: ViewModifier {
-    let isDismissDisabled: Bool
-
-    func body(content: Content) -> some View { content }
-}
-
-#endif
-
-@available(iOS 14, macOS 11, *)
 public extension View {
     /// Sizes a `BottomSheet` (built with `fillsHeight: false`) to its content's natural height —
-    /// no hardcoded `.height(...)` needed. On iOS < 16 it is a no-op.
+    /// no hardcoded `.height(...)` needed.
     ///
     /// The content is measured directly (via a `GeometryReader` background), so it does not rely
     /// on any published preference — it self-sizes whatever finite-height view it wraps. The
@@ -361,8 +269,8 @@ public extension View {
     ///     colour the wrapped `BottomSheet` was built with, so a custom one has
     ///     to be passed here too — or use `BottomSheet.selfSizing(...)`, which
     ///     forwards a single `background` to both.
-    ///   - cornerRadius: Optional corner radius applied via `presentationCornerRadius` on
-    ///     iOS 16.4..<26 (iOS 26+ keeps the system corner styling).
+    ///   - cornerRadius: Optional corner radius applied via `presentationCornerRadius`
+    ///     below iOS 26 (iOS 26+ keeps the system corner styling).
     @ViewBuilder
     func selfSizingSheet(
         fallback: CGFloat = 0,
@@ -370,46 +278,30 @@ public extension View {
         background: Color = .dash.primaryBackground,
         cornerRadius: CGFloat? = nil
     ) -> some View {
-        if #available(iOS 16.0, macOS 13.0, *) {
-            let modified = modifier(SelfSizingSheetModifier(fallback: fallback, maxHeightFraction: maxHeightFraction))
-            #if os(iOS)
-            if #available(iOS 16.4, *) {
-                // The background is filled whatever the corner radius: the
-                // measured height excludes the home-indicator inset that
-                // `.presentationDetents([.height])` adds back, so that strip
-                // sits outside the sheet's own `VStack` and shows the system
-                // background unless this fills it.
-                if #unavailable(iOS 26.0), let cornerRadius {
-                    modified
-                        .presentationCornerRadius(cornerRadius)
-                        .presentationBackground(background)
-                } else {
-                    // iOS 26+ keeps the system corner styling.
-                    modified
-                        .presentationBackground(background)
-                }
-            } else {
-                modified
-            }
-            #elseif os(macOS)
-            // `presentationCornerRadius` is iOS-only, but the presentation
-            // background lands on macOS 13.3 — apply it there too so the
-            // parameter is not silently ignored.
-            if #available(macOS 13.3, *) {
-                modified.presentationBackground(background)
-            } else {
-                modified
-            }
-            #else
+        let modified = modifier(SelfSizingSheetModifier(fallback: fallback, maxHeightFraction: maxHeightFraction))
+        #if os(iOS)
+        // The background is filled whatever the corner radius: the measured
+        // height excludes the home-indicator inset that
+        // `.presentationDetents([.height])` adds back, so that strip sits
+        // outside the sheet's own `VStack` and shows the system background
+        // unless this fills it.
+        if #unavailable(iOS 26.0), let cornerRadius {
             modified
-            #endif
+                .presentationCornerRadius(cornerRadius)
+                .presentationBackground(background)
         } else {
-            self
+            // iOS 26+ keeps the system corner styling.
+            modified
+                .presentationBackground(background)
         }
+        #else
+        // `presentationCornerRadius` is iOS-only; the presentation background
+        // is not, so the parameter is not silently ignored off iOS.
+        modified.presentationBackground(background)
+        #endif
     }
 }
 
-@available(iOS 16.0, macOS 13.0, *)
 private struct SelfSizingSheetModifier: ViewModifier {
     let fallback: CGFloat
     let maxHeightFraction: CGFloat
@@ -423,7 +315,7 @@ private struct SelfSizingSheetModifier: ViewModifier {
                 GeometryReader { proxy in
                     Color.clear
                         .onAppear { update(proxy.size.height) }
-                        .onChange(of: proxy.size.height) { update($0) }
+                        .onChange(of: proxy.size.height) { _, newHeight in update(newHeight) }
                 }
             )
             .presentationDetents(detents)
@@ -458,7 +350,6 @@ private struct SelfSizingSheetModifier: ViewModifier {
 
 #if DEBUG
 
-@available(iOS 17, macOS 14, *)
 #Preview("BottomSheet Filled Height") {
     BottomSheet(
         title: "Bottom Sheet",
@@ -477,7 +368,6 @@ private struct SelfSizingSheetModifier: ViewModifier {
     }
 }
 
-@available(iOS 17, macOS 14, *)
 #Preview("BottomSheet Natural Height") {
     BottomSheet(
         title: "Bottom Sheet",
@@ -497,7 +387,6 @@ private struct SelfSizingSheetModifier: ViewModifier {
     }
 }
 
-@available(iOS 17, macOS 14, *)
 #Preview("BottomSheet Custom Background") {
     BottomSheet(
         title: "Bottom Sheet",
@@ -519,7 +408,6 @@ private struct SelfSizingSheetModifier: ViewModifier {
     }
 }
 
-@available(iOS 17, macOS 14, *)
 #Preview("BottomSheet Dismissal States") {
     VStack(spacing: 12) {
         BottomSheet(

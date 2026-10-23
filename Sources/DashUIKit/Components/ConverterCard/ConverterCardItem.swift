@@ -29,7 +29,6 @@ import SwiftUI
 /// (the Coinbase row keeps the same id whether it occupies the top or bottom slot). The default
 /// `id = title` is sufficient when titles are distinct and stable. Pass an explicit `id` if the
 /// title might change or if two rows could share a title.
-@available(iOS 14, macOS 11, *)
 public struct ConverterCardItem: Identifiable {
     public let id: AnyHashable
     /// Static leading icon. Ignored when `iconView` is non-nil.

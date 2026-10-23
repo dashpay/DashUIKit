@@ -24,7 +24,6 @@ import SwiftUI
 /// - `onSwap == nil` → static `arrow-down` icon, non-interactive.
 /// - `onSwap != nil` → tappable `diagonal-up-down` button that rotates 180° on each tap and fires
 ///   the swap action.
-@available(iOS 14, macOS 11, *)
 struct ConverterArrowBadge: View {
     let onSwap: (() -> Void)?
     @State private var rotation: Double = 0
