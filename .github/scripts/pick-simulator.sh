@@ -5,15 +5,16 @@
 set -euo pipefail
 
 sdk=$(xcrun --sdk iphonesimulator --show-sdk-version)
-runtimes=$(xcrun simctl list runtimes available -j)
-devices=$(xcrun simctl list devices available -j)
 
-udid=$(jq -rn --arg sdk "$sdk" --argjson runtimes "$runtimes" --argjson devices "$devices" '
+# Through files, not --argjson: the device list can outgrow the argument limit.
+udid=$(jq -rn --arg sdk "$sdk" \
+  --slurpfile runtimes <(xcrun simctl list runtimes available -j) \
+  --slurpfile devices <(xcrun simctl list devices available -j) '
   def mm: split(".") | map(tonumber) | .[0:2];
-  [$runtimes.runtimes[]
+  [$runtimes[0].runtimes[]
     | select(.platform == "iOS" and (.version | mm) <= ($sdk | mm))
     | . as $rt
-    | [$devices.devices[$rt.identifier][]? | select(.name | startswith("iPhone"))]
+    | [$devices[0].devices[$rt.identifier][]? | select(.name | startswith("iPhone"))]
     | select(length > 0)
     | {version: ($rt.version | split(".") | map(tonumber)), runtime: $rt.identifier, udid: (last | .udid)}]
   | sort_by(.version) | last

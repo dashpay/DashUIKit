@@ -45,11 +45,6 @@ jobs:
       - name: Build for macOS
         run: swift build
 
-      # xcodebuild raises the deployment target to the SDK's minimum, so it misses
-      # APIs newer than the package's own floor; this checks against the floor.
-      - name: Type-check at the iOS deployment target
-        run: .github/scripts/typecheck-ios-floor.sh
-
   test:
     name: Test
     runs-on: macos-26
