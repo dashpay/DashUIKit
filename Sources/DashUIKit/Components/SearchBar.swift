@@ -18,11 +18,23 @@
 #if canImport(UIKit)
 import SwiftUI
 
-// MARK: - Public shell
-
+/// A search field whose cancel button slides in while it has focus.
 public struct SearchBar: View {
+    private enum Layout {
+        static let fieldHeight: CGFloat = 40
+        static let fieldCornerRadius: CGFloat = 14
+        static let fieldHorizontalPadding: CGFloat = 14
+        static let fieldSpacing: CGFloat = 10
+        static let cancelHorizontalPadding: CGFloat = 12
+        static let cancelVerticalPadding: CGFloat = 6
+        static let animationDuration: TimeInterval = 0.25
+    }
+
     @Binding private var text: String
     private let placeholder: String
+
+    @FocusState private var isFocused: Bool
+    @State private var isEditing: Bool = false
 
     public init(
         text: Binding<String>,
@@ -34,30 +46,6 @@ public struct SearchBar: View {
     }
 
     public var body: some View {
-        SearchBarFocused(text: $text, placeholder: placeholder)
-    }
-}
-
-// MARK: - Focus-driven cancel button
-
-private struct SearchBarFocused: View {
-    private enum Layout {
-        static let fieldHeight: CGFloat = 40
-        static let fieldCornerRadius: CGFloat = 14
-        static let fieldHorizontalPadding: CGFloat = 14
-        static let fieldSpacing: CGFloat = 10
-        static let cancelHorizontalPadding: CGFloat = 12
-        static let cancelVerticalPadding: CGFloat = 6
-        static let animationDuration: TimeInterval = 0.25
-    }
-
-    @Binding var text: String
-    let placeholder: String
-
-    @FocusState private var isFocused: Bool
-    @State private var isEditing: Bool = false
-
-    var body: some View {
         HStack(spacing: 0) {
             HStack(spacing: Layout.fieldSpacing) {
                 magnifyingGlass
@@ -127,7 +115,7 @@ private struct SearchBarFocused: View {
                     .padding(.vertical, Layout.cancelVerticalPadding)
             }
         )
-        .tint(Color.dash.primaryText as Color?)
+        .tint(Color.dash.primaryText)
     }
 
     private var searchField: some View {
@@ -142,7 +130,7 @@ private struct SearchBarFocused: View {
             EmptyView()
         }
         .focused($isFocused)
-        .tint(Color.dash.primaryText as Color?)
+        .tint(Color.dash.primaryText)
     }
 }
 

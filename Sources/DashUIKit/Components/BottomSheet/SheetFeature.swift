@@ -48,9 +48,9 @@ public struct SheetFeature<Icon: View>: View {
                 .frame(width: 40, height: 40)
 
             VStack(alignment: .leading, spacing: 2) {
-                // `.subheadMedium`, not `.subhead` + `.fontWeight`: the
-                // modifier is macOS 13, and the weight belongs to a type token
-                // anyway — the library carries both weights of this size.
+                // `.subheadMedium`, not `.subhead` + `.fontWeight`: the weight
+                // belongs to a type token — the library carries both weights
+                // of this size.
                 Text(title)
                     .dashFont(.subheadMedium)
                     .foregroundColor(Color.dash.primaryText)

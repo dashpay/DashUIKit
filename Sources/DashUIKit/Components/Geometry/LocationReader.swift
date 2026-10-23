@@ -100,7 +100,7 @@ struct LocationReader_Previews: PreviewProvider {
                 .padding()
             }
             .coordinateSpace(name: "demo")
-            .overlay(Text(String(format: "header midY: %.1f", headerCenterY)).padding(), alignment: .top)
+            .overlay(alignment: .top) { Text(String(format: "header midY: %.1f", headerCenterY)).padding() }
         }
     }
 

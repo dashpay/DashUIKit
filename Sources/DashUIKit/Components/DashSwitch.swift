@@ -31,7 +31,7 @@ public struct DashSwitch: View {
     public var body: some View {
         Toggle("", isOn: $isOn)
             .labelsHidden()
-            .tint(Color.dash.switchTrackFillOn as Color?)
+            .tint(Color.dash.switchTrackFillOn)
     }
 }
 

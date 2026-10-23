@@ -85,7 +85,7 @@ File `Components/AddressFieldView.swift` · **UIKit only**
 
 A labeled crypto-address input with a trailing action button (scan-QR when empty, clear
 when filled), error styling, and a multi-line read-out state. Uses a vertical
-axis field (1–3 lines).
+axis field (1–2 lines).
 
 Also the general-purpose text input: its three parts — label, field, help text — are the
 design system's `Input` component, so it is what any labeled field is built from, not

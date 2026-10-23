@@ -186,7 +186,7 @@ public struct NumericKeyboardView: View {
         //
         // `.continuous` because the circular default kinks visibly where the
         // arc meets the top edge at this radius.
-        .background(alignment: .top) {
+        .background {
             UnevenRoundedRectangle(
                 topLeadingRadius: Layout.panelCornerRadius,
                 topTrailingRadius: Layout.panelCornerRadius,

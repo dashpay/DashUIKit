@@ -123,16 +123,13 @@ public struct TransactionView: View {
     // MARK: - Icon
 
     private var iconWrap: some View {
-        // `.overlay(_:alignment:)` (iOS 13) rather than `.overlay(alignment:content:)` (iOS 15),
-        // so the component stays usable at the iOS 14 deployment target.
         mainIcon
             .frame(width: Layout.iconSize, height: Layout.iconSize)
             .clipShape(RoundedRectangle(cornerRadius: Layout.iconCornerRadius, style: .continuous))
-            .overlay(
+            .overlay(alignment: .bottomTrailing) {
                 secondaryBadge
-                    .offset(x: 3,y: 3),
-                alignment: .bottomTrailing
-            )
+                    .offset(x: 3, y: 3)
+            }
     }
 
     @ViewBuilder

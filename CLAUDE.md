@@ -13,7 +13,7 @@ the host passes in.
 ## Deployment target: iOS 18
 
 The package targets **iOS 18 / macOS 15** (see `Package.swift`), matching dashwallet-ios,
-the only consumer. Everything SwiftUI shipped up to iOS 17 — `@FocusState`,
+the only consumer. Everything SwiftUI shipped up to iOS 18 — `@FocusState`,
 `presentationDetents`, `presentationBackground`, the `#Preview` macro, `.isToggle` — is
 available unconditionally, so components carry no `@available` annotation and no fallback
 branch for it.
@@ -21,9 +21,10 @@ branch for it.
 When writing or changing code:
 
 - **Do not** add `@available(iOS …)` for anything at or below the floor; the package
-  declares it once. Annotate only what genuinely needs a *higher* version than the
-  floor, and then gate it with `if #available(...)` plus a path that works below it —
-  `selfSizingSheet` does this for the iOS 26 corner styling (`#unavailable(iOS 26.0)`).
+  declares it once. An API newer than the floor is gated in the body with
+  `if #available(...)` / `#unavailable(...)` plus a path that works below it, and the
+  declaration stays unannotated — `selfSizingSheet` does this for the iOS 26 corner
+  styling (`#unavailable(iOS 26.0)`).
 - Raising the floor again is a package-level decision, not a per-component one. If a
   component cannot work at the declared floor, say so in review rather than annotating
   around it.
@@ -55,8 +56,8 @@ Sources/DashUIKit/
   or `Font.dash.subhead` when you only need the font. Tokens defined in `DashTextStyle.swift`.
 - **Icons:** pass a `DashIconSource` (`.system` / `.custom(name, bundle:)` / `.uiImage`) and
   render with `Image(dash: source)`. Custom assets resolve from `.dashUIKit`/`.module`.
-- **Availability:** don't annotate. The floor is declared in `Package.swift`; annotate only
-  an API that needs something *newer* than it, and gate that with `if #available(...)`.
+- **Availability:** don't annotate. The floor is declared in `Package.swift`; gate an API
+  that needs something *newer* than it with `if #available(...)` in the body.
 - **UIKit-only files** are wrapped in `#if canImport(UIKit)` (e.g. `SearchBar`, `Toast`,
   `AddressFieldView`, `DashSwitch`).
 - **Localization:** user-facing strings use `NSLocalizedString(_, bundle: .module, comment:)`.

@@ -225,7 +225,7 @@ extension AddressFieldView {
         .lineLimit(1...2)
         .dashFont(.subhead)
         .textInputAutocapitalization(.never)
-        .disableAutocorrection(true)
+        .autocorrectionDisabled()
         .foregroundStyle(Color.dash.primaryText)
         .tint(Color.dash.primaryText)
         .focused($isTextFieldFocused)

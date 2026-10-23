@@ -105,7 +105,9 @@ public struct BottomSheet<Content: View>: View {
                     )
             }
         }
-        .modifier(BottomSheetDismissalModifier(isEnabled: isDismissalEnabled))
+        // Pass the flag rather than branching on it: an if/else is
+        // `_ConditionalContent`, which rebuilds the sheet and drops host state.
+        .interactiveDismissDisabled(!isDismissalEnabled)
     }
 
     private var grabber: some View {
@@ -245,18 +247,6 @@ enum BottomSheetDismissalAction {
         } else if isDismissalEnabled {
             dismiss()
         }
-    }
-}
-
-private struct BottomSheetDismissalModifier: ViewModifier {
-    let isEnabled: Bool
-
-    // The value is passed to the modifier rather than deciding whether to apply
-    // it: a `@ViewBuilder` if/else would hand back `_ConditionalContent`, and
-    // flipping between its branches makes SwiftUI rebuild the sheet, taking the
-    // host's state inside `content()` with it.
-    func body(content: Content) -> some View {
-        content.interactiveDismissDisabled(!isEnabled)
     }
 }
 
