@@ -34,7 +34,6 @@ public struct SearchBar: View {
     private let placeholder: String
 
     @FocusState private var isFocused: Bool
-    @State private var isEditing: Bool = false
 
     public init(
         text: Binding<String>,
@@ -58,20 +57,12 @@ public struct SearchBar: View {
             .background(Color.dash.searchBackground)
             .clipShape(RoundedRectangle(cornerRadius: Layout.fieldCornerRadius, style: .continuous))
 
-            if isEditing {
+            if isFocused {
                 cancelButton
                     .transition(.move(edge: .trailing).combined(with: .opacity))
             }
         }
-        .animation(.easeInOut(duration: Layout.animationDuration), value: isEditing)
-        .onAppear {
-            isEditing = isFocused
-        }
-        .onChange(of: isFocused) { _, focused in
-            withAnimation(.easeInOut(duration: Layout.animationDuration)) {
-                isEditing = focused
-            }
-        }
+        .animation(.easeInOut(duration: Layout.animationDuration), value: isFocused)
     }
 
     private var magnifyingGlass: some View {
@@ -103,9 +94,6 @@ public struct SearchBar: View {
         Button(
             action: {
                 text = ""
-                withAnimation(.easeInOut(duration: Layout.animationDuration)) {
-                    isEditing = false
-                }
                 isFocused = false
             },
             label: {
@@ -130,6 +118,8 @@ public struct SearchBar: View {
             EmptyView()
         }
         .focused($isFocused)
+        .dashFont(.subhead)
+        .foregroundStyle(Color.dash.primaryText)
         .tint(Color.dash.primaryText)
     }
 }
@@ -138,10 +128,24 @@ public struct SearchBar: View {
 
 #if DEBUG
 
-#Preview {
+#Preview("Empty") {
     @Previewable @State var text = ""
     SearchBar(text: $text)
         .padding()
+}
+
+#Preview("Typed") {
+    @Previewable @State var text = "Dash"
+    SearchBar(text: $text)
+        .padding()
+}
+
+#Preview("Typed, dark") {
+    @Previewable @State var text = "Dash"
+    SearchBar(text: $text)
+        .padding()
+        .background(Color.dash.primaryBackground)
+        .preferredColorScheme(.dark)
 }
 
 #endif // DEBUG
