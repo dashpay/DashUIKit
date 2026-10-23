@@ -19,13 +19,13 @@ import SwiftUI
 
 // MARK: - ScrollViewWithOnScrollChanged
 
-/// A drop-in `ScrollView` that reports its content offset as the user scrolls — useful for
-/// collapsing headers, scroll-driven shadows, parallax, etc. It predates the library's iOS 18
-/// floor; new code can use the system `onScrollGeometryChange` instead.
+/// A drop-in `ScrollView` that reports where its content's origin sits as the user scrolls —
+/// useful for collapsing headers, scroll-driven shadows, parallax, etc.
 ///
-/// The trick: a zero-sized ``LocationReader`` rides at the very top of the content inside a
-/// private named coordinate space. As the content slides, the probe's position within that
-/// space is exactly the scroll offset, which is forwarded through `onScrollChanged`.
+/// The reported point is the content origin relative to the visible start edges, inside every
+/// content inset (safe area, `safeAreaPadding`, `contentMargins`): `.zero` at rest, negative once
+/// the content has scrolled towards its end, and positive while it is pulled past the start.
+/// It is read from `onScrollGeometryChange`, and sent again when the content reappears.
 public struct ScrollViewWithOnScrollChanged<Content: View>: View {
 
     private let axes: Axis.Set
@@ -33,8 +33,10 @@ public struct ScrollViewWithOnScrollChanged<Content: View>: View {
     private let content: Content
     private let report: (CGPoint) -> Void
 
-    /// A per-instance coordinate-space name, so stacked scroll views never read each other's probe.
-    @State private var spaceName = UUID().uuidString
+    @Environment(\.layoutDirection) private var layoutDirection
+    /// Remembers the last origin so it can be sent again when the content
+    /// reappears. A reference, so scroll frames do not write view state.
+    @State private var replay = Replay()
 
     public init(
         _ axes: Axis.Set = .vertical,
@@ -50,16 +52,41 @@ public struct ScrollViewWithOnScrollChanged<Content: View>: View {
 
     public var body: some View {
         ScrollView(axes, showsIndicators: showsIndicators) {
-            offsetProbe
+            // Keeps the content one default stack spacing below the top, where
+            // hosts lay out against it. Deleting it moves their content up by
+            // that spacing.
+            Color.clear.frame(width: 0, height: 0)
             content
         }
-        .coordinateSpace(name: spaceName)
+        .onScrollGeometryChange(for: CGPoint.self) { geometry in
+            scrollContentOrigin(of: geometry, layoutDirection: layoutDirection)
+        } action: { _, origin in
+            replay.last = origin
+            report(origin)
+        }
+        .onAppear {
+            // The first appearance is covered by the geometry change itself.
+            if replay.hasAppeared, let last = replay.last { report(last) }
+            replay.hasAppeared = true
+        }
     }
 
-    /// Top-of-content marker whose location within `spaceName` mirrors the scroll offset.
-    private var offsetProbe: some View {
-        LocationReader(coordinateSpace: .named(spaceName), onChange: report)
+    private final class Replay {
+        var last: CGPoint?
+        var hasAppeared = false
     }
+}
+
+/// Where the content's origin sits relative to the visible start edges, inside the insets.
+///
+/// Right-to-left layouts differ in how `ScrollGeometry` reports the horizontal axis: at rest
+/// `contentOffset.x` equals the trailing inset, the leading inset does not move it, and the
+/// offset grows as the content scrolls towards its end.
+func scrollContentOrigin(of geometry: ScrollGeometry, layoutDirection: LayoutDirection) -> CGPoint {
+    let x = layoutDirection == .rightToLeft
+        ? -(geometry.contentOffset.x - geometry.contentInsets.trailing)
+        : -(geometry.contentOffset.x + geometry.contentInsets.leading)
+    return CGPoint(x: x, y: -(geometry.contentOffset.y + geometry.contentInsets.top))
 }
 
 // MARK: - Preview
@@ -90,8 +117,37 @@ struct ScrollViewWithOnScrollChanged_Previews: PreviewProvider {
         }
     }
 
+    private struct HorizontalDemo: View {
+        @State private var offsetX: CGFloat = 0
+
+        var body: some View {
+            ScrollViewWithOnScrollChanged(.horizontal) {
+                HStack(spacing: 16) {
+                    ForEach(0..<24) { index in
+                        Color.blue.opacity(0.4)
+                            .frame(width: 120, height: 120)
+                            .overlay { Text("Col \(index)") }
+                    }
+                }
+                .padding()
+            } onScrollChanged: { origin in
+                offsetX = origin.x
+            }
+            .overlay(alignment: .bottom) { Text(String(format: "offset.x: %.1f", offsetX)).padding() }
+        }
+    }
+
     static var previews: some View {
         Demo()
+            .previewDisplayName("Vertical")
+        Demo()
+            .contentMargins(.top, 40)
+            .previewDisplayName("Vertical, top margin")
+        HorizontalDemo()
+            .previewDisplayName("Horizontal")
+        HorizontalDemo()
+            .environment(\.layoutDirection, .rightToLeft)
+            .previewDisplayName("Horizontal, right-to-left")
     }
 }
 
