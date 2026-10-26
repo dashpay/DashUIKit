@@ -4,6 +4,8 @@ the PR with the description rendered as GitHub's body_html) and expects a pass o
 Runs without the network. Run from the repository root."""
 import json
 import os
+import re
+import secrets
 import subprocess
 import sys
 import tempfile
@@ -49,7 +51,7 @@ CASES = [
      + '<video src="https://github.com/user-attachments/assets/aaaa"></video><video src="https://github.com/user-attachments/assets/bbbb"></video>'),
     ("query is the identity on other hosts", "pass", UI, h(2, "Before / After")
      + '<img src="https://host.example/render?id=1"><img src="https://host.example/render?id=2">'),
-    ("a newline in a path is escaped", "fail", [{"filename": "Sources/a\n::error::forged.swift"}], ""),
+    ("a newline in a path stays inside the stop block", "fail", [{"filename": "Sources/a\n::error::forged.swift"}], ""),
     ("a Screenshot tests heading is not the section", "fail", UI, h(2, "Screenshot tests") + A + B),
     ("Screenshots with a parenthetical", "pass", UI, h(2, "📸 Screenshots (light and dark)") + A + B),
     ("a workflow badge and codecov are not screenshots", "fail", UI, h(2, "Before / After")
@@ -62,8 +64,45 @@ CASES = [
     ("Package.swift alone is a UI change", "fail", [{"filename": "Package.swift"}], ""),
     ("one image in each of two sections", "fail", UI, h(2, "Screenshots") + A + h(2, "Other") + "<p>x</p>" + h(2, "Before / After") + B),
     ("a Screenshots heading nested in Before / After", "pass", UI, h(2, "Before / After") + A + h(3, "Screenshots") + h(3, "Dark") + B),
+    ("Screenshots with more words in the heading", "pass", UI, h(2, "UI screenshots: light / dark") + A + B),
+    ("a numbered Screenshots heading", "pass", UI, h(2, "1. Screenshots &amp; video") + A + B),
+    ("a struck-out image does not count", "fail", UI, h(2, "Before / After") + A + "<del>%s</del>" % B),
+    ("an image in <s> does not count", "fail", UI, h(2, "Before / After") + A + "<s>%s</s>" % B),
+    ("a struck-out heading is not the section", "fail", UI, h(2, "<del>Before / After</del>") + A + B),
+    ("a plural Screenshots tests heading is not the section", "fail", UI, h(2, "Screenshots tests") + A + B),
+    ("a hyphenated Screenshot-testing heading is not the section", "fail", UI, h(2, "Screenshot-testing") + A + B),
+    ("Screenshot_tests is not the section", "fail", UI, h(2, "Screenshot_tests") + A + B),
+    ("a Screenshot of the test run is not the section", "fail", UI, h(2, "Before / After") + "<p>x</p>"
+     + h(2, "How Has This Been Tested?") + h(3, "Screenshot of the test run") + A + B),
+    ("Screenshots of the latest build", "pass", UI, h(2, "Screenshots of the latest build") + A + B),
+    ("Screenshots (tests) is not the section", "fail", UI, h(2, "Screenshots (tests)") + A + B),
+    ("Screenshot/snapshot tests is not the section", "fail", UI, h(2, "Screenshot/snapshot tests") + A + B),
+    ("a heading that only mentions screenshots is not the section", "fail", UI, h(2, "Notes on screenshots") + A + B),
+    ("badge SVG variants and badge hosts are not screenshots", "fail", UI, h(2, "Before / After")
+     + '<img src="https://x.io/a/badge-flat.svg"><img src="https://x.io/b/badge_small.svg">'
+     + '<img src="https://badge.fury.io/js/x.svg"><img src="https://badges.gitter.im/x/y.svg">'),
+    ("extensionless /badge leaves are not screenshots", "fail", UI, h(2, "Before / After")
+     + '<img src="https://www.codefactor.io/repository/github/x/y/badge"><img src="https://api.securityscorecards.dev/projects/github.com/x/y/badge">'),
+    ("a host that only starts with badge is not a badge", "pass", UI, h(2, "Before / After")
+     + '<img src="https://badger.example.com/light.png"><img src="https://badger.example.com/dark.png">'),
+    ("screenshots in a folder named after a badge count", "pass", UI, h(2, "Before / After")
+     + '<img src="https://raw.githubusercontent.com/o/r/b/docs/status-badge/light.png"><img src="https://raw.githubusercontent.com/o/r/b/docs/status-badge/dark.png">'),
+    ("UI: Screenshots", "pass", UI, h(2, "UI: Screenshots") + A + B),
+    ("other badges are not screenshots", "fail", UI, h(2, "Before / After")
+     + '<img src="https://gitlab.com/a/b/badges/main/pipeline.svg"><img src="https://example.com/build-badge.svg">'
+     + '<img src="https://sonarcloud.io/api/project_badges/measure?k=x">'),
+    ("a screenshot of badge UI counts", "pass", UI, h(2, "Before / After")
+     + '<img src="https://example.com/coin-selector-badge-light.png"><img src="https://example.com/coin-selector-badge-dark.png">'),
+    ("a version-specific manifest is a UI change", "fail", [{"filename": "Package@swift-6.2.swift"}], ""),
+    ("a manifest backup is not a UI change", "pass", [{"filename": "Package.swift.orig"}], ""),
+    ("a legacy ##[ marker in a path stays inside the stop block", "fail", [{"filename": "Sources/##[error]forged.swift"}], ""),
     ("renamed out of Sources/", "fail", [{"filename": "Legacy/Toast.swift", "previous_filename": "Sources/DashUIKit/Components/Toast.swift"}], ""),
 ]
+
+
+def commands_on(stdout):
+    """The output with the ::stop-commands:: blocks cut out: what the runner still parses."""
+    return re.sub(r"^::stop-commands::(\w+)$.*?^::\1::$", "", stdout, flags=re.M | re.S)
 
 
 def run(files, body_html, changed_files=None):
@@ -86,13 +125,16 @@ def main():
         r = run(files, html, case[4] if len(case) > 4 else None)
         # A failure must be the check's own verdict, not a crash that also exits 1.
         ok = ("Traceback" not in r.stderr) and ((r.returncode == 0) if want == "pass"
-              else (r.returncode == 1 and "::error::" in r.stdout))
-        if name.startswith("a newline in a path") and "\n::error::forged" in r.stdout:
+              else (r.returncode == 1 and "::error::" in commands_on(r.stdout)))
+        if name.startswith(("a newline in a path", "a legacy ##[")) and "forged" in commands_on(r.stdout):
             ok = False
         print(("ok    " if ok else "FAIL  ") + name)
         if not ok:
             failures += 1
-            print("      expected %s, got exit %d\n      %s" % (want, r.returncode, (r.stdout + r.stderr).strip().replace("\n", "\n      ")))
+            # The child's output is PR-like text: defuse workflow commands before it reaches the log.
+            token = secrets.token_hex(16)
+            out = (r.stdout + r.stderr).strip().replace("\n", "\n      ")
+            print("      expected %s, got exit %d\n::stop-commands::%s\n      %s\n::%s::" % (want, r.returncode, token, out, token))
     print("%d case(s) failed" % failures if failures else "All cases passed")
     return 1 if failures else 0
 

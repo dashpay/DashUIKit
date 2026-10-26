@@ -72,7 +72,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - id: checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
 
@@ -82,11 +83,14 @@ jobs:
         run: .github/scripts/conventions.sh
 
       # Breaks a copy of the tree once per rule, so a rule that stops matching fails here.
+      # The tests run even when the check above failed, so their result is always reported.
       - name: Test the conventions script
+        if: ${{ !cancelled() && steps.checkout.outcome == 'success' }}
         run: .github/scripts/tests/conventions-test.sh
 
       # The PR-description check runs from the base branch, so its rules are tested here.
       - name: Test the Before / After screenshots check
+        if: ${{ !cancelled() && steps.checkout.outcome == 'success' }}
         run: python3 .github/scripts/tests/screenshots-test.py
 
   actionlint:

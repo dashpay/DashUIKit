@@ -61,8 +61,9 @@ Sources/DashUIKit/
 - **UIKit-only files** are wrapped in `#if canImport(UIKit)` (e.g. `SearchBar`, `Toast`,
   `AddressFieldView`, `DashSwitch`).
 - **Localization:** user-facing strings use `NSLocalizedString(_, bundle: .module, comment:)`.
-- **PR screenshots:** a PR that changes anything under `Sources/` or `Package.swift` shows Before / After
-  screenshots (light and dark) in its description, or ticks "No visual change" and says why.
+- **PR screenshots:** a PR that changes anything under `Sources/` or a package manifest
+  (`Package.swift`, `Package@swift-*.swift`) shows Before / After screenshots (light and
+  dark) in its description, or ticks "No visual change" and says why.
   CI (`Before / After screenshots`) enforces it.
 - Components are **stateless/value-driven** — state (`@Binding`) and callbacks live with the
   host. Don't add view models or persistence here.

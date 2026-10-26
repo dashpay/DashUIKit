@@ -1,17 +1,19 @@
 #!/usr/bin/env python3
 """Fails a PR that changes anything under Sources/ (components, design tokens, the asset
-catalog) unless its description shows Before / After screenshots or declares that nothing
-visible changed:
+catalog) or a package manifest unless its description shows Before / After screenshots or
+declares that nothing visible changed:
 
-  - a heading whose text mentions "Before / After" or "Screenshots" (any level, any case,
-    with or without an emoji in front), and under it, up to the next heading of the same or
-    a higher level, at least two different images; or
+  - a heading whose text mentions "Before / After", or starts with "Screenshots" and does
+    not mention tests (any level, any case, with or without an emoji, a number or "UI" in
+    front), and under it, up to the next heading of the same or a higher level, at least
+    two different images; or
   - the ticked task "No visual change".
 
 It reads the description as GitHub renders it (body_html), so comments, code blocks, list
 indentation and every other markdown rule are already applied: what counts is what a reader
-sees. A file renamed out of Sources/ counts as a UI change, and so does Package.swift, whose platform
-floor decides which branches the components compile. Whether the images really show
+sees. A file renamed out of Sources/ counts as a UI change, and so does the package manifest
+(Package.swift, Package@swift-*.swift), whose platform floor decides which branches the
+components compile. Struck-out text and images do not count. Whether the images really show
 light and dark is left to the reviewer.
 
 Usage:
@@ -22,14 +24,17 @@ Env: GITHUB_STEP_SUMMARY (optional).
 import json
 import os
 import re
+import secrets
 import subprocess
 import sys
 from html.parser import HTMLParser
 from urllib.parse import urlsplit
 
-# "Before / After" anywhere in the heading, or a heading that is just "Screenshots" (an
-# emoji or a parenthetical around it is fine, "Screenshot tests" is not).
-SECTION = re.compile(r"before\W*(and|vs\.?|to)?\W*after|^\W*screenshots?\W*(\(.*\))?\W*$", re.I)
+# "Before / After" anywhere in the heading, or a heading that starts with "Screenshots"
+# ("UI screenshots", "1. Screenshots & video") and is not about tests.
+BEFORE_AFTER = re.compile(r"before\W*(and|vs\.?|to)?\W*after", re.I)
+SCREENSHOTS = re.compile(r"^[\W\d_]*(ui[\W_]+)?screenshots?(?![a-z])", re.I)
+TESTS = re.compile(r"(?<![a-z])test", re.I)
 NO_VISUAL_CHANGE = re.compile(r"^\s*no visual change", re.I)
 # GitHub's files endpoint stops at 3000 entries, however it is paginated.
 FILES_CAP = 3000
@@ -38,8 +43,16 @@ NOT_SCREENSHOT_HOSTS = ("github.githubassets.com", "img.shields.io", "badgen.net
 # Uploads whose query only signs or tweaks the URL; the same file can come back with another.
 UPLOAD_HOSTS = ("private-user-images.githubusercontent.com", "camo.githubusercontent.com",
                 "user-images.githubusercontent.com")
-# Files whose change alters what components render: the sources and the platform floor.
-UI_PATHS = ("Sources/", "Package.swift")
+# Files whose change alters what components render: the sources and the manifests, which
+# set the platform floor.
+UI_SOURCES = "Sources/"
+MANIFEST = re.compile(r"Package(@swift-[0-9.]+)?\.swift")
+# Badge images: a path segment that is just "badge", "badges" or "project_badges"
+# (".../badge", ".../badges/..."), an SVG named after a badge ("badge.svg",
+# "badge-flat.svg"), or a host named "badge" or "badges" (badge.fury.io, badges.gitter.im).
+# A PNG screenshot of badge UI still counts.
+BADGE_SEGMENT = re.compile(r"(project_)?badges?", re.I)
+BADGE_SVG = re.compile(r".*badge.*\.svg", re.I)
 
 
 class Description(HTMLParser):
@@ -63,7 +76,7 @@ class Description(HTMLParser):
             if self.section_level and level <= self.section_level:
                 self.section_level = 0
             self.heading_level, self.heading_text = level, ""
-        elif tag in ("img", "video") and self.section_level:
+        elif tag in ("img", "video") and self.section_level and not self.struck:
             src = attrs.get("data-canonical-src") or attrs.get("src") or ""
             emoji = "emoji" in (attrs.get("class") or "").split()
             if src.startswith(("https://", "http://")) and not emoji and not is_badge(src):
@@ -79,7 +92,7 @@ class Description(HTMLParser):
         if self.heading_level and tag == "h%d" % self.heading_level:
             # A matching heading starts a section, unless it is nested in an open one,
             # which then simply goes on.
-            if SECTION.search(self.heading_text.strip()) and not self.section_level:
+            if is_section(self.heading_text.strip()) and not self.section_level:
                 self.section_level = self.heading_level
                 self.sections.append([])
             self.heading_level = 0
@@ -88,10 +101,14 @@ class Description(HTMLParser):
             self.in_task = False
 
     def handle_data(self, data):
-        if self.heading_level:
+        if self.heading_level and not self.struck:
             self.heading_text += data
         if self.in_task and not self.struck:
             self.task_text += data
+
+
+def is_section(heading):
+    return bool(BEFORE_AFTER.search(heading) or (SCREENSHOTS.search(heading) and not TESTS.search(heading)))
 
 
 def split(src):
@@ -105,7 +122,9 @@ def is_badge(src):
     parts = split(src)
     if parts is None:
         return True
-    return parts.hostname in NOT_SCREENSHOT_HOSTS or "badge" in parts.path.rsplit("/", 1)[-1]
+    host, segments = parts.hostname or "", parts.path.split("/")
+    return (host in NOT_SCREENSHOT_HOSTS or host.split(".")[0] in ("badge", "badges")
+            or any(BADGE_SEGMENT.fullmatch(s) for s in segments) or bool(BADGE_SVG.fullmatch(segments[-1])))
 
 
 def distinct(sources):
@@ -137,13 +156,17 @@ def gh(path, accept=None, paginate=False):
 
 
 def shown(path):
-    """A path as it is printed: PR-controlled text must not begin a line, where it could be
-    read as a workflow command, and must not render as markdown in the summary."""
+    """A path as it is printed in the summary list: on one line, and not rendered as markdown.
+    Workflow commands in it are stopped by summary(), not here."""
     return "`%s`" % path.replace("\r", "\\r").replace("\n", "\\n").replace("`", "'")
 
 
 def summary(line):
-    print(line)
+    # The lines carry PR-controlled text. The runner reads "::" commands at a line start and
+    # the legacy "##[" anywhere, and no escape covers every byte it may skip: stop command
+    # parsing around the text instead. The summary file is only rendered, as it is.
+    token = secrets.token_hex(16)
+    print("::stop-commands::%s\n%s\n::%s::" % (token, line, token))
     target = os.environ.get("GITHUB_STEP_SUMMARY")
     if target:
         with open(target, "a") as f:
@@ -168,7 +191,7 @@ def main():
         paths.append(f["filename"])
         if f.get("previous_filename"):
             paths.append(f["previous_filename"])
-    ui = [p for p in paths if p.startswith(UI_PATHS)]
+    ui = [p for p in paths if p.startswith(UI_SOURCES) or MANIFEST.fullmatch(p)]
     if not ui and len(files) >= FILES_CAP and (pr.get("changed_files") or 0) > len(files):
         # GitHub lists only the first 3000: treat the rest as possibly UI.
         ui = ["(more than %d changed files; the rest are not listed)" % FILES_CAP]
