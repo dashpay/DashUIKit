@@ -66,7 +66,7 @@ list_sets() {
 
 # Platform floors as major.minor; macOS falls back to 0 (flag nothing) if undeclared.
 ios_floor=$("$scripts/ios-floor.sh" Package.swift) || exit 2
-mac_floor=$(sed 's#//.*##' Package.swift | { grep -oE '\.macOS\(\.v[0-9]+(_[0-9]+)?\)' || true; } | head -n 1 |
+mac_floor=$(sed 's#//.*##' Package.swift | { grep -oE '\.macOS\(\.v[0-9]+(_[0-9]+)?\)' || true; } | awk 'NR == 1' |
   sed -E 's/.*\.v([0-9]+)(_([0-9]+))?\)/\1.\3/; s/\.$/.0/')
 if [ -z "$mac_floor" ] && sed 's#//.*##' Package.swift | grep -q '\.macOS('; then
   echo "conventions.sh: could not read the .macOS(.vNN) platform in Package.swift" >&2

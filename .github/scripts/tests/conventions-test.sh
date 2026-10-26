@@ -25,7 +25,7 @@ fresh() {
 
 # first_set EXT [UNDER]: path of the first *.EXT set (optionally under a folder).
 first_set() {
-  find "$work/tree/$catalog${2:+/$2}" -type d -name "*.$1" | sort | head -n 1
+  find "$work/tree/$catalog${2:+/$2}" -type d -name "*.$1" | sort | awk 'NR == 1'
 }
 
 # set_name PATH: the set's name without its extension.
@@ -206,7 +206,7 @@ fresh; write_fixture \
 expect "calls that are not literal asset lookups" pass
 
 # 4. Set contents and namespaces.
-fresh; dir=$(first_set imageset); png=$(jq -r '.images[] | .filename // empty' "$dir/Contents.json" | head -n 1); rm "$dir/$png"
+fresh; dir=$(first_set imageset); png=$(jq -r '.images[] | .filename // empty' "$dir/Contents.json" | awk 'NR == 1'); rm "$dir/$png"
 expect "image file missing" fail "lists \"${png}\", which is not in the imageset"
 
 fresh; dir=$(first_set imageset); echo '{"images":[],"info":{"version":1}}' > "$dir/Contents.json"
