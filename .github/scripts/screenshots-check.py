@@ -5,14 +5,18 @@ declares that nothing visible changed:
 
   - a heading whose text mentions "Before / After", or mentions "Screenshots" and is not
     about tests (any heading level, any case), and under it,
-    up to the next heading of the same or a higher level, at least two different images; or
+    up to the next heading of the same or a higher level, at least two different images or
+    videos uploaded to GitHub (dragged into the description); or
   - the ticked task "No visual change".
 
 It reads the description as GitHub renders it (body_html), so comments, code blocks, list
 indentation and every other markdown rule are already applied: what counts is what a reader
 sees. A file renamed out of Sources/ counts as a UI change, and so does the package manifest
 (Package.swift, Package@swift-*.swift), whose platform floor decides which branches the
-components compile. Struck-out text and images do not count. Whether the images really show
+components compile. Only uploads count, so badges, emoji and externally hosted images never
+pass as screenshots. In a <picture>, only its <img> counts, not the <source> variants. An
+upload GitHub cannot resolve still counts; a reader sees it as a broken image.
+Struck-out text and images do not count. Whether the images really show
 light and dark is left to the reviewer.
 
 Usage:
@@ -38,26 +42,23 @@ TESTS = re.compile(r"(?<![a-z])(tests?|testing)(?![a-z])", re.I)
 NO_VISUAL_CHANGE = re.compile(r"^\s*no visual change", re.I)
 # GitHub's files endpoint stops at 3000 entries, however it is paginated.
 FILES_CAP = 3000
-# Images that are not screenshots: emoji and badges.
-NOT_SCREENSHOT_HOSTS = ("github.githubassets.com", "img.shields.io", "badgen.net", "codecov.io", "app.codecov.io",
-                        "coveralls.io", "api.netlify.com")
-# Uploads whose query only signs or tweaks the URL; the same file can come back with another.
-UPLOAD_HOSTS = ("private-user-images.githubusercontent.com", "camo.githubusercontent.com",
-                "user-images.githubusercontent.com")
+# Files dragged into a PR description, images and videos alike, identified by their UUID,
+# since one upload can appear in several forms:
+#   github.com/user-attachments/assets/<uuid>                    (the markdown form)
+#   github.com/<owner>/<repo>/assets/<user>/<uuid>               (older markdown form)
+#   private-user-images.githubusercontent.com/<user>/<n>-<uuid>.<ext>?jwt=…  (rendered, signed
+#                                                                 per viewer)
+#   user-images.githubusercontent.com/<user>/<n>-<uuid>.<ext>    (older rendered form)
+# Which form body_html holds depends on the viewer and on the markup (GitHub leaves a
+# <picture> alone), so every form counts.
+UUID = r"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
+UPLOAD_HOSTS = ("private-user-images.githubusercontent.com", "user-images.githubusercontent.com")
+RENDERED = re.compile(r"/\d+/\d+-(%s)\.\w+" % UUID)
+MARKDOWN_FORM = re.compile(r"/user-attachments/assets/(%s)/?|/[^/]+/[^/]+/assets/\d+/(%s)/?" % (UUID, UUID))
 # Files whose change alters what components render: the sources and the manifests, which
 # set the platform floor.
 UI_SOURCES = "Sources/"
 MANIFEST = re.compile(r"Package(@swift-[0-9.]+)?\.swift")
-# Badge images: a URL ending in "/badge" or "/badges" in any case, a lower-case "badge",
-# "badges" or "project_badges" segment anywhere in the path (goreportcard, Codacy, Read the
-# Docs, GitLab, SonarCloud), an SVG named after a badge ("badge.svg", "badge-flat.svg"), or
-# a host named "badge" or "badges" (badge.fury.io, badges.gitter.im). A PNG screenshot of
-# badge UI, or one in a folder named after the Badge component ("Badge/light.png"), still
-# counts. On GitHub's own hosts the path carries a branch name ("feat/badge"), so a "badge"
-# segment does not count there. A listed host also covers its subdomains (flat.badgen.net).
-BADGE_SEGMENTS = ("badge", "badges", "project_badges")
-BRANCH_HOSTS = ("github.com", "www.github.com", "raw.githubusercontent.com", "media.githubusercontent.com")
-BADGE_SVG = re.compile(r".*badge.*\.svg", re.I)
 
 
 class Description(HTMLParser):
@@ -82,10 +83,11 @@ class Description(HTMLParser):
                 self.section_level = 0
             self.heading_level, self.heading_text = level, ""
         elif tag in ("img", "video") and self.section_level and not self.struck:
-            src = attrs.get("data-canonical-src") or attrs.get("src") or ""
-            emoji = "emoji" in (attrs.get("class") or "").split()
-            if src.startswith(("https://", "http://")) and not emoji and not is_badge(src):
-                self.sections[-1].append(src)
+            # Camo keeps the original URL in data-canonical-src; either attribute may hold
+            # the upload.
+            key = upload(attrs.get("data-canonical-src")) or upload(attrs.get("src"))
+            if key:
+                self.sections[-1].append(key)
         elif tag in ("del", "s", "strike"):
             self.struck += 1
         elif tag == "input" and attrs.get("type") == "checkbox" and "checked" in attrs:
@@ -123,32 +125,14 @@ def split(src):
         return None
 
 
-def is_badge(src):
-    parts = split(src)
-    if parts is None:
-        return True
-    host, segments = parts.hostname or "", parts.path.split("/")
-    folders = [s for s in segments if s != "badge"] if host in BRANCH_HOSTS else segments
-    return (any(host == h or host.endswith("." + h) for h in NOT_SCREENSHOT_HOSTS)
-            or host.split(".")[0] in ("badge", "badges")
-            or any(s in BADGE_SEGMENTS for s in folders) or segments[-1].lower() in ("badge", "badges")
-            or bool(BADGE_SVG.fullmatch(segments[-1])))
-
-
-def distinct(sources):
-    """Different images: the same upload is often linked with different queries."""
-    seen = []
-    for src in sources:
-        parts = split(src)
-        if parts is None:
-            continue
-        parts = parts._replace(fragment="")
-        if parts.hostname in UPLOAD_HOSTS or (parts.hostname == "github.com" and parts.path.startswith("/user-attachments/")):
-            parts = parts._replace(query="")
-        key = parts.geturl()
-        if key not in seen:
-            seen.append(key)
-    return seen
+def upload(src):
+    """The UUID of a file uploaded to GitHub, else None. The query only signs the URL."""
+    parts = split((src or "").strip())
+    if parts is None or parts.scheme != "https":
+        return None
+    pattern = RENDERED if parts.hostname in UPLOAD_HOSTS else MARKDOWN_FORM if parts.hostname == "github.com" else None
+    match = pattern and pattern.fullmatch(parts.path.lower())
+    return match and next(g for g in match.groups() if g)
 
 
 def gh(path, accept=None, paginate=False):
@@ -212,21 +196,22 @@ def main():
     page.feed(pr.get("body_html") or "")
     page.close()
     # One section must hold the two images; images from separate sections do not add up.
-    images = max((distinct(section) for section in page.sections), key=len, default=[])
+    images = max((list(dict.fromkeys(section)) for section in page.sections), key=len, default=[])
     listed = "\n".join("  - " + shown(p) for p in ui[:10]) + ("\n  - and %d more" % (len(ui) - 10) if len(ui) > 10 else "")
 
     if len(images) >= 2:
-        summary("UI change with %d different screenshots under Before / After." % len(images))
+        summary("UI change with %d different uploaded screenshots or videos under Before / After." % len(images))
         return 0
     if any(NO_VISUAL_CHANGE.match(t) for t in page.ticked):
         summary("Author declared no visual change for:\n" + listed)
         return 0
 
     print("::error::This PR changes UI files but shows no Before / After screenshots "
-          "(found %d different image(s) under a Before / After or Screenshots heading)." % len(images))
+          "(found %d different uploaded image(s) or video(s) under a Before / After or Screenshots heading)." % len(images))
     summary("UI change without Before / After screenshots. Changed UI files:\n" + listed)
-    summary('Add at least two images (before and after, light and dark where it differs) under the '
-            '"Before / After" heading of the description, or tick "No visual change" and say why. '
+    summary('Drag at least two images (before and after, light and dark where it differs) into the '
+            '"Before / After" section of the description (or a Screenshots section), so GitHub uploads them; links to images '
+            'hosted elsewhere do not count. Or tick "No visual change" and say why. '
             "Editing the description re-runs this check.")
     return 1
 

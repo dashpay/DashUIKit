@@ -12,8 +12,17 @@ import tempfile
 
 SCRIPT = os.path.join(os.getcwd(), ".github", "scripts", "screenshots-check.py")
 UI = [{"filename": "Sources/DashUIKit/Components/SearchBar.swift"}]
-IMG = '<a target="_blank" rel="noopener noreferrer" href="https://github.com/user-attachments/assets/%s"><img width="260" alt="x" src="https://github.com/user-attachments/assets/%s" style="max-width: 100%%;"></a>'
-A, B = IMG % ("1111", "1111"), IMG % ("2222", "2222")
+# Uploads in the form GitHub renders them in body_html: the markdown's
+# github.com/user-attachments/assets/<uuid> becomes a signed private-user-images URL, and a
+# dragged video becomes a <details> block around a <video>. The UUIDs are made up.
+U1, U2, U3, U4 = ("8c0d2014-13e9-49c0-bf2f-8a279af37a55", "20448a6e-2f3b-4c1d-9e8f-0a1b2c3d4e5f",
+                  "ca81c104-5d6e-4f70-8a9b-c0d1e2f3a4b5", "0f1e2d3c-4b5a-4697-8877-665544332211")
+PRIVATE = "https://private-user-images.githubusercontent.com/270373998/677853016-%s.png?jwt=%s"
+IMG = '<a target="_blank" rel="noopener noreferrer" href="%s"><img width="260" alt="x" src="%s" style="max-width: 100%%;"></a>'
+A, B = IMG % (PRIVATE % (U1, "a"), PRIVATE % (U1, "a")), IMG % (PRIVATE % (U2, "b"), PRIVATE % (U2, "b"))
+ATTACHMENT = "https://github.com/user-attachments/assets/%s"
+VIDEO = ('<details open="" class="details-reset border rounded-2"><summary class="px-3 py-2"><span class="m-1">x.mov</span>'
+         '</summary><video src="%s" data-canonical-src="%s" controls="controls" muted="muted" class="d-block rounded-bottom-2 border-top width-fit"></video></details>')
 
 
 def h(level, text):
@@ -34,30 +43,25 @@ CASES = [
     ("subheadings inside the section", "pass", UI, h(2, "Before / After") + h(3, "Light") + A + h(3, "Dark") + B),
     ("one image", "fail", UI, h(2, "Before / After") + A),
     ("the same image with two signed queries", "fail", UI, h(2, "Before / After")
-     + '<img src="https://private-user-images.githubusercontent.com/1/x.png?jwt=a"><img src="https://private-user-images.githubusercontent.com/1/x.png?jwt=b">'),
+     + '<img src="%s"><img src="%s">' % (PRIVATE % (U1, "a"), PRIVATE % (U1, "b"))),
     ("images under another heading", "fail", UI, h(2, "Before / After") + "<p>none</p>" + h(2, "How Has This Been Tested?") + A + B),
     ("images above the section", "fail", UI, A + B + h(2, "Before / After")),
     ("the empty template cells", "fail", UI, h(2, "Before / After") + '<img width="260" src=""><img width="260">'),
-    ("data-canonical-src counts", "pass", UI, h(2, "Before / After")
-     + '<img src="https://camo.githubusercontent.com/1" data-canonical-src="https://example.com/1.png"><img src="https://camo.githubusercontent.com/2" data-canonical-src="https://example.com/2.png">'),
     ("No visual change ticked", "pass", UI, h(2, "Before / After") + task('No visual change (refactor, tests, docs). Say why in "What was done?".', True)),
     ("No visual change unticked", "fail", UI, task("No visual change (refactor, tests, docs).", False)),
     ("another task ticked", "fail", UI, task("I have performed a self-review of my own code", True)),
     ("empty description", "fail", UI, None),
     ("Before & After heading", "pass", UI, h(2, "Before &amp; After") + A + B),
-    ("emoji and badges are not screenshots", "fail", UI, h(2, "Before / After")
-     + '<img class="emoji" src="https://github.githubassets.com/images/icons/emoji/shipit.png"><img src="https://img.shields.io/badge/a-b-c">'),
+    ("emoji do not count", "fail", UI, h(2, "Before / After") + A
+     + '<img class="emoji" src="https://github.githubassets.com/images/icons/emoji/shipit.png">'),
     ("two videos", "pass", UI, h(2, "Before / After")
-     + '<video src="https://github.com/user-attachments/assets/aaaa"></video><video src="https://github.com/user-attachments/assets/bbbb"></video>'),
-    ("query is the identity on other hosts", "pass", UI, h(2, "Before / After")
-     + '<img src="https://host.example/render?id=1"><img src="https://host.example/render?id=2">'),
+     + (VIDEO % (PRIVATE % (U3, "c"), PRIVATE % (U3, "c"))).replace(".png", ".mov")
+     + (VIDEO % (PRIVATE % (U4, "d"), PRIVATE % (U4, "d"))).replace(".png", ".mov")),
     ("a newline in a path stays inside the stop block", "fail", [{"filename": "Sources/a\n::error::forged.swift"}], ""),
     ("a Screenshot tests heading is not the section", "fail", UI, h(2, "Screenshot tests") + A + B),
     ("Screenshots with a parenthetical", "pass", UI, h(2, "📸 Screenshots (light and dark)") + A + B),
-    ("a workflow badge and codecov are not screenshots", "fail", UI, h(2, "Before / After")
-     + '<img src="https://github.com/dashpay/DashUIKit/actions/workflows/ci.yml/badge.svg"><img src="https://codecov.io/gh/x/y/graph/badge.svg">'),
     ("one upload with and without ?raw=true", "fail", UI, h(2, "Before / After")
-     + '<img src="https://github.com/user-attachments/assets/aaaa"><img src="https://github.com/user-attachments/assets/aaaa?raw=true">'),
+     + '<picture><img src="%s"></picture><picture><img src="%s?raw=true"></picture>' % (ATTACHMENT % U3, ATTACHMENT % U3)),
     ("a malformed URL does not crash the ticked box", "pass", UI, h(2, "Before / After")
      + '<img src="http://[bad/x.png">' + task("No visual change", True)),
     ("a struck-out tick does not count", "fail", UI, task("<del>No visual change</del>", True)),
@@ -82,49 +86,65 @@ CASES = [
     ("Screenshots (testnet)", "pass", UI, h(2, "Screenshots (testnet)") + A + B),
     ("Screenshots from TestFlight", "pass", UI, h(2, "Screenshots from TestFlight") + A + B),
     ("Screenshots (tested on iPhone 16)", "pass", UI, h(2, "Screenshots (tested on iPhone 16)") + A + B),
-    ("screenshots in a Badge folder count", "pass", UI, h(2, "Before / After")
-     + '<img src="https://example.com/docs/Badge/light.png"><img src="https://example.com/docs/Badge/dark.png">'),
-    ("a goreportcard badge is not a screenshot", "fail", UI, h(2, "Before / After") + A
-     + '<img src="https://goreportcard.com/badge/github.com/x/y">'),
-    ("a Codacy badge is not a screenshot", "fail", UI, h(2, "Before / After") + A
-     + '<img src="https://app.codacy.com/project/badge/Grade/abc">'),
-    ("a Read the Docs badge is not a screenshot", "fail", UI, h(2, "Before / After") + A
-     + '<img src="https://readthedocs.org/projects/x/badge/?version=latest">'),
-    ("a badge in a repo's badges/ folder is not a screenshot", "fail", UI, h(2, "Before / After") + A
-     + '<img src="https://raw.githubusercontent.com/o/r/main/.github/badges/jacoco.svg">'),
-    ("a badge on a subdomain of a badge host is not a screenshot", "fail", UI, h(2, "Before / After") + A
-     + '<img src="https://flat.badgen.net/npm/v/x">'),
-    ("LFS screenshots on a badge branch count", "pass", UI, h(2, "Before / After")
-     + '<img src="https://media.githubusercontent.com/media/o/r/feat/badge/docs/light.png">'
-     + '<img src="https://media.githubusercontent.com/media/o/r/feat/badge/docs/dark.png">'),
-    ("screenshots on a badge branch count", "pass", UI, h(2, "Before / After")
-     + '<img src="https://raw.githubusercontent.com/dashpay/DashUIKit/feat/badge/docs/light.png">'
-     + '<img src="https://raw.githubusercontent.com/dashpay/DashUIKit/feat/badge/docs/dark.png">'),
-    ("GitLab badges are not screenshots", "fail", UI, h(2, "Before / After")
-     + '<img src="https://gitlab.com/a/b/badges/main/pipeline.svg"><img src="https://gitlab.com/a/b/badges/main/coverage.svg">'),
-    ("a /badges leaf is not a screenshot", "fail", UI, h(2, "Before / After") + A
-     + '<img src="https://example.com/x/badges">'),
-    ("coveralls and netlify badges are not screenshots", "fail", UI, h(2, "Before / After")
-     + '<img src="https://coveralls.io/repos/github/x/y/badge.png"><img src="https://api.netlify.com/api/v1/badges/1/deploy-status">'),
-    ("badge SVG variants and badge hosts are not screenshots", "fail", UI, h(2, "Before / After")
-     + '<img src="https://x.io/a/badge-flat.svg"><img src="https://x.io/b/badge_small.svg">'
-     + '<img src="https://badge.fury.io/js/x.svg"><img src="https://badges.gitter.im/x/y.svg">'),
-    ("extensionless /badge leaves are not screenshots", "fail", UI, h(2, "Before / After")
-     + '<img src="https://www.codefactor.io/repository/github/x/y/badge"><img src="https://api.securityscorecards.dev/projects/github.com/x/y/badge">'),
-    ("a host that only starts with badge is not a badge", "pass", UI, h(2, "Before / After")
-     + '<img src="https://badger.example.com/light.png"><img src="https://badger.example.com/dark.png">'),
-    ("screenshots in a folder named after a badge count", "pass", UI, h(2, "Before / After")
-     + '<img src="https://raw.githubusercontent.com/o/r/b/docs/status-badge/light.png"><img src="https://raw.githubusercontent.com/o/r/b/docs/status-badge/dark.png">'),
     ("UI: Screenshots", "pass", UI, h(2, "UI: Screenshots") + A + B),
-    ("other badges are not screenshots", "fail", UI, h(2, "Before / After")
-     + '<img src="https://gitlab.com/a/b/badges/main/pipeline.svg"><img src="https://example.com/build-badge.svg">'
-     + '<img src="https://sonarcloud.io/api/project_badges/measure?k=x">'),
-    ("a screenshot of badge UI counts", "pass", UI, h(2, "Before / After")
-     + '<img src="https://example.com/coin-selector-badge-light.png"><img src="https://example.com/coin-selector-badge-dark.png">'),
     ("a version-specific manifest is a UI change", "fail", [{"filename": "Package@swift-6.2.swift"}], ""),
     ("a manifest backup is not a UI change", "pass", [{"filename": "Package.swift.orig"}], ""),
     ("a legacy ##[ marker in a path stays inside the stop block", "fail", [{"filename": "Sources/##[error]forged.swift"}], ""),
     ("renamed out of Sources/", "fail", [{"filename": "Legacy/Toast.swift", "previous_filename": "Sources/DashUIKit/Components/Toast.swift"}], ""),
+    ("a markdown-form upload and its rendered form are one upload", "fail", UI, h(2, "Before / After")
+     + '<picture><img src="%s"></picture>' % (ATTACHMENT % U1) + '<img src="%s">' % (PRIVATE % (U1, "z"))),
+    ("an older repo-assets upload in a picture", "pass", UI, h(2, "Before / After") + A
+     + '<picture><img src="https://github.com/dashpay/DashUIKit/assets/270373998/%s"></picture>' % U3),
+    ("the markdown form counts", "pass", UI, h(2, "Before / After") + A + '<img src="%s">' % (ATTACHMENT % U3)),
+    ("an upper-case UUID counts", "pass", UI, h(2, "Before / After") + A + '<img src="%s">' % (ATTACHMENT % U3.upper())),
+    ("a path after the upload id does not count", "fail", UI, h(2, "Before / After") + A
+     + '<img src="%s/extra.png">' % (ATTACHMENT % U3)),
+    ("an older rendered upload counts", "pass", UI, h(2, "Before / After") + A
+     + '<img src="https://user-images.githubusercontent.com/1/123456-%s.PNG">' % U3),
+    ("a markdown-form canonical with a rendered src counts", "pass", UI, h(2, "Before / After")
+     + (VIDEO % (PRIVATE % (U3, "c"), ATTACHMENT % U3)).replace(".png", ".mov")
+     + (VIDEO % (PRIVATE % (U4, "d"), ATTACHMENT % U4)).replace(".png", ".mov")),
+    ("an upload in a picture counts", "pass", UI, h(2, "Before / After") + A
+     + '<picture><source media="(prefers-color-scheme: dark)" srcset="%s"><img src="%s"></picture>' % (ATTACHMENT % U4, ATTACHMENT % U3)),
+    ("an older user-images upload", "pass", UI, h(2, "Before / After") + A
+     + '<img src="https://user-images.githubusercontent.com/1/123456-%s.png">' % U3),
+    ("an upload linked through www.github.com does not count", "fail", UI, h(2, "Before / After") + A
+     + '<picture><img src="https://camo.githubusercontent.com/1" data-canonical-src="https://www.github.com/user-attachments/assets/%s"></picture>' % U3),
+    ("an http upload link does not count", "fail", UI, h(2, "Before / After") + A
+     + '<picture><img src="http://github.com/user-attachments/assets/%s"></picture>' % U3),
+    ("an upload id that is not a UUID does not count", "fail", UI, h(2, "Before / After") + A
+     + '<picture><img src="https://github.com/user-attachments/assets/1111"></picture>'),
+    ("a bare upload host does not count", "fail", UI, h(2, "Before / After") + A
+     + '<img src="https://private-user-images.githubusercontent.com/">'),
+    ("a repo-assets URL with no id does not count", "fail", UI, h(2, "Before / After") + A
+     + '<picture><img src="https://github.com/o/r/assets/1/"></picture>'),
+    ("an attached file is not a screenshot", "fail", UI, h(2, "Before / After") + A
+     + '<picture><img src="https://github.com/user-attachments/files/123/log.zip"></picture>'),
+    ("a <source> variant alone is not a second upload", "fail", UI, h(2, "Before / After") + A
+     + '<picture><source media="(prefers-color-scheme: dark)" srcset="%s"><img src=""></picture>' % (ATTACHMENT % U4)),
+    ("the canonical src is read before a proxied src", "pass", UI, h(2, "Before / After") + A
+     + '<img src="https://camo.githubusercontent.com/1" data-canonical-src="%s">' % (PRIVATE % (U3, "c"))),
+    ("the canonical src wins over src", "pass", UI, h(2, "Before / After") + A
+     + '<img src="%s" data-canonical-src="%s">' % (PRIVATE % (U1, "a"), ATTACHMENT % U3)),
+    ("spaces around src are ignored", "pass", UI, h(2, "Before / After") + A
+     + '<img src=" %s ">' % (ATTACHMENT % U3)),
+    ("two uploads in the markdown form", "pass", UI, h(2, "Before / After")
+     + '<img src="%s"><img src="%s">' % (ATTACHMENT % U3, ATTACHMENT % U4)),
+    ("a non-UUID id next to a markdown-form upload does not count", "fail", UI, h(2, "Before / After")
+     + '<img src="%s"><img src="https://github.com/user-attachments/assets/1111">' % (ATTACHMENT % U3)),
+    ("external images do not count", "fail", UI, h(2, "Before / After")
+     + '<img src="https://example.com/light.png"><img src="https://example.com/dark.png">'),
+    ("an external image proxied through camo does not count", "fail", UI, h(2, "Before / After") + A
+     + '<img src="https://camo.githubusercontent.com/1" data-canonical-src="https://example.com/1.png">'),
+    ("camo without a canonical src does not count", "fail", UI, h(2, "Before / After") + A
+     + '<img src="https://camo.githubusercontent.com/1">'),
+    ("badges do not count", "fail", UI, h(2, "Before / After") + A
+     + '<img src="https://img.shields.io/badge/a-b-c"><img src="https://github.com/dashpay/DashUIKit/actions/workflows/ci.yml/badge.svg">'
+     + '<img src="https://codecov.io/gh/x/y/graph/badge.svg">'),
+    ("a raw file from a branch does not count", "fail", UI, h(2, "Before / After") + A
+     + '<img src="https://raw.githubusercontent.com/dashpay/DashUIKit/feat/x/docs/light.png">'),
+    ("a github.com raw link does not count", "fail", UI, h(2, "Before / After") + A
+     + '<img src="https://github.com/dashpay/DashUIKit/raw/master/docs/light.png">'),
 ]
 
 
