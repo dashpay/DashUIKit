@@ -164,6 +164,7 @@ public enum DashColors {
     // MARK: Switch
 
     public static var switchThumbFill: Color { dashAsset("SwitchThumbFill") }
+    public static var switchThumbShadow: Color { dashAsset("SwitchThumbShadow") }
     public static var switchTrackFillOff: Color { dashAsset("SwitchTrackFillOff") }
     public static var switchTrackFillOffDisabled: Color { dashAsset("SwitchTrackFillOffDisabled") }
     public static var switchTrackFillOn: Color { dashAsset("SwitchTrackFillOn") }

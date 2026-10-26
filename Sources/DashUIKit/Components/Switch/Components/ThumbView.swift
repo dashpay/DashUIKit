@@ -20,8 +20,8 @@ struct ThumbView: View {
           .frame(width: 39, height: 24)
           .background(Constants.switchThumbFill)
           .cornerRadius(Constants.switchThumbRadius)
-          .shadow(color: Color(red: 0.1, green: 0.13, blue: 0.15).opacity(0.06), radius: 1, x: 0, y: 1)
-          .shadow(color: Color(red: 0.1, green: 0.13, blue: 0.15).opacity(0.1), radius: 1.5, x: 0, y: 1)
+          .shadow(color: Color.dash.switchThumbShadow.opacity(0.06), radius: 1, x: 0, y: 1)
+          .shadow(color: Color.dash.switchThumbShadow.opacity(0.1), radius: 1.5, x: 0, y: 1)
     }
 }
 
