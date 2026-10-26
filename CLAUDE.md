@@ -66,6 +66,12 @@ Sources/DashUIKit/
   CI (`Before / After screenshots`) enforces it.
 - Components are **stateless/value-driven** — state (`@Binding`) and callbacks live with the
   host. Don't add view models or persistence here.
+- CI enforces the mechanical ones with `.github/scripts/conventions.sh`: `DashIcon` ↔
+  imagesets, `Color.dash` tokens ↔ colorsets, literal asset names and their bundle, no
+  colors built from components (`Color(red:…)`, hex), `NSLocalizedString` /
+  `String(localized:)` with the package bundle, no `@available` at or below the floor.
+  It does not check system colors (`Color.red`) or `Text("…")` keys. Run it from the repo
+  root before pushing.
 
 ## Build / preview
 

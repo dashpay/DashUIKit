@@ -4,6 +4,11 @@
 language: en-US
 
 reviews:
+  # Finish each review with a verdict instead of a plain comment: request changes while
+  # CodeRabbit has actionable comments, approve once they are resolved and no pre-merge
+  # check is in an error state.
+  request_changes_workflow: true
+
   auto_review:
     enabled: true
     # CodeRabbit only reviews PRs targeting the default branch unless told otherwise.
