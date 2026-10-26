@@ -4,7 +4,7 @@ catalog) or a package manifest unless its description shows Before / After scree
 declares that nothing visible changed:
 
   - a heading whose text mentions "Before / After", or mentions "Screenshots" and is not
-    about tests (any level, any case, with or without an emoji in front), and under it,
+    about tests (any heading level, any case), and under it,
     up to the next heading of the same or a higher level, at least two different images; or
   - the ticked task "No visual change".
 
@@ -48,12 +48,15 @@ UPLOAD_HOSTS = ("private-user-images.githubusercontent.com", "camo.githubusercon
 # set the platform floor.
 UI_SOURCES = "Sources/"
 MANIFEST = re.compile(r"Package(@swift-[0-9.]+)?\.swift")
-# Badge images: a URL ending in "/badge" or "/badges", a lower-case "badges" or
-# "project_badges" directory (GitLab, SonarCloud), an SVG named
-# after a badge ("badge.svg", "badge-flat.svg"), or a host named "badge" or "badges"
-# (badge.fury.io, badges.gitter.im). A PNG screenshot of badge UI, or one in a folder named
-# after a badge component ("Badge/light.png"), still counts.
-BADGE_LEAF = re.compile(r"badges?", re.I)
+# Badge images: a URL ending in "/badge" or "/badges" in any case, a lower-case "badge",
+# "badges" or "project_badges" segment anywhere in the path (goreportcard, Codacy, Read the
+# Docs, GitLab, SonarCloud), an SVG named after a badge ("badge.svg", "badge-flat.svg"), or
+# a host named "badge" or "badges" (badge.fury.io, badges.gitter.im). A PNG screenshot of
+# badge UI, or one in a folder named after the Badge component ("Badge/light.png"), still
+# counts. On GitHub's own hosts the path carries a branch name ("feat/badge"), so a "badge"
+# segment does not count there. A listed host also covers its subdomains (flat.badgen.net).
+BADGE_SEGMENTS = ("badge", "badges", "project_badges")
+BRANCH_HOSTS = ("github.com", "www.github.com", "raw.githubusercontent.com", "media.githubusercontent.com")
 BADGE_SVG = re.compile(r".*badge.*\.svg", re.I)
 
 
@@ -125,8 +128,10 @@ def is_badge(src):
     if parts is None:
         return True
     host, segments = parts.hostname or "", parts.path.split("/")
-    return (host in NOT_SCREENSHOT_HOSTS or host.split(".")[0] in ("badge", "badges")
-            or any(s in ("badges", "project_badges") for s in segments) or bool(BADGE_LEAF.fullmatch(segments[-1]))
+    folders = [s for s in segments if s != "badge"] if host in BRANCH_HOSTS else segments
+    return (any(host == h or host.endswith("." + h) for h in NOT_SCREENSHOT_HOSTS)
+            or host.split(".")[0] in ("badge", "badges")
+            or any(s in BADGE_SEGMENTS for s in folders) or segments[-1].lower() in ("badge", "badges")
             or bool(BADGE_SVG.fullmatch(segments[-1])))
 
 

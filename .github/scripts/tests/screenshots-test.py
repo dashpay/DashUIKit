@@ -84,6 +84,22 @@ CASES = [
     ("Screenshots (tested on iPhone 16)", "pass", UI, h(2, "Screenshots (tested on iPhone 16)") + A + B),
     ("screenshots in a Badge folder count", "pass", UI, h(2, "Before / After")
      + '<img src="https://example.com/docs/Badge/light.png"><img src="https://example.com/docs/Badge/dark.png">'),
+    ("a goreportcard badge is not a screenshot", "fail", UI, h(2, "Before / After") + A
+     + '<img src="https://goreportcard.com/badge/github.com/x/y">'),
+    ("a Codacy badge is not a screenshot", "fail", UI, h(2, "Before / After") + A
+     + '<img src="https://app.codacy.com/project/badge/Grade/abc">'),
+    ("a Read the Docs badge is not a screenshot", "fail", UI, h(2, "Before / After") + A
+     + '<img src="https://readthedocs.org/projects/x/badge/?version=latest">'),
+    ("a badge in a repo's badges/ folder is not a screenshot", "fail", UI, h(2, "Before / After") + A
+     + '<img src="https://raw.githubusercontent.com/o/r/main/.github/badges/jacoco.svg">'),
+    ("a badge on a subdomain of a badge host is not a screenshot", "fail", UI, h(2, "Before / After") + A
+     + '<img src="https://flat.badgen.net/npm/v/x">'),
+    ("LFS screenshots on a badge branch count", "pass", UI, h(2, "Before / After")
+     + '<img src="https://media.githubusercontent.com/media/o/r/feat/badge/docs/light.png">'
+     + '<img src="https://media.githubusercontent.com/media/o/r/feat/badge/docs/dark.png">'),
+    ("screenshots on a badge branch count", "pass", UI, h(2, "Before / After")
+     + '<img src="https://raw.githubusercontent.com/dashpay/DashUIKit/feat/badge/docs/light.png">'
+     + '<img src="https://raw.githubusercontent.com/dashpay/DashUIKit/feat/badge/docs/dark.png">'),
     ("GitLab badges are not screenshots", "fail", UI, h(2, "Before / After")
      + '<img src="https://gitlab.com/a/b/badges/main/pipeline.svg"><img src="https://gitlab.com/a/b/badges/main/coverage.svg">'),
     ("a /badges leaf is not a screenshot", "fail", UI, h(2, "Before / After") + A
