@@ -49,8 +49,8 @@ class Description(HTMLParser):
         super().__init__(convert_charrefs=True)
         self.heading_level = 0       # inside <hN>: N
         self.heading_text = ""
-        self.section_level = 0       # inside the Before / After section: its heading level
-        self.images = []
+        self.section_level = 0       # inside a Before / After section: its heading level
+        self.sections = []           # the image sources of each such section, in order
         self.in_task = False         # inside an <li> whose checkbox is ticked
         self.task_text = ""
         self.ticked = []
@@ -67,7 +67,7 @@ class Description(HTMLParser):
             src = attrs.get("data-canonical-src") or attrs.get("src") or ""
             emoji = "emoji" in (attrs.get("class") or "").split()
             if src.startswith(("https://", "http://")) and not emoji and not is_badge(src):
-                self.images.append(src)
+                self.sections[-1].append(src)
         elif tag in ("del", "s", "strike"):
             self.struck += 1
         elif tag == "input" and attrs.get("type") == "checkbox" and "checked" in attrs:
@@ -77,8 +77,11 @@ class Description(HTMLParser):
         if tag in ("del", "s", "strike") and self.struck:
             self.struck -= 1
         if self.heading_level and tag == "h%d" % self.heading_level:
-            if SECTION.search(self.heading_text):
+            # A matching heading starts a section, unless it is nested in an open one,
+            # which then simply goes on.
+            if SECTION.search(self.heading_text.strip()) and not self.section_level:
                 self.section_level = self.heading_level
+                self.sections.append([])
             self.heading_level = 0
         elif tag == "li" and self.in_task:
             self.ticked.append(self.task_text.strip())
@@ -177,7 +180,8 @@ def main():
     page = Description()
     page.feed(pr.get("body_html") or "")
     page.close()
-    images = distinct(page.images)
+    # One section must hold the two images; images from separate sections do not add up.
+    images = max((distinct(section) for section in page.sections), key=len, default=[])
     listed = "\n".join("  - " + shown(p) for p in ui[:10]) + ("\n  - and %d more" % (len(ui) - 10) if len(ui) > 10 else "")
 
     if len(images) >= 2:

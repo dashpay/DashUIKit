@@ -60,6 +60,8 @@ CASES = [
      + '<img src="http://[bad/x.png">' + task("No visual change", True)),
     ("a struck-out tick does not count", "fail", UI, task("<del>No visual change</del>", True)),
     ("Package.swift alone is a UI change", "fail", [{"filename": "Package.swift"}], ""),
+    ("one image in each of two sections", "fail", UI, h(2, "Screenshots") + A + h(2, "Other") + "<p>x</p>" + h(2, "Before / After") + B),
+    ("a Screenshots heading nested in Before / After", "pass", UI, h(2, "Before / After") + A + h(3, "Screenshots") + h(3, "Dark") + B),
     ("renamed out of Sources/", "fail", [{"filename": "Legacy/Toast.swift", "previous_filename": "Sources/DashUIKit/Components/Toast.swift"}], ""),
 ]
 
