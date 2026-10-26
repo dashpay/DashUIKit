@@ -120,8 +120,14 @@ CASES = [
      + '<picture><img src="https://github.com/o/r/assets/1/"></picture>'),
     ("an attached file is not a screenshot", "fail", UI, h(2, "Before / After") + A
      + '<picture><img src="https://github.com/user-attachments/files/123/log.zip"></picture>'),
-    ("a <source> variant in a picture is a second upload", "pass", UI, h(2, "Before / After") + A
+    ("a colour-scheme <source> in a picture is a second upload", "pass", UI, h(2, "Before / After") + A
      + '<picture><source media="(prefers-color-scheme: dark)" srcset="%s"><img src=""></picture>' % (ATTACHMENT % U4)),
+    ("a screen-size <source> in a picture is the same image", "fail", UI, h(2, "Before / After")
+     + '<picture><source media="(min-width: 800px)" srcset="%s"><img src="%s"></picture>' % (ATTACHMENT % U4, ATTACHMENT % U3)),
+    ("a colour-scheme media query in any case counts", "pass", UI, h(2, "Before / After")
+     + '<picture><source media="(Prefers-Color-Scheme: dark)" srcset="%s"><img src="%s"></picture>' % (ATTACHMENT % U4, ATTACHMENT % U3)),
+    ("a plain link to a pinned file does not count", "fail", UI, h(2, "Before / After") + A
+     + '<a href="https://raw.githubusercontent.com/o/r/d0c798679389e6ba06b9e1bf26942b99483f6dde/after.png">after</a>'),
     ("the canonical src is read before a proxied src", "pass", UI, h(2, "Before / After") + A
      + '<img src="https://camo.githubusercontent.com/1" data-canonical-src="%s">' % (PRIVATE % (U3, "c"))),
     ("the canonical src wins over src", "pass", UI, h(2, "Before / After") + A
@@ -150,8 +156,8 @@ CASES = [
     ("an oldest cloud upload counts", "pass", UI, h(2, "Before / After") + A
      + '<img src="https://cloud.githubusercontent.com/assets/1/2/%s.png">' % U3),
     ("commit-pinned raw files count", "pass", UI, h(2, "Before / After")
-     + '<img src="https://raw.githubusercontent.com/romchornyi/DashUIKit-fork/d0c798679389e6ba06b9e1bf26942b99483f6dde/pr19/before-light.png">'
-     + '<img src="https://raw.githubusercontent.com/romchornyi/DashUIKit-fork/d0c798679389e6ba06b9e1bf26942b99483f6dde/pr19/after-light.png">'),
+     + '<img src="https://raw.githubusercontent.com/o/r/d0c798679389e6ba06b9e1bf26942b99483f6dde/docs/before-light.png">'
+     + '<img src="https://raw.githubusercontent.com/o/r/d0c798679389e6ba06b9e1bf26942b99483f6dde/docs/after-light.png">'),
     ("a commit-pinned raw file through camo counts", "pass", UI, h(2, "Before / After") + A
      + '<img src="https://camo.githubusercontent.com/1" data-canonical-src="https://raw.githubusercontent.com/o/r/d0c798679389e6ba06b9e1bf26942b99483f6dde/a.png">'),
     ("a commit-pinned github.com raw link counts", "pass", UI, h(2, "Before / After") + A
@@ -162,7 +168,7 @@ CASES = [
      + '<img src="https://github.com/o/r/blob/d0c798679389e6ba06b9e1bf26942b99483f6dde/docs/a.png">'),
     ("a short SHA is not pinned", "fail", UI, h(2, "Before / After") + A
      + '<img src="https://raw.githubusercontent.com/o/r/d0c7986/a.png">'),
-    ("a pinned file that is not an image or video does not count", "fail", UI, h(2, "Before / After") + A
+    ("a pinned file that is not an image does not count", "fail", UI, h(2, "Before / After") + A
      + '<img src="https://raw.githubusercontent.com/o/r/d0c798679389e6ba06b9e1bf26942b99483f6dde/badge.svg">'),
     ("the same pinned file twice counts once", "fail", UI, h(2, "Before / After")
      + '<img src="https://raw.githubusercontent.com/o/r/d0c798679389e6ba06b9e1bf26942b99483f6dde/a.png"><img src="https://github.com/o/r/raw/d0c798679389e6ba06b9e1bf26942b99483f6dde/a.png">'),
@@ -175,7 +181,7 @@ CASES = [
     ("a raw=true inside another parameter does not count", "fail", UI, h(2, "Before / After") + A
      + '<img src="https://github.com/o/r/blob/d0c798679389e6ba06b9e1bf26942b99483f6dde/a.png?xraw=true">'),
     ("resolution variants of one <source> count once", "fail", UI, h(2, "Before / After")
-     + '<picture><source srcset="%s 1x, %s 2x"><img src=""></picture>' % (ATTACHMENT % U3, ATTACHMENT % U4)),
+     + '<picture><source media="(prefers-color-scheme: dark)" srcset="%s 1x, %s 2x"><img src=""></picture>' % (ATTACHMENT % U3, ATTACHMENT % U4)),
     ("one pinned file through a fork and a dot segment counts once", "fail", UI, h(2, "Before / After")
      + '<img src="https://raw.githubusercontent.com/o/r/d0c798679389e6ba06b9e1bf26942b99483f6dde/a.png"><img src="https://raw.githubusercontent.com/fork/r/d0c798679389e6ba06b9e1bf26942b99483f6dde/x/../a.png">'
      + '<img src="https://raw.githubusercontent.com/o/r/d0c798679389e6ba06b9e1bf26942b99483f6dde/%61.png">'),
@@ -183,12 +189,46 @@ CASES = [
      + '<img src="https://raw.githubusercontent.com/o/r/d0c798679389e6ba06b9e1bf26942b99483f6dde/docs/Before.png"><img src="https://raw.githubusercontent.com/o/r/d0c798679389e6ba06b9e1bf26942b99483f6dde/docs/before.png">'),
     ("a pinned video in an img does not count", "fail", UI, h(2, "Before / After") + A
      + '<img src="https://raw.githubusercontent.com/o/r/d0c798679389e6ba06b9e1bf26942b99483f6dde/after.mov">'),
-    ("a pinned video in a video tag counts", "pass", UI, h(2, "Before / After") + A
+    ("a pinned video does not count", "fail", UI, h(2, "Before / After") + A
      + '<video src="https://raw.githubusercontent.com/o/r/d0c798679389e6ba06b9e1bf26942b99483f6dde/after.mov"></video>'),
     ("a raw file from a branch does not count", "fail", UI, h(2, "Before / After") + A
      + '<img src="https://raw.githubusercontent.com/dashpay/DashUIKit/feat/x/docs/light.png">'),
     ("a github.com raw link on a branch does not count", "fail", UI, h(2, "Before / After") + A
      + '<img src="https://github.com/dashpay/DashUIKit/raw/master/docs/light.png">'),
+    ("a <source> with no media hides the img", "fail", UI, h(2, "Before / After")
+     + '<picture><source srcset="https://raw.githubusercontent.com/o/r/d0c798679389e6ba06b9e1bf26942b99483f6dde/a.png"><img src="https://raw.githubusercontent.com/o/r/d0c798679389e6ba06b9e1bf26942b99483f6dde/b.png"></picture>'),
+    ("a format-variant <source> is the same image", "fail", UI, h(2, "Before / After")
+     + '<picture><source type="image/webp" srcset="https://raw.githubusercontent.com/o/r/d0c798679389e6ba06b9e1bf26942b99483f6dde/a.webp"><img src="https://raw.githubusercontent.com/o/r/d0c798679389e6ba06b9e1bf26942b99483f6dde/a.png"></picture>'),
+    ("a dark <source> after an unconditional one is never shown", "fail", UI, h(2, "Before / After")
+     + '<picture><source srcset="https://raw.githubusercontent.com/o/r/d0c798679389e6ba06b9e1bf26942b99483f6dde/a.png"><source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/o/r/d0c798679389e6ba06b9e1bf26942b99483f6dde/b.png"><img alt="x"></picture>'),
+    ("explicit light and dark sources count twice", "pass", UI, h(2, "Before / After")
+     + '<picture><source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/o/r/d0c798679389e6ba06b9e1bf26942b99483f6dde/l.png"><source media="(prefers-color-scheme:dark)" srcset="https://raw.githubusercontent.com/o/r/d0c798679389e6ba06b9e1bf26942b99483f6dde/d.png"><img src="https://raw.githubusercontent.com/o/r/d0c798679389e6ba06b9e1bf26942b99483f6dde/x.png"></picture>'),
+    ("a picture outside the section does not count", "fail", UI, '<picture><source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/o/r/d0c798679389e6ba06b9e1bf26942b99483f6dde/d.png"><img src="https://raw.githubusercontent.com/o/r/d0c798679389e6ba06b9e1bf26942b99483f6dde/l.png"></picture>'
+     + h(2, "Before / After") + A),
+    ("a <source> after the img is never shown", "fail", UI, h(2, "Before / After")
+     + '<picture><img src="https://raw.githubusercontent.com/o/r/d0c798679389e6ba06b9e1bf26942b99483f6dde/l.png"><source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/o/r/d0c798679389e6ba06b9e1bf26942b99483f6dde/d.png"></picture>'),
+    ("a typed dark <source> counts", "pass", UI, h(2, "Before / After")
+     + '<picture><source media="(prefers-color-scheme: dark)" type="image/png" srcset="https://raw.githubusercontent.com/o/r/d0c798679389e6ba06b9e1bf26942b99483f6dde/d.png"><img src="https://raw.githubusercontent.com/o/r/d0c798679389e6ba06b9e1bf26942b99483f6dde/l.png"></picture>'),
+    ("a typed <source> with no media shadows the dark one", "fail", UI, h(2, "Before / After")
+     + '<picture><source type="image/webp" srcset="https://raw.githubusercontent.com/o/r/d0c798679389e6ba06b9e1bf26942b99483f6dde/l.webp"><source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/o/r/d0c798679389e6ba06b9e1bf26942b99483f6dde/d.png"><img src="https://raw.githubusercontent.com/o/r/d0c798679389e6ba06b9e1bf26942b99483f6dde/l.png"></picture>'),
+    ("a second img in a picture is shown", "pass", UI, h(2, "Before / After")
+     + '<picture><img src="https://raw.githubusercontent.com/o/r/d0c798679389e6ba06b9e1bf26942b99483f6dde/a.png"><img src="https://raw.githubusercontent.com/o/r/d0c798679389e6ba06b9e1bf26942b99483f6dde/b.png"></picture>'),
+    ("a picture img given by srcset counts", "pass", UI, h(2, "Before / After")
+     + '<picture><source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/o/r/d0c798679389e6ba06b9e1bf26942b99483f6dde/d.png"><img srcset="https://raw.githubusercontent.com/o/r/d0c798679389e6ba06b9e1bf26942b99483f6dde/l.png 2x"></picture>'),
+    ("a media=all <source> applies to every reader", "fail", UI, h(2, "Before / After")
+     + '<picture><source media="all" srcset="https://raw.githubusercontent.com/o/r/d0c798679389e6ba06b9e1bf26942b99483f6dde/x.png"><source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/o/r/d0c798679389e6ba06b9e1bf26942b99483f6dde/d.png"><img src="https://raw.githubusercontent.com/o/r/d0c798679389e6ba06b9e1bf26942b99483f6dde/l.png"></picture>'),
+    ("a wrapped colour-scheme media query counts", "pass", UI, h(2, "Before / After")
+     + '<picture><source media="(prefers-color-scheme:\n\tdark)" srcset="https://raw.githubusercontent.com/o/r/d0c798679389e6ba06b9e1bf26942b99483f6dde/d.png"><img src="https://raw.githubusercontent.com/o/r/d0c798679389e6ba06b9e1bf26942b99483f6dde/l.png"></picture>'),
+    ("a pinned image in a video does not count", "fail", UI, h(2, "Before / After") + A
+     + '<video src="https://raw.githubusercontent.com/o/r/d0c798679389e6ba06b9e1bf26942b99483f6dde/a.png"></video>'),
+    ("a picture without an img shows nothing", "fail", UI, h(2, "Before / After")
+     + '<picture><source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/o/r/d0c798679389e6ba06b9e1bf26942b99483f6dde/d.png"><source srcset="https://raw.githubusercontent.com/o/r/d0c798679389e6ba06b9e1bf26942b99483f6dde/l.png"></picture>'),
+    ("a <source> without srcset is skipped", "pass", UI, h(2, "Before / After")
+     + '<picture><source src="https://raw.githubusercontent.com/o/r/d0c798679389e6ba06b9e1bf26942b99483f6dde/x.png"><img src="https://raw.githubusercontent.com/o/r/d0c798679389e6ba06b9e1bf26942b99483f6dde/l.png"></picture><img src="https://raw.githubusercontent.com/o/r/d0c798679389e6ba06b9e1bf26942b99483f6dde/z.png">'),
+    ("a struck-out picture img still ends its sources", "fail", UI, h(2, "Before / After")
+     + '<picture><del><img src="https://raw.githubusercontent.com/o/r/d0c798679389e6ba06b9e1bf26942b99483f6dde/l.png"></del><source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/o/r/d0c798679389e6ba06b9e1bf26942b99483f6dde/d.png"><img src="https://raw.githubusercontent.com/o/r/d0c798679389e6ba06b9e1bf26942b99483f6dde/m.png"></picture>'),
+    ("a light fallback <source> with no media query counts", "pass", UI, h(2, "Before / After")
+     + '<picture><source media="(prefers-color-scheme: dark)" srcset="%s"><source srcset="%s"><img alt="x"></picture>' % (ATTACHMENT % U3, ATTACHMENT % U4)),
 ]
 
 

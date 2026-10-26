@@ -6,8 +6,8 @@ declares that nothing visible changed:
   - a heading whose text mentions "Before / After", or mentions "Screenshots" and is not
     about tests (any heading level, any case), and under it,
     up to the next heading of the same or a higher level, at least two different images or
-    videos that are files uploaded to GitHub (dragged into the description) or files of a
-    repository pinned to a commit; or
+    videos uploaded to GitHub (dragged into the description), or images that are repository
+    files pinned to a commit; or
   - the ticked task "No visual change".
 
 It reads the description as GitHub renders it (body_html), so comments, code blocks, list
@@ -15,11 +15,11 @@ indentation and every other markdown rule are already applied: what counts is wh
 sees. A file renamed out of Sources/ counts as a UI change, and so does the package manifest
 (Package.swift, Package@swift-*.swift), whose platform floor decides which branches the
 components compile. Only those two kinds count, so badges, emoji, externally hosted images
-and files on a branch never pass as screenshots. In a <picture>, each <source> variant
-counts as well as the <img> (GitHub's light / dark pattern). An upload GitHub cannot
-resolve still counts; a reader sees it as a broken image.
-Struck-out text and images do not count. Whether the images really show
-light and dark is left to the reviewer.
+and files on a branch never pass as screenshots. A <picture> counts the images a light-mode
+and a dark-mode reader see (GitHub's light / dark pattern). An upload GitHub cannot resolve
+still counts; a reader sees it as a broken image.
+Struck-out text and images do not count. Whether the images really show light and dark is
+left to the reviewer.
 
 Usage:
   REPO=dashpay/DashUIKit PR_NUMBER=31 GH_TOKEN=… screenshots-check.py
@@ -67,9 +67,8 @@ UPLOADS = {
 # A repository file pinned to a full commit SHA, the way an author without a browser
 # (gh pr create, an agent) shows screenshots, since attachments cannot be uploaded through
 # the API. A branch name is not pinned: the file can change or vanish, so it does not count.
-# The file must be one the tag can show: an image in <img> / <source>, a video in <video>.
+# Only images: GitHub strips a hand-written <video> whose file is not an upload.
 IMAGES = ("png", "jpg", "jpeg", "gif", "webp")
-MEDIA = {"img": IMAGES, "source": IMAGES, "video": ("mov", "mp4", "webm")}
 PINNED = {
     "raw.githubusercontent.com": re.compile(r"/[^/]+/[^/]+/()([0-9a-f]{40})/(.+)", re.I),
     "github.com": re.compile(r"/[^/]+/[^/]+/(raw|blob)/([0-9a-f]{40})/(.+)", re.I),
@@ -93,7 +92,7 @@ class Description(HTMLParser):
         self.task_text = ""
         self.ticked = []
         self.struck = 0              # inside <del> / <s>: text a reader sees as crossed out
-        self.picture = 0             # inside <picture>: each <source> is another variant
+        self.picture = None          # inside <picture>: its <source>s and <img>, resolved at its end
 
     def handle_starttag(self, tag, attrs):
         attrs = dict(attrs)
@@ -102,20 +101,26 @@ class Description(HTMLParser):
             if self.section_level and level <= self.section_level:
                 self.section_level = 0
             self.heading_level, self.heading_text = level, ""
-        elif tag in ("img", "video") and self.section_level and not self.struck:
+        elif tag in ("img", "video") and self.section_level:
             # Camo keeps the original URL in data-canonical-src; either attribute may hold
-            # the upload.
-            key = screenshot(attrs.get("data-canonical-src"), tag) or screenshot(attrs.get("src"), tag)
-            if key:
+            # the upload. A <video> only survives GitHub's sanitizer with an uploaded file.
+            image = tag == "img"
+            key = None if self.struck else (
+                screenshot(attrs.get("data-canonical-src"), image) or screenshot(attrs.get("src"), image)
+                or (screenshot(first(attrs.get("srcset"))) if image else None))
+            if image and self.picture is not None and "img" not in self.picture:
+                # The <picture>'s own image, struck out or not: shown when none of its
+                # <source>s applies, and the end of the <source>s a browser considers.
+                self.picture["img"] = key
+            elif key:
                 self.sections[-1].append(key)
-        elif tag == "source" and self.picture and self.section_level and not self.struck:
-            # srcset lists resolution variants of one image, of which a reader sees one: the
-            # first stands for the <source>.
-            key = screenshot(((attrs.get("srcset") or "").split(",")[0].split() or [""])[0], tag)
-            if key:
-                self.sections[-1].append(key)
+        elif (tag == "source" and self.picture is not None and "img" not in self.picture
+              and self.section_level and not self.struck and attrs.get("srcset")):
+            # A browser skips a <source> without srcset, and one after the <img>.
+            media = re.sub(r"\s+", "", (attrs.get("media") or "").lower())
+            self.picture["sources"].append((media, screenshot(first(attrs.get("srcset")))))
         elif tag == "picture":
-            self.picture += 1
+            self.picture = {"sources": []}
         elif tag in ("del", "s", "strike"):
             self.struck += 1
         elif tag == "input" and attrs.get("type") == "checkbox" and "checked" in attrs:
@@ -124,8 +129,10 @@ class Description(HTMLParser):
     def handle_endtag(self, tag):
         if tag in ("del", "s", "strike") and self.struck:
             self.struck -= 1
-        if tag == "picture" and self.picture:
-            self.picture -= 1
+        if tag == "picture" and self.picture is not None:
+            if self.section_level:
+                self.sections[-1].extend(seen(self.picture))
+            self.picture = None
         if self.heading_level and tag == "h%d" % self.heading_level:
             # A matching heading starts a section, unless it is nested in an open one,
             # which then simply goes on.
@@ -155,9 +162,35 @@ def split(src):
         return None
 
 
-def screenshot(src, tag):
-    """A key for the file src shows in a <tag> when it is a GitHub upload or a commit-pinned
-    repository file, else None. Uploads are keyed by UUID, since one upload has several URL
+def first(srcset):
+    """srcset lists resolution variants of one image, of which a reader sees one: the first
+    stands for it."""
+    return ((srcset or "").split(",")[0].split() or [""])[0]
+
+
+def seen(picture):
+    """The images a <picture> shows to a light-mode and a dark-mode reader: the first <source>
+    whose media applies, else the <img>. Media with no query, "all" or "screen" applies to
+    every reader, a colour-scheme query to that scheme; any other query (a screen size) is
+    taken not to apply, so the image it would replace is the one counted. A type is taken as
+    supported: a format variant then simply stands for the image."""
+    shown = []
+    for scheme in ("light", "dark"):
+        if "img" not in picture:
+            return []  # a <picture> without an <img> shows nothing
+        key = picture["img"]
+        for media, source in picture["sources"]:
+            if media in ("", "all", "screen") or "prefers-color-scheme:%s" % scheme in media:
+                key = source
+                break
+        if key and key not in shown:
+            shown.append(key)
+    return shown
+
+
+def screenshot(src, pinned=True):
+    """A key for the file src shows when it is a GitHub upload or a commit-pinned repository
+    image, else None. Uploads are keyed by UUID, since one upload has several URL
     forms, and the query of an upload only signs it. A pinned file is keyed by commit and
     path, which is the same file whatever fork or URL form reaches it."""
     parts = split((src or "").strip())
@@ -167,8 +200,8 @@ def screenshot(src, tag):
     match = upload.fullmatch(parts.path.lower()) if upload else None
     if match:
         return match.group(1) or match.group(2)
-    pinned = PINNED.get(parts.hostname)
-    match = pinned.fullmatch(parts.path) if pinned else None
+    pattern = PINNED.get(parts.hostname) if pinned else None
+    match = pattern.fullmatch(parts.path) if pattern else None
     if not match:
         return None
     route, sha, path = match.groups()
@@ -176,7 +209,7 @@ def screenshot(src, tag):
     if route.lower() == "blob" and "raw" not in parse_qs(parts.query, keep_blank_values=True):
         return None
     path = posixpath.normpath("/" + unquote(path).lstrip("/"))
-    if path.rsplit(".", 1)[-1].lower() not in MEDIA[tag]:
+    if path.rsplit(".", 1)[-1].lower() not in IMAGES:
         return None
     return sha.lower() + path
 
@@ -253,11 +286,13 @@ def main():
         return 0
 
     print("::error::This PR changes UI files but shows no Before / After screenshots "
-          "(found %d different uploaded or commit-pinned image(s) or video(s) under a Before / After or Screenshots heading)." % len(images))
+          "(found %d different uploaded images or videos, or commit-pinned images, under a Before / After or Screenshots heading)." % len(images))
     summary("UI change without Before / After screenshots. Changed UI files:\n" + listed)
     summary('Drag at least two images or videos (before and after, light and dark where it differs) into the '
             '"Before / After" section of the description (or a Screenshots section), so GitHub uploads them, or '
-            "link repository files pinned to a full commit SHA (`raw.githubusercontent.com/OWNER/REPO/SHA/...`). "
+            "embed images that are repository files pinned to a full commit SHA "
+            "(`![](https://raw.githubusercontent.com/OWNER/REPO/SHA/...png)`); a plain link does not count, and a video "
+            "must be dragged in. "
             'Images hosted elsewhere or on a branch do not count. Or tick "No visual change" and say why. '
             "Editing the description re-runs this check.")
     return 1

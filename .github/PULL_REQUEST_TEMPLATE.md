@@ -17,7 +17,7 @@
 
 
 ## Before / After
-<!--- Required when the PR changes anything under Sources/, Package.swift or Package@swift-*.swift: CI checks for at least two images or videos here: drag the files in, or link repository files pinned to a full 40-character commit SHA. -->
+<!--- Required when the PR changes anything under Sources/, Package.swift or Package@swift-*.swift: CI checks for at least two images or videos here: drag the files in, or embed images that are repository files pinned to a full 40-character commit SHA as ![](…); a plain link does not count, and a video must be dragged in. -->
 <!--- Show light and dark, and every state that changed. Dropping a file inserts a new <img> line: -->
 <!--- move it into its cell on the row's line, set width="260" and delete height, so the table keeps its shape. -->
 
