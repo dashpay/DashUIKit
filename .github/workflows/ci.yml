@@ -83,12 +83,12 @@ jobs:
         run: .github/scripts/conventions.sh
 
       # Breaks a copy of the tree once per rule, so a rule that stops matching fails here.
-      # The tests run even when the check above failed, so their result is always reported.
+      # It needs a clean baseline, so it runs only when the check above passed.
       - name: Test the conventions script
-        if: ${{ !cancelled() && steps.checkout.outcome == 'success' }}
         run: .github/scripts/tests/conventions-test.sh
 
-      # The PR-description check runs from the base branch, so its rules are tested here.
+      # The PR-description check runs from the base branch, so its rules are tested here,
+      # also when a conventions step above failed.
       - name: Test the Before / After screenshots check
         if: ${{ !cancelled() && steps.checkout.outcome == 'success' }}
         run: python3 .github/scripts/tests/screenshots-test.py

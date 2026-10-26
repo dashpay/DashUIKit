@@ -77,7 +77,19 @@ CASES = [
     ("Screenshots of the latest build", "pass", UI, h(2, "Screenshots of the latest build") + A + B),
     ("Screenshots (tests) is not the section", "fail", UI, h(2, "Screenshots (tests)") + A + B),
     ("Screenshot/snapshot tests is not the section", "fail", UI, h(2, "Screenshot/snapshot tests") + A + B),
-    ("a heading that only mentions screenshots is not the section", "fail", UI, h(2, "Notes on screenshots") + A + B),
+    ("Screenshots anywhere in the heading", "pass", UI, h(2, "iOS screenshots") + A + B),
+    ("Light / dark screenshots", "pass", UI, h(2, "Light / dark screenshots") + A + B),
+    ("Screenshots (testnet)", "pass", UI, h(2, "Screenshots (testnet)") + A + B),
+    ("Screenshots from TestFlight", "pass", UI, h(2, "Screenshots from TestFlight") + A + B),
+    ("Screenshots (tested on iPhone 16)", "pass", UI, h(2, "Screenshots (tested on iPhone 16)") + A + B),
+    ("screenshots in a Badge folder count", "pass", UI, h(2, "Before / After")
+     + '<img src="https://example.com/docs/Badge/light.png"><img src="https://example.com/docs/Badge/dark.png">'),
+    ("GitLab badges are not screenshots", "fail", UI, h(2, "Before / After")
+     + '<img src="https://gitlab.com/a/b/badges/main/pipeline.svg"><img src="https://gitlab.com/a/b/badges/main/coverage.svg">'),
+    ("a /badges leaf is not a screenshot", "fail", UI, h(2, "Before / After") + A
+     + '<img src="https://example.com/x/badges">'),
+    ("coveralls and netlify badges are not screenshots", "fail", UI, h(2, "Before / After")
+     + '<img src="https://coveralls.io/repos/github/x/y/badge.png"><img src="https://api.netlify.com/api/v1/badges/1/deploy-status">'),
     ("badge SVG variants and badge hosts are not screenshots", "fail", UI, h(2, "Before / After")
      + '<img src="https://x.io/a/badge-flat.svg"><img src="https://x.io/b/badge_small.svg">'
      + '<img src="https://badge.fury.io/js/x.svg"><img src="https://badges.gitter.im/x/y.svg">'),
