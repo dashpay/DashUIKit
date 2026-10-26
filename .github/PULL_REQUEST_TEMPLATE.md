@@ -17,7 +17,7 @@
 
 
 ## Before / After
-<!--- Required when the PR changes anything under Sources/: CI checks for at least two images here. -->
+<!--- Required when the PR changes anything under Sources/ or Package.swift: CI checks for at least two images here. -->
 <!--- Show light and dark, and every state that changed. Dropping a file inserts a new <img> line: -->
 <!--- move it into its cell on the row's line, set width="260" and delete height, so the table keeps its shape. -->
 

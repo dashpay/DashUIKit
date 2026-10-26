@@ -10,7 +10,8 @@ visible changed:
 
 It reads the description as GitHub renders it (body_html), so comments, code blocks, list
 indentation and every other markdown rule are already applied: what counts is what a reader
-sees. A file renamed out of Sources/ counts as a UI change. Whether the images really show
+sees. A file renamed out of Sources/ counts as a UI change, and so does Package.swift, whose platform
+floor decides which branches the components compile. Whether the images really show
 light and dark is left to the reviewer.
 
 Usage:
@@ -26,14 +27,19 @@ import sys
 from html.parser import HTMLParser
 from urllib.parse import urlsplit
 
-SECTION = re.compile(r"before\W*(and|vs\.?|to)?\W*after|screenshots?", re.I)
+# "Before / After" anywhere in the heading, or a heading that is just "Screenshots" (an
+# emoji or a parenthetical around it is fine, "Screenshot tests" is not).
+SECTION = re.compile(r"before\W*(and|vs\.?|to)?\W*after|^\W*screenshots?\W*(\(.*\))?\W*$", re.I)
 NO_VISUAL_CHANGE = re.compile(r"^\s*no visual change", re.I)
 # GitHub's files endpoint stops at 3000 entries, however it is paginated.
 FILES_CAP = 3000
-# Images that are not screenshots: emoji, badges.
-NOT_SCREENSHOTS = ("https://github.githubassets.com/", "https://img.shields.io/", "https://badgen.net/")
-# Hosts whose query only signs the URL; the same upload comes back with a new one each time.
-SIGNED_HOSTS = ("private-user-images.githubusercontent.com", "camo.githubusercontent.com")
+# Images that are not screenshots: emoji and badges.
+NOT_SCREENSHOT_HOSTS = ("github.githubassets.com", "img.shields.io", "badgen.net", "codecov.io", "app.codecov.io")
+# Uploads whose query only signs or tweaks the URL; the same file can come back with another.
+UPLOAD_HOSTS = ("private-user-images.githubusercontent.com", "camo.githubusercontent.com",
+                "user-images.githubusercontent.com")
+# Files whose change alters what components render: the sources and the platform floor.
+UI_PATHS = ("Sources/", "Package.swift")
 
 
 class Description(HTMLParser):
@@ -48,6 +54,7 @@ class Description(HTMLParser):
         self.in_task = False         # inside an <li> whose checkbox is ticked
         self.task_text = ""
         self.ticked = []
+        self.struck = 0              # inside <del> / <s>: text a reader sees as crossed out
 
     def handle_starttag(self, tag, attrs):
         attrs = dict(attrs)
@@ -59,12 +66,16 @@ class Description(HTMLParser):
         elif tag in ("img", "video") and self.section_level:
             src = attrs.get("data-canonical-src") or attrs.get("src") or ""
             emoji = "emoji" in (attrs.get("class") or "").split()
-            if src.startswith(("https://", "http://")) and not emoji and not src.startswith(NOT_SCREENSHOTS):
+            if src.startswith(("https://", "http://")) and not emoji and not is_badge(src):
                 self.images.append(src)
+        elif tag in ("del", "s", "strike"):
+            self.struck += 1
         elif tag == "input" and attrs.get("type") == "checkbox" and "checked" in attrs:
             self.in_task, self.task_text = True, ""
 
     def handle_endtag(self, tag):
+        if tag in ("del", "s", "strike") and self.struck:
+            self.struck -= 1
         if self.heading_level and tag == "h%d" % self.heading_level:
             if SECTION.search(self.heading_text):
                 self.section_level = self.heading_level
@@ -76,16 +87,33 @@ class Description(HTMLParser):
     def handle_data(self, data):
         if self.heading_level:
             self.heading_text += data
-        if self.in_task:
+        if self.in_task and not self.struck:
             self.task_text += data
 
 
+def split(src):
+    try:
+        return urlsplit(src)
+    except ValueError:  # e.g. "http://[bad": not a URL GitHub can show
+        return None
+
+
+def is_badge(src):
+    parts = split(src)
+    if parts is None:
+        return True
+    return parts.hostname in NOT_SCREENSHOT_HOSTS or "badge" in parts.path.rsplit("/", 1)[-1]
+
+
 def distinct(sources):
-    """Different images: the same upload is often linked with different signed queries."""
+    """Different images: the same upload is often linked with different queries."""
     seen = []
     for src in sources:
-        parts = urlsplit(src)._replace(fragment="")
-        if parts.hostname in SIGNED_HOSTS:
+        parts = split(src)
+        if parts is None:
+            continue
+        parts = parts._replace(fragment="")
+        if parts.hostname in UPLOAD_HOSTS or (parts.hostname == "github.com" and parts.path.startswith("/user-attachments/")):
             parts = parts._replace(query="")
         key = parts.geturl()
         if key not in seen:
@@ -106,8 +134,9 @@ def gh(path, accept=None, paginate=False):
 
 
 def shown(path):
-    """A path as it is printed: PR-controlled text must not start a workflow command."""
-    return path.replace("%", "%25").replace("\r", "%0D").replace("\n", "%0A")
+    """A path as it is printed: PR-controlled text must not begin a line, where it could be
+    read as a workflow command, and must not render as markdown in the summary."""
+    return "`%s`" % path.replace("\r", "\\r").replace("\n", "\\n").replace("`", "'")
 
 
 def summary(line):
@@ -136,7 +165,7 @@ def main():
         paths.append(f["filename"])
         if f.get("previous_filename"):
             paths.append(f["previous_filename"])
-    ui = [p for p in paths if p.startswith("Sources/")]
+    ui = [p for p in paths if p.startswith(UI_PATHS)]
     if not ui and len(files) >= FILES_CAP and (pr.get("changed_files") or 0) > len(files):
         # GitHub lists only the first 3000: treat the rest as possibly UI.
         ui = ["(more than %d changed files; the rest are not listed)" % FILES_CAP]
@@ -160,7 +189,7 @@ def main():
 
     print("::error::This PR changes UI files but shows no Before / After screenshots "
           "(found %d different image(s) under a Before / After or Screenshots heading)." % len(images))
-    summary("UI change without Before / After screenshots. Changed under Sources/:\n" + listed)
+    summary("UI change without Before / After screenshots. Changed UI files:\n" + listed)
     summary('Add at least two images (before and after, light and dark where it differs) under the '
             '"Before / After" heading of the description, or tick "No visual change" and say why. '
             "Editing the description re-runs this check.")

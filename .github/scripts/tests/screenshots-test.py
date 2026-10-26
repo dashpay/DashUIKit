@@ -50,6 +50,16 @@ CASES = [
     ("query is the identity on other hosts", "pass", UI, h(2, "Before / After")
      + '<img src="https://host.example/render?id=1"><img src="https://host.example/render?id=2">'),
     ("a newline in a path is escaped", "fail", [{"filename": "Sources/a\n::error::forged.swift"}], ""),
+    ("a Screenshot tests heading is not the section", "fail", UI, h(2, "Screenshot tests") + A + B),
+    ("Screenshots with a parenthetical", "pass", UI, h(2, "📸 Screenshots (light and dark)") + A + B),
+    ("a workflow badge and codecov are not screenshots", "fail", UI, h(2, "Before / After")
+     + '<img src="https://github.com/dashpay/DashUIKit/actions/workflows/ci.yml/badge.svg"><img src="https://codecov.io/gh/x/y/graph/badge.svg">'),
+    ("one upload with and without ?raw=true", "fail", UI, h(2, "Before / After")
+     + '<img src="https://github.com/user-attachments/assets/aaaa"><img src="https://github.com/user-attachments/assets/aaaa?raw=true">'),
+    ("a malformed URL does not crash the ticked box", "pass", UI, h(2, "Before / After")
+     + '<img src="http://[bad/x.png">' + task("No visual change", True)),
+    ("a struck-out tick does not count", "fail", UI, task("<del>No visual change</del>", True)),
+    ("Package.swift alone is a UI change", "fail", [{"filename": "Package.swift"}], ""),
     ("renamed out of Sources/", "fail", [{"filename": "Legacy/Toast.swift", "previous_filename": "Sources/DashUIKit/Components/Toast.swift"}], ""),
 ]
 
@@ -72,7 +82,9 @@ def main():
     for case in cases:
         name, want, files, html = case[:4]
         r = run(files, html, case[4] if len(case) > 4 else None)
-        ok = (r.returncode == 0) if want == "pass" else (r.returncode == 1)
+        # A failure must be the check's own verdict, not a crash that also exits 1.
+        ok = ("Traceback" not in r.stderr) and ((r.returncode == 0) if want == "pass"
+              else (r.returncode == 1 and "::error::" in r.stdout))
         if name.startswith("a newline in a path") and "\n::error::forged" in r.stdout:
             ok = False
         print(("ok    " if ok else "FAIL  ") + name)

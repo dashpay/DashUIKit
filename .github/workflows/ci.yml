@@ -85,6 +85,10 @@ jobs:
       - name: Test the conventions script
         run: .github/scripts/tests/conventions-test.sh
 
+      # The PR-description check runs from the base branch, so its rules are tested here.
+      - name: Test the Before / After screenshots check
+        run: python3 .github/scripts/tests/screenshots-test.py
+
   actionlint:
     name: Lint CI config (actionlint, shellcheck)
     runs-on: ubuntu-latest
@@ -111,16 +115,3 @@ jobs:
       # actionlint only checks inline run: blocks.
       - name: Run shellcheck on scripts
         run: shellcheck .github/scripts/*.sh .github/scripts/tests/*.sh
-
-  ci-scripts:
-    name: Test CI scripts
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-
-      # The PR-description check runs from the base branch, so its rules are tested here.
-      - name: Test the Before / After screenshots check
-        run: python3 .github/scripts/tests/screenshots-test.py
