@@ -120,7 +120,7 @@ CASES = [
      + '<picture><img src="https://github.com/o/r/assets/1/"></picture>'),
     ("an attached file is not a screenshot", "fail", UI, h(2, "Before / After") + A
      + '<picture><img src="https://github.com/user-attachments/files/123/log.zip"></picture>'),
-    ("a <source> variant alone is not a second upload", "fail", UI, h(2, "Before / After") + A
+    ("a <source> variant in a picture is a second upload", "pass", UI, h(2, "Before / After") + A
      + '<picture><source media="(prefers-color-scheme: dark)" srcset="%s"><img src=""></picture>' % (ATTACHMENT % U4)),
     ("the canonical src is read before a proxied src", "pass", UI, h(2, "Before / After") + A
      + '<img src="https://camo.githubusercontent.com/1" data-canonical-src="%s">' % (PRIVATE % (U3, "c"))),
@@ -141,9 +141,53 @@ CASES = [
     ("badges do not count", "fail", UI, h(2, "Before / After") + A
      + '<img src="https://img.shields.io/badge/a-b-c"><img src="https://github.com/dashpay/DashUIKit/actions/workflows/ci.yml/badge.svg">'
      + '<img src="https://codecov.io/gh/x/y/graph/badge.svg">'),
+    ("a light / dark picture of two uploads counts twice", "pass", UI, h(2, "Before / After")
+     + '<picture><source media="(prefers-color-scheme: dark)" srcset="%s 1x"><img src="%s"></picture>' % (ATTACHMENT % U4, ATTACHMENT % U3)),
+    ("a <source> outside a picture does not count", "fail", UI, h(2, "Before / After") + A
+     + '<video><source src="https://example.com/x.mp4" srcset="%s"></video>' % (ATTACHMENT % U3)),
+    ("an extensionless rendered upload counts", "pass", UI, h(2, "Before / After") + A
+     + '<img src="https://private-user-images.githubusercontent.com/1/2-%s?jwt=x">' % U3),
+    ("an oldest cloud upload counts", "pass", UI, h(2, "Before / After") + A
+     + '<img src="https://cloud.githubusercontent.com/assets/1/2/%s.png">' % U3),
+    ("commit-pinned raw files count", "pass", UI, h(2, "Before / After")
+     + '<img src="https://raw.githubusercontent.com/romchornyi/DashUIKit-fork/d0c798679389e6ba06b9e1bf26942b99483f6dde/pr19/before-light.png">'
+     + '<img src="https://raw.githubusercontent.com/romchornyi/DashUIKit-fork/d0c798679389e6ba06b9e1bf26942b99483f6dde/pr19/after-light.png">'),
+    ("a commit-pinned raw file through camo counts", "pass", UI, h(2, "Before / After") + A
+     + '<img src="https://camo.githubusercontent.com/1" data-canonical-src="https://raw.githubusercontent.com/o/r/d0c798679389e6ba06b9e1bf26942b99483f6dde/a.png">'),
+    ("a commit-pinned github.com raw link counts", "pass", UI, h(2, "Before / After") + A
+     + '<img src="https://github.com/o/r/raw/d0c798679389e6ba06b9e1bf26942b99483f6dde/docs/a.jpg">'),
+    ("a commit-pinned blob with ?raw=true counts", "pass", UI, h(2, "Before / After") + A
+     + '<img src="https://github.com/o/r/blob/d0c798679389e6ba06b9e1bf26942b99483f6dde/docs/a.png?raw=true">'),
+    ("a commit-pinned blob page does not count", "fail", UI, h(2, "Before / After") + A
+     + '<img src="https://github.com/o/r/blob/d0c798679389e6ba06b9e1bf26942b99483f6dde/docs/a.png">'),
+    ("a short SHA is not pinned", "fail", UI, h(2, "Before / After") + A
+     + '<img src="https://raw.githubusercontent.com/o/r/d0c7986/a.png">'),
+    ("a pinned file that is not an image or video does not count", "fail", UI, h(2, "Before / After") + A
+     + '<img src="https://raw.githubusercontent.com/o/r/d0c798679389e6ba06b9e1bf26942b99483f6dde/badge.svg">'),
+    ("the same pinned file twice counts once", "fail", UI, h(2, "Before / After")
+     + '<img src="https://raw.githubusercontent.com/o/r/d0c798679389e6ba06b9e1bf26942b99483f6dde/a.png"><img src="https://github.com/o/r/raw/d0c798679389e6ba06b9e1bf26942b99483f6dde/a.png">'),
+    ("a pinned raw link to a file under a blob/ folder counts", "pass", UI, h(2, "Before / After") + A
+     + '<img src="https://github.com/o/r/raw/d0c798679389e6ba06b9e1bf26942b99483f6dde/docs/blob/a.png">'),
+    ("a blob with any raw= value counts", "pass", UI, h(2, "Before / After")
+     + '<img src="https://github.com/o/r/blob/d0c798679389e6ba06b9e1bf26942b99483f6dde/a.png?raw=1"><img src="https://github.com/o/r/blob/d0c798679389e6ba06b9e1bf26942b99483f6dde/b.png?raw=">'),
+    ("a doubled slash is the same pinned file", "fail", UI, h(2, "Before / After")
+     + '<img src="https://raw.githubusercontent.com/o/r/d0c798679389e6ba06b9e1bf26942b99483f6dde/a.png"><img src="https://raw.githubusercontent.com/o/r/d0c798679389e6ba06b9e1bf26942b99483f6dde//a.png">'),
+    ("a raw=true inside another parameter does not count", "fail", UI, h(2, "Before / After") + A
+     + '<img src="https://github.com/o/r/blob/d0c798679389e6ba06b9e1bf26942b99483f6dde/a.png?xraw=true">'),
+    ("resolution variants of one <source> count once", "fail", UI, h(2, "Before / After")
+     + '<picture><source srcset="%s 1x, %s 2x"><img src=""></picture>' % (ATTACHMENT % U3, ATTACHMENT % U4)),
+    ("one pinned file through a fork and a dot segment counts once", "fail", UI, h(2, "Before / After")
+     + '<img src="https://raw.githubusercontent.com/o/r/d0c798679389e6ba06b9e1bf26942b99483f6dde/a.png"><img src="https://raw.githubusercontent.com/fork/r/d0c798679389e6ba06b9e1bf26942b99483f6dde/x/../a.png">'
+     + '<img src="https://raw.githubusercontent.com/o/r/d0c798679389e6ba06b9e1bf26942b99483f6dde/%61.png">'),
+    ("pinned files that differ only in case are two files", "pass", UI, h(2, "Before / After")
+     + '<img src="https://raw.githubusercontent.com/o/r/d0c798679389e6ba06b9e1bf26942b99483f6dde/docs/Before.png"><img src="https://raw.githubusercontent.com/o/r/d0c798679389e6ba06b9e1bf26942b99483f6dde/docs/before.png">'),
+    ("a pinned video in an img does not count", "fail", UI, h(2, "Before / After") + A
+     + '<img src="https://raw.githubusercontent.com/o/r/d0c798679389e6ba06b9e1bf26942b99483f6dde/after.mov">'),
+    ("a pinned video in a video tag counts", "pass", UI, h(2, "Before / After") + A
+     + '<video src="https://raw.githubusercontent.com/o/r/d0c798679389e6ba06b9e1bf26942b99483f6dde/after.mov"></video>'),
     ("a raw file from a branch does not count", "fail", UI, h(2, "Before / After") + A
      + '<img src="https://raw.githubusercontent.com/dashpay/DashUIKit/feat/x/docs/light.png">'),
-    ("a github.com raw link does not count", "fail", UI, h(2, "Before / After") + A
+    ("a github.com raw link on a branch does not count", "fail", UI, h(2, "Before / After") + A
      + '<img src="https://github.com/dashpay/DashUIKit/raw/master/docs/light.png">'),
 ]
 
