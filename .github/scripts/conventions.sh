@@ -237,6 +237,13 @@ find "$src" -name '*.swift' -print0 | sort -z |
       for (i = 1; i <= 3; i++) if (x[i] + 0 != y[i] + 0) return x[i] + 0 < y[i] + 0
       return 1
     }
+    # keeps(): the parsed @available also deprecates, obsoletes, renames or marks
+    # unavailable, labelled (deprecated: 17) or bare (deprecated).
+    function keeps(   k) {
+      for (k = 2; k <= nargs; k++)
+        if (alabel[k] ~ /^(deprecated|obsoleted|renamed)$/ || (alabel[k] == "" && trim(amask[k]) ~ /^(deprecated|unavailable)$/)) return 1
+      return 0
+    }
     function available(li,   ml, base, open, k, t, platform, version, floor) {
       ml = M[li]; base = 0
       while (match(substr(ml, base + 1), /[@#](available|unavailable)[[:space:]]*\(/)) {
@@ -255,18 +262,35 @@ find "$src" -name '*.swift' -print0 | sort -z |
           else if (platform ~ /^macOS(ApplicationExtension)?$/) floor = mac_floor
           else continue
           if (!le(version, floor)) continue
-          # introduced: next to deprecated:/obsoleted:/… : only introduced: can go.
-          if (arg("deprecated") || arg("obsoleted") || arg("renamed") || arg("message"))
-            out(li, "introduced: " version " for " platform " is at or below the package floor (" floor "); remove only introduced:, keep the rest of the attribute")
+          # Next to a deprecation, obsoletion or rename only introduced: can go;
+          # a message: alone would be left with nothing to qualify.
+          if (keeps())
+            out(li, "introduced: " version " for " platform " is at or below the package floor (" floor "); remove only introduced:, keep the rest of the attribute (CLAUDE.md, Deployment target)")
           else
             out(li, "availability check for " platform " " version " is at or below the package floor (" floor "), declared once in Package.swift; drop it (CLAUDE.md, Deployment target)")
         }
       }
     }
 
+    # Color tokens: dashAsset("Name") calls in Color+DashUI.swift.
+    function tokens(li,   ml, base, open, s) {
+      if (file != exempt) return
+      ml = M[li]; base = 0
+      while (match(substr(ml, base + 1), /(^|[^A-Za-z0-9_])dashAsset[[:space:]]*\(/)) {
+        open = base + RSTART + RLENGTH - 1
+        base = open
+        parse(li, open)
+        s = atop[1]
+        if (alabel[1] == "" && match(s, /^[[:space:]]*"[^"\\]+"[[:space:]]*$/)) {
+          match(s, /"[^"]+"/)
+          print "T\t" substr(s, RSTART + 1, RLENGTH - 2) "\t" file "\t" li
+        }
+      }
+    }
+
     function flush(   i, cut) {
       for (i = 1; i <= nl; i++) {
-        assets(i); colors(i); localized(i); available(i)
+        assets(i); colors(i); localized(i); available(i); tokens(i)
       }
       nl = 0
     }
@@ -372,19 +396,9 @@ awk -F'\t' '$1 == "imageset" { print $2 }' "$literals" > "$icon_used"
 check_sets imageset "$imagesets" "$icon_values" "$icon_used" unique
 check_literals imageset "$imagesets"
 
-# 2. Color tokens.
+# 2. Color tokens, read by the Swift scan above.
 color_tokens=$work/color-tokens
-awk -v f="$colors" '
-  {
-    line = $0
-    sub(/[[:space:]]*\/\/.*$/, "", line)
-    while (match(line, /dashAsset[[:space:]]*\([[:space:]]*"[^"]+"[[:space:]]*\)/)) {
-      call = substr(line, RSTART, RLENGTH)
-      line = substr(line, RSTART + RLENGTH)
-      match(call, /"[^"]+"/)
-      print substr(call, RSTART + 1, RLENGTH - 2) "\t" f "\t" FNR
-    }
-  }' "$colors" > "$color_tokens"
+awk -F'\t' '$1 == "T" { print $2 "\t" $3 "\t" $4 }' "$scan" > "$color_tokens"
 color_used=$work/color-used
 awk -F'\t' '$1 == "colorset" { print $2 }' "$literals" > "$color_used"
 check_sets colorset "$colorsets" "$color_tokens" "$color_used"

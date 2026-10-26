@@ -126,7 +126,11 @@ expect "orphan colorset" fail 'colorset "OrphanColor" is not referenced'
 fresh; echo 'let fixtureToken = dashAsset( "NoSuchToken" )' >> "$work/tree/$src/Foundation/Color+DashUI.swift"
 expect "token without colorset" fail 'Color+DashUI.swift:' 'no colorset named "NoSuchToken"'
 
+fresh; printf '%s\n' 'let fixtureToken = dashAsset(' '    "NoSuchSplit")' >> "$work/tree/$src/Foundation/Color+DashUI.swift"
+expect "token split over two lines" fail 'no colorset named "NoSuchSplit"'
+
 fresh; echo "let fixtureToken = 1 // was dashAsset(\"NoSuchToken\")" >> "$work/tree/$src/Foundation/Color+DashUI.swift"
+echo 'let other = xdashAsset("NoSuchOther")' >> "$work/tree/$src/Foundation/Color+DashUI.swift"
 dir=$(first_set colorset); cp -R "$dir" "${dir%/*}/LiteralOnly.colorset"
 write_fixture 'let a = Color("LiteralOnly", bundle: .module)'
 expect "commented token; colorset named only by a literal" pass
@@ -298,7 +302,15 @@ fresh; write_fixture \
   'func e() { if #available(iOS 13, *) {} }' \
   'func f() { if #unavailable(iOS 13) {} }' \
   '@available(iOS, introduced: 13, deprecated: 99, message: "Use X")' \
-  'struct G {}'
+  'struct G {}' \
+  '@available(iOS, introduced: 13, deprecated)' \
+  'struct H {}' \
+  '@available(iOS, introduced: 13, obsoleted: 99)' \
+  'struct I {}' \
+  '@available(iOS, introduced: 13, renamed: "J2")' \
+  'struct J {}' \
+  '@available(iOS, introduced: 13, message: "m")' \
+  'struct K {}'
 expect "@available at or below the floor" fail \
   "${fixture}:1: availability check for iOS 13 is at or below the package floor" \
   "${fixture}:3: availability check for iOS 13 is at or below" \
@@ -306,7 +318,11 @@ expect "@available at or below the floor" fail \
   "${fixture}:7: availability check for macOS 10.15 is at or below the package floor" \
   "${fixture}:10: availability check for iOS 13 is at or below" \
   "${fixture}:11: availability check for iOS 13 is at or below" \
-  "${fixture}:12: introduced: 13 for iOS is at or below the package floor"
+  "${fixture}:12: introduced: 13 for iOS is at or below the package floor" \
+  "${fixture}:14: introduced: 13 for iOS is at or below the package floor" \
+  "${fixture}:16: introduced: 13 for iOS is at or below the package floor" \
+  "${fixture}:18: introduced: 13 for iOS is at or below the package floor" \
+  "${fixture}:20: availability check for iOS 13 is at or below the package floor"
 
 fresh; write_fixture \
   '@available(*, deprecated, message: "x")' \
