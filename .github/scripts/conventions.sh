@@ -18,7 +18,8 @@
 #      image or color, every image it names exists, and no catalog folder provides
 #      a namespace (names would gain a "Folder/" prefix);
 #   5. no color built from components (red:, white:, hue:, gray:, .sRGB, hex,
-#      #colorLiteral), Color+DashUI.swift included: every token is a colorset;
+#      #colorLiteral), Color+DashUI.swift included, where tokens are read from
+#      colorsets with dashAsset("Name");
 #   6. every NSLocalizedString call, and every String(localized:) /
 #      AttributedString(localized:) call with a literal key, passes the package
 #      bundle;
@@ -194,9 +195,9 @@ find "$src" -name '*.swift' -print0 | sort -z |
         # checked against the catalog. Icon_DashUI.swift and Color+DashUI.swift are
         # exempt from this check only: they hold the resolvers for DashIcon cases
         # and Color.dash tokens, whose names rules 1 and 2 check where they are
-        # declared. In this package
-        # only DashIconSource has a .custom case that takes a bundle. A literal
-        # with an escape counts as computed: its name is not read below.
+        # declared. In this package only DashIconSource has a .custom case that
+        # takes a bundle. A literal with an escape counts as computed: its name is
+        # not read below.
         k = arg(label)
         computed = (amask[1] !~ /^[[:space:]]*"[[:space:]]*"[[:space:]]*$/ || index(atop[1], "\\"))
         if (k && pkg(amask[k]) && computed && file != icons && file != tokens_file)
@@ -235,7 +236,7 @@ find "$src" -name '*.swift' -print0 | sort -z |
     # Rule 5: colors from components.
     function colors(li,   ml, base, open, first, k, hit) {
       ml = M[li]; base = 0
-      if (ml ~ /#colorLiteral/) out(li, "hardcoded color: add a token to Foundation/Color+DashUI.swift backed by a colorset and use Color.dash.<token>")
+      if (ml ~ /#colorLiteral/) out(li, "hardcoded color: add a colorset and a token for it in Foundation/Color+DashUI.swift (dashAsset(\"Name\")), and use Color.dash.<token>")
       while (match(substr(ml, base + 1), /((^|[^A-Za-z0-9_])(Color|UIColor|NSColor|CGColor|CIColor)[[:space:]]*(\.init)?|\.init)[[:space:]]*\(/)) {
         open = base + RSTART + RLENGTH - 1
         base = open
@@ -244,7 +245,7 @@ find "$src" -name '*.swift' -print0 | sort -z |
         for (k = 1; k <= nargs; k++)
           if (alabel[k] ~ /^(red|white|hue|gray|displayP3Red|srgbRed|hex|calibratedRed|calibratedWhite|calibratedHue|deviceRed|deviceWhite|deviceHue|genericGamma22White)$/) hit = 1
         if (hit)
-          out(li, "hardcoded color: add a token to Foundation/Color+DashUI.swift backed by a colorset and use Color.dash.<token>")
+          out(li, "hardcoded color: add a colorset and a token for it in Foundation/Color+DashUI.swift (dashAsset(\"Name\")), and use Color.dash.<token>")
       }
     }
 
