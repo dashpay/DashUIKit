@@ -108,15 +108,15 @@ public extension SheetFeature where Icon == AnyView {
         SheetFeature(
             title: "Identity",
             description: "Register a username and be paid by name instead of an address.",
-            icon: .custom("feature-identity", bundle: .dashUIKit))
+            icon: DashIcon.Features.identity.source)
         SheetFeature(
             title: "Platform",
             description: "Store contacts and profile data on Dash Platform.",
-            icon: .custom("feature-platform", bundle: .dashUIKit))
+            icon: DashIcon.Features.platform.source)
         SheetFeature(
             title: "Shield",
             description: "Move funds into shielded balances that stay off the public ledger.",
-            icon: .custom("feature-shield", bundle: .dashUIKit))
+            icon: DashIcon.Features.shield.source)
     }
     .padding(20)
     .background(Color.dash.primaryBackground)

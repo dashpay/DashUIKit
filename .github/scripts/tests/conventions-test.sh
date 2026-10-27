@@ -40,13 +40,17 @@ write_fixture() {
 }
 
 # expect NAME fail|pass [NEEDLE...]: runs the script on the copy; a failure must
-# exit 1 and print every needle.
+# exit 1 and print every needle, and none of the needles written as "!text".
 expect() {
   local name=$1 want=$2 output status=0 needle missing=""
   shift 2
   output=$(cd "$work/tree" && "$script" 2>&1) || status=$?
   for needle in "$@"; do
-    [[ "$output" == *"$needle"* ]] || missing="${missing}      missing: ${needle}"$'\n'
+    if [[ "$needle" == '!'* ]]; then
+      [[ "$output" != *"${needle#!}"* ]] || missing="${missing}      unexpected: ${needle#!}"$'\n'
+    else
+      [[ "$output" == *"$needle"* ]] || missing="${missing}      missing: ${needle}"$'\n'
+    fi
   done
   if { [ "$want" = pass ] && [ "$status" -eq 0 ]; } ||
      { [ "$want" = fail ] && [ "$status" -eq 1 ] && [ -z "$missing" ]; }; then
@@ -184,26 +188,85 @@ expect "literal asset names" fail \
 
 fresh; write_fixture \
   'let a = Font.custom("Inter", size: 12)' \
-  'let b = Image(dash: .custom("icon-\(n)", bundle: .dashUIKit))' \
+  'let b = Image(dash: DashIcon.Toast.info.source)' \
   'let c = Image(systemName: "xmark").accessibilityLabel(NSLocalizedString("Close", bundle: .module, comment: ""))' \
   'let d = Image(dash: source).overlay(Text("Done", bundle: .module))' \
   "let e = Image(\"${img}\", bundle: Bundle.dashUIKit)" \
   'let f = Color(uiColor: .systemBackground).opacity(0.5)' \
-  'let g = Image(String(format: "menu-%@", x), bundle: .module)' \
-  "let h = Image(icons[\"key\"] ?? \"${img}\", bundle: .module)" \
+  'let g = Image(name, bundle: bundle)' \
+  "let h = Image(ImageResource(name: \"${img}\", bundle: .module))" \
   'let i = Color(UIColor(named: "'"${col}"'", in: .module, compatibleWith: nil)!)' \
-  'let j = Image(dash: .custom("icon-\(flag ? "a" : "b")", bundle: .dashUIKit))' \
+  'let j = Image(dash: .custom("'"${img}"'", bundle: .dashUIKit))' \
   'let k = Image(.resourceName)' \
   "let l = Image(\"${img}\", bundle: #bundle)" \
-  'let m = Image("icon-" + name, bundle: .module)' \
+  'func m(s: DashIconSource) { switch s { case let .custom(name, bundle: b): _ = (name, b); default: break } }' \
   'let n = Image(icon.resource)' \
   'let o = Label("Title", systemImage: "xmark")' \
   'func p(s: DashIconSource) { switch s { case let .custom(name, bundle): _ = (name, bundle); default: break } }' \
   'func q(s: DashIconSource) { if case .custom(_, let b) = s { _ = b } }' \
   'let r: Set<PresentationDetent> = [.medium, .custom(Half.self)]' \
   'let t = Button(style: .custom(style))' \
-  'let u = Placement.custom("Compact")'
+  'let u = Placement.custom("Compact")' \
+  'func v(s: DashIconSource) -> Bool { if case .custom(_, bundle: _) = s { return true }; return false }'
 expect "calls that are not literal asset lookups" pass
+
+# A name the scanner cannot read, looked up in the package bundle.
+fresh; write_fixture \
+  'let a = Image(dash: .custom("icon-\(n)", bundle: .dashUIKit))' \
+  'let b = Image(dash: .custom("icon-\(flag ? "a" : "b")", bundle: .dashUIKit))' \
+  'let c = Image(dash: .custom(style.iconName, bundle: .dashUIKit))' \
+  'var d: DashIconSource { .custom(rawValue, bundle: .module) }' \
+  'let e = NavigationBarCircleIcon(' \
+  '    .custom(' \
+  '        names[0],' \
+  '        bundle: .module))' \
+  "let f = DashIconSource.custom(\"${img}\" + suffix, bundle: .dashUIKit)" \
+  'let g = Image(String(format: "menu-%@", x), bundle: .module)' \
+  "let h = Image(icons[\"key\"] ?? \"${img}\", bundle: .module)" \
+  'let i = Image(decorative: name, bundle: .dashUIKit)' \
+  'let j = UIImage(named: name, in: .module, with: nil)' \
+  'let k = Color(token, bundle: .module)' \
+  'let l = UIColor(named: token, in: .dashUIKit, compatibleWith: nil)' \
+  'let m = Image(dash: .custom(#"icon-\#(n)"#, bundle: .dashUIKit))' \
+  'let n = Image(ImageResource(name: name, bundle: .module))' \
+  'let o = Color(ColorResource(name: "NoSuchColor4", bundle: .module))' \
+  'let p = Image(dash: .custom("", bundle: .dashUIKit))' \
+  'let q = Image(dash: .custom("no\u{2d}such", bundle: .module))' \
+  'let r = Image(name, bundle: nil)' \
+  'let s = Image(dash: .custom(name, bundle: .main))' \
+  'let t = UIImage(named: name, in: Bundle.main, with: nil)' \
+  'let u = Color(name, bundle: Bundle .main)' \
+  'let v = Image("icon-" + name, bundle: .module)'
+expect "computed names in the package bundle" fail \
+  "${fixture}:1: asset name is not one literal" \
+  "${fixture}:2: asset name is not one literal" \
+  "${fixture}:3: asset name is not one literal" \
+  "${fixture}:4: asset name is not one literal" \
+  "${fixture}:6: asset name is not one literal" \
+  "${fixture}:9: asset name is not one literal" \
+  "${fixture}:10: asset name is not one literal" \
+  "${fixture}:11: asset name is not one literal" \
+  "${fixture}:12: asset name is not one literal" \
+  "${fixture}:13: asset name is not one literal" \
+  "${fixture}:14: asset name is not one literal, so the catalog check cannot follow it; use a Color.dash token" \
+  "${fixture}:15: asset name is not one literal, so the catalog check cannot follow it; use a Color.dash token" \
+  "${fixture}:16: asset name is not one literal" \
+  "${fixture}:17: asset name is not one literal" \
+  "${fixture}:18: no colorset named \"NoSuchColor4\"" \
+  "${fixture}:19: empty asset name" \
+  "${fixture}:20: asset name is not one literal" \
+  "${fixture}:21: bundle: nil is not the package bundle" \
+  "${fixture}:22: bundle: .main is not the package bundle" \
+  "${fixture}:23: in: Bundle.main is not the package bundle" \
+  "${fixture}:24: bundle: Bundle .main is not the package bundle" \
+  "${fixture}:25: asset name is not one literal" \
+  '!no imageset named "icon-'
+
+# The resolver files may pass a name on; a computed token name is still flagged.
+fresh; echo 'func fixtureSource(_ n: String) -> DashIconSource { .custom(n, bundle: .dashUIKit) }' >> "$work/tree/$src/Foundation/Icon_DashUI.swift"
+echo 'extension DashColors { static func fixtureState(_ s: String) -> Color { dashAsset("State-" + s) } }' >> "$work/tree/$src/Foundation/Color+DashUI.swift"
+expect "computed token name" fail '!Icon_DashUI.swift:' \
+  "Color+DashUI.swift:$(wc -l < "$work/tree/$src/Foundation/Color+DashUI.swift" | tr -d ' '): dashAsset(…) needs one literal colorset name"
 
 # 4. Set contents and namespaces.
 fresh; dir=$(first_set imageset); png=$(jq -r '.images[] | .filename // empty' "$dir/Contents.json" | awk 'NR == 1'); rm "$dir/$png"
