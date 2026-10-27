@@ -54,6 +54,7 @@ public struct Toast: View {
 
     private let style: ToastStyle
     private let message: String
+    private let accessibilityLabel: Text
     private let onDismiss: (() -> Void)?
 
     public init(
@@ -61,22 +62,40 @@ public struct Toast: View {
         message: String,
         onDismiss: (() -> Void)? = nil
     ) {
+        self.init(style: style, message: message, accessibilityLabel: Text(message), onDismiss: onDismiss)
+    }
+
+    /// `accessibilityLabel` is what VoiceOver reads instead of `message`, for a
+    /// host that wants the style spoken too ("Error, payment failed"). It is a
+    /// `Text`, so the host localizes it as it would a `Button` title. It replaces
+    /// the message's label, so pass a new one with every new message. The icon
+    /// itself is never read.
+    public init(
+        style: ToastStyle,
+        message: String,
+        accessibilityLabel: Text,
+        onDismiss: (() -> Void)? = nil
+    ) {
         self.style = style
         self.message = message
+        self.accessibilityLabel = accessibilityLabel
         self.onDismiss = onDismiss
     }
 
     public var body: some View {
         HStack(alignment: .top, spacing: 8) {
             HStack(alignment: .top, spacing: 0) {
+                // Otherwise VoiceOver reads the asset name ("toast-warning, image").
                 leadingIcon
                     .frame(width: 24, height: 24)
+                    .accessibilityHidden(true)
 
                 Text(message)
                     .dashFont(.footnoteMedium)
                     .foregroundColor(Color.dash.toastText)
                     .padding(.vertical, 3)
                     .padding(.leading, 8)
+                    .accessibilityLabel(accessibilityLabel)
             }
             .padding(.trailing, 8)
 
@@ -126,9 +145,10 @@ public struct Toast: View {
 
 #Preview {
     VStack(spacing: 12) {
-        Toast(style: .warning, message: "Sgome coins are not available", onDismiss: {})
+        Toast(style: .warning, message: "Some coins are not available", onDismiss: {})
         Toast(style: .info, message: "Heads up", onDismiss: {})
         Toast(style: .error, message: "Something went wrong", onDismiss: {})
+        Toast(style: .error, message: "Payment failed", accessibilityLabel: Text("Error, payment failed"), onDismiss: {})
         Toast(style: .success, message: "Done", onDismiss: {})
         Toast(style: .copied, message: "Copied to clipboard")
         Toast(style: .loading, message: "Loading…")
