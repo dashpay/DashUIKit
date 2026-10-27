@@ -57,8 +57,11 @@ Sources/DashUIKit/
 - **Icons:** pass a `DashIconSource` (`.system` / `.custom(name, bundle:)` / `.uiImage`) and
   render with `Image(dash: source)`. Custom assets resolve from `.dashUIKit`/`.module`.
   Inside the library a bundled icon is a `DashIcon` case (`DashIcon.Toast.info.source`,
-  `.image`), never a name built at runtime: CI rejects a package-bundle lookup whose name
-  is not one literal.
+  `.image`), never a name built at runtime: CI rejects a lookup in `.dashUIKit` /
+  `.module` whose name is not one literal, and a lookup in the host bundle (`.main`,
+  `nil`, `.none`). It is a text scan: the call shapes it cannot follow (a bundle in a
+  variable, `.custom(name)` with no bundle and no `dash:` / `icon:` label, …) are listed
+  in the script header.
 - **Availability:** don't annotate. The floor is declared in `Package.swift`; gate an API
   that needs something *newer* than it with `if #available(...)` in the body.
 - **UIKit-only files** are wrapped in `#if canImport(UIKit)` (e.g. `SearchBar`, `Toast`,

@@ -39,8 +39,9 @@ write_fixture() {
   printf '%s\n' "$@" > "$work/tree/$fixture"
 }
 
-# expect NAME fail|pass [NEEDLE...]: runs the script on the copy; a failure must
-# exit 1 and print every needle, and none of the needles written as "!text".
+# expect NAME fail|pass [NEEDLE...]: runs the script on the copy (a failure must
+# exit 1); in either mode the output must contain every needle, and must not
+# contain a needle written as "!text".
 expect() {
   local name=$1 want=$2 output status=0 needle missing=""
   shift 2
@@ -52,7 +53,7 @@ expect() {
       [[ "$output" == *"$needle"* ]] || missing="${missing}      missing: ${needle}"$'\n'
     fi
   done
-  if { [ "$want" = pass ] && [ "$status" -eq 0 ]; } ||
+  if { [ "$want" = pass ] && [ "$status" -eq 0 ] && [ -z "$missing" ]; } ||
      { [ "$want" = fail ] && [ "$status" -eq 1 ] && [ -z "$missing" ]; }; then
     echo "ok    ${name}"
   else
@@ -260,7 +261,49 @@ expect "computed names in the package bundle" fail \
   "${fixture}:23: in: Bundle.main is not the package bundle" \
   "${fixture}:24: bundle: Bundle .main is not the package bundle" \
   "${fixture}:25: asset name is not one literal" \
-  '!no imageset named "icon-'
+  '!no imageset named "icon-' \
+  '!no imageset named "menu-' \
+  '!no imageset named "key"'
+
+# One defect, one report: a ternary of literals in the host bundle is reported
+# by the literal path (bundle_ok) only, not also as a computed name.
+fresh; write_fixture "let a = Image(flag ? \"${img}\" : \"${img}\", bundle: .main)"
+host_report="${fixture}:1: bundle: .main is not the package bundle; use .dashUIKit"
+expect "ternary in the host bundle, reported once" fail "$host_report" 'Conventions: 1 violation(s)'
+
+# A .custom that passes a bundle is a lookup wherever it is: a ternary's names
+# are read and its host bundle reported once; a repeated missing name, once.
+fresh; write_fixture \
+  'let x = foo(source: .custom(flag ? "a" : "b", bundle: .main))' \
+  'let y = Image(flag ? "nosuch-a" : "nosuch-a", bundle: .module)' \
+  'let z = Image("", bundle: .main)'
+expect "ternary outside the context; repeated name; empty name in the host bundle" fail \
+  "${fixture}:1: bundle: .main is not the package bundle" \
+  "${fixture}:1: no imageset named \"a\"" \
+  "${fixture}:2: asset name is not one literal" \
+  "${fixture}:2: no imageset named \"nosuch-a\"" \
+  "!${fixture}:2: no imageset named \"nosuch-a\" in Sources/DashUIKit/Resources/Media.xcassets"$'\n'"${fixture}:2: no imageset named" \
+  "${fixture}:3: bundle: .main is not the package bundle" \
+  "${fixture}:3: empty asset name" \
+  'Conventions: 7 violation(s)'
+
+# A computed name in the host bundle is reported wherever the call is.
+fresh; write_fixture \
+  'var d1: DashIconSource { .custom(name, bundle: .main) }' \
+  'func d2() -> DashIconSource { return .custom(name, bundle: .main) }' \
+  'let d3 = NavigationBarCircleIcon(.custom(name, bundle: nil))' \
+  'let d4 = foo(source: .custom(name, bundle: .main))' \
+  'let d5 = Image(name, bundle: .none)' \
+  'func d6() -> DashIconSource { return .custom("nosuch-d6", bundle: .main) }'
+expect "computed .custom names in the host bundle" fail \
+  "${fixture}:5: bundle: .none is not the package bundle" \
+  "${fixture}:6: bundle: .main is not the package bundle" \
+  "${fixture}:6: no imageset named \"nosuch-d6\"" \
+  'Conventions: 7 violation(s)' \
+  "${fixture}:1: bundle: .main is not the package bundle" \
+  "${fixture}:2: bundle: .main is not the package bundle" \
+  "${fixture}:3: bundle: nil is not the package bundle" \
+  "${fixture}:4: bundle: .main is not the package bundle"
 
 # The resolver files may pass a name on; a computed token name is still flagged.
 fresh; echo 'func fixtureSource(_ n: String) -> DashIconSource { .custom(n, bundle: .dashUIKit) }' >> "$work/tree/$src/Foundation/Icon_DashUI.swift"
