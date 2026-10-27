@@ -37,7 +37,7 @@ Token groups (see the source for the full list):
 - **Raw tokens:** `blue` (+ `blueAlpha5…90`), `black`/`black1000Alpha5…90`/`black800/900`,
   `gray50…500` (+ alpha variants), `green`/`greenAlpha10`, `red`/`redAlpha5/10`,
   `white`/`whiteAlpha5…90`, `orange`, `yellow`, `lightBlue`, `purple`, `topper`, `uphold`
-- **`shadow`** — a code-defined adaptive color (subtle on light, `.clear` on dark);
+- **`shadow`** — the `Shadow` colorset (subtle on light, clear on dark);
   used by `MenuViewModifier`.
 
 Adding a color: add the color set to the catalog, then add a matching
