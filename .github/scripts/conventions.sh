@@ -8,11 +8,12 @@
 #      dashAsset call whose name is not one literal is flagged;
 #   3. asset names written as literals (Image("…", bundle:), .custom("…", bundle:),
 #      Color("…", bundle:), UIImage(named: "…", in:), …) exist, and are looked up
-#      in the package bundle (.module / .dashUIKit), not the host app's; a
-#      package-bundle lookup whose name is not one literal (a variable,
-#      interpolation, ternary, concatenation) is flagged, as is an empty one, since the
-#      name escapes this check: a bundled icon is a DashIcon case, a color a
-#      Color.dash token;
+#      in the package bundle (.module / .dashUIKit), not the host app's (a
+#      computed name in .main / nil / .none too); a package-bundle lookup whose
+#      name is not one literal (a variable, interpolation, ternary,
+#      concatenation) is flagged, since the name escapes this check: a bundled
+#      icon is a DashIcon case, a color a Color.dash token; an empty name ("")
+#      is flagged too;
 #   4. every imageset and colorset has a valid Contents.json naming at least one
 #      image or color, every image it names exists, and no catalog folder provides
 #      a namespace (names would gain a "Folder/" prefix);
@@ -35,7 +36,8 @@
 # looked up in a bundle passed in as a variable (Image+DashUI.swift resolves a
 # host's DashIconSource that way) or without one (Image(name) may be an
 # ImageResource; only UIImage(named:) and .custom are checked for their bundle
-# then), a .custom(…) that is not after DashIconSource,
+# then), the host bundle written other than .main / nil / .none (Optional.none,
+# Bundle(for:)), a .custom(…) without a bundle that is not after DashIconSource,
 # `dash:` or an `…icon:` label, NSImage(named:), SwiftUI Text("…") and
 # LocalizedStringResource localization. Icon_DashUI.swift is
 # expected to keep each `case` list on one line.
@@ -165,7 +167,7 @@ find "$src" -name '*.swift' -print0 | sort -z |
     }
 
     # Rule 3: literal asset names.
-    function assets(li,   ml, base, call, before, open, kind, label, k, s, n, name, computed) {
+    function assets(li,   ml, base, call, before, open, kind, label, k, s, n, name, computed, seen, names, empty, context, k2) {
       ml = M[li]; base = 0
       while (match(substr(ml, base + 1), /(^|[^A-Za-z0-9_])(ImageResource|ColorResource|Image|UIImage|Color|UIColor|Label|Button|Toggle|Menu|Tab|ContentUnavailableView)[[:space:]]*(\.init)?[[:space:]]*\(|\.custom[[:space:]]*\(/)) {
         call = substr(ml, base + RSTART, RLENGTH)
@@ -199,25 +201,30 @@ find "$src" -name '*.swift' -print0 | sort -z |
         computed = (amask[1] !~ /^[[:space:]]*"[[:space:]]*"[[:space:]]*$/ || index(atop[1], "\\"))
         if (k && pkg(amask[k]) && computed && file != icons && file != tokens_file)
           out(li, "asset name is not one literal, so the catalog check cannot follow it; use " (kind == "colorset" ? "a Color.dash token" : "a DashIcon case (DashIcon.<Group>.<case>.source or .image)"))
-        # A computed name looked up in the host app bundle by name (a literal one
-        # gets the same report from bundle_ok below).
-        else if (k && computed && trim(amask[k]) ~ /^(nil|(Bundle[[:space:]]*)?\.main)$/)
-          out(li, label ": " trim(amask[k]) " is not the package bundle; use .dashUIKit")
-        # Other enums have a .custom case too: .custom counts only where a
-        # DashIconSource is expected (after `DashIconSource`, `dash:` or an
-        # `…icon:` / `…Icon:` label).
-        if (call ~ /custom/ && before !~ /(DashIconSource[[:space:]]*=?|(dash|[A-Za-z]*[Ii]con):)[[:space:]]*$/) continue
-        # "a" + b is an expression, not a name.
-        s = (index(amask[1], "+") ? "" : atop[1]); n = 0
+        # The literal names in the call, each once. "a" + b is an expression, not
+        # a name.
+        s = (index(amask[1], "+") ? "" : atop[1]); n = 0; empty = 0
+        split("", seen)
         while (match(s, /"([^"\\]|\\.)*"/)) {
           name = substr(s, RSTART + 1, RLENGTH - 2)
           s = substr(s, RSTART + RLENGTH)
-          if (name == "") { if (trim(amask[1]) == "\"\"") out(li, "empty asset name"); continue }
-          if (index(name, "\\")) continue
-          print "L\t" kind "\t" name "\t" file "\t" li
-          n++
+          if (name == "") { empty = (trim(amask[1]) == "\"\""); continue }
+          if (index(name, "\\") || (name in seen)) continue
+          seen[name] = 1; names[++n] = name
         }
-        if (n) bundle_ok(label, li)
+        # Other enums have a .custom case too: its literals are read as names only
+        # where a DashIconSource is expected (after `DashIconSource`, `dash:` or
+        # an `…icon:` / `…Icon:` label) or when it passes a bundle, which in this
+        # package only DashIconSource.custom does.
+        context = (call !~ /custom/ || arg("bundle") || before ~ /(DashIconSource[[:space:]]*=?|(dash|[A-Za-z]*[Ii]con):)[[:space:]]*$/)
+        # A computed name looked up in the host app bundle, unless bundle_ok
+        # below reports the same call for the literals inside it.
+        if (k && computed && trim(amask[k]) ~ /^(nil|\.none|(Bundle[[:space:]]*)?\.main)$/ && !(context && n))
+          out(li, label ": " trim(amask[k]) " is not the package bundle; use .dashUIKit")
+        if (!context) continue
+        if (empty) out(li, "empty asset name")
+        for (k2 = 1; k2 <= n; k2++) print "L\t" kind "\t" names[k2] "\t" file "\t" li
+        if (n || empty) bundle_ok(label, li)
         # UIImage(named: name) without in: always looks in the host app bundle,
         # and so does DashIconSource.custom(name) (bundle defaults to nil).
         else if (!arg(label) && call ~ /UI|custom/)

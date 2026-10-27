@@ -134,5 +134,5 @@ the unselected segment), and illustrations
 File `Foundation/BundleToken.swift`.
 
 `Bundle.dashUIKit` is a convenience alias for `Bundle.module`, used when loading custom
-assets from the package bundle (`Image("menu-send", bundle: .dashUIKit)`; inside the library
-prefer `DashIcon`).
+assets from the package bundle. For a bundled icon, `DashIcon` already does this with a
+compile-checked name: `DashIcon.Menu.send.image` rather than `Image("menu-send", bundle: .dashUIKit)`.

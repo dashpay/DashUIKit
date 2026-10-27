@@ -24,6 +24,7 @@ final class DashIconTests: XCTestCase {
 
     /// Every case names an imageset that ships in the package bundle, so a
     /// raw value that drifts from the catalog fails here, not as a blank image.
+    /// One line per group in `Foundation/Icon_DashUI.swift`: add a new group here.
     func testEveryCaseResolvesInThePackageBundle() {
         assertResolves(DashIcon.Common.self)
         assertResolves(DashIcon.Icons.self)
