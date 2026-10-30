@@ -128,11 +128,21 @@ expect "no imagesets at all" fail 'no imageset found'
 fresh; dir=$(first_set colorset); cp -R "$dir" "${dir%/*}/OrphanColor.colorset"
 expect "orphan colorset" fail 'colorset "OrphanColor" is not referenced'
 
+fresh; echo 'let fixtureShadow = Color(red: 0.72, green: 0.76, blue: 0.8, opacity: 0.1)' >> "$work/tree/$src/Foundation/Color+DashUI.swift"
+expect "component color in Color+DashUI.swift" fail \
+  "Color+DashUI.swift:$(wc -l < "$work/tree/$src/Foundation/Color+DashUI.swift" | tr -d ' '): hardcoded color"
+
 fresh; echo 'let fixtureToken = dashAsset( "NoSuchToken" )' >> "$work/tree/$src/Foundation/Color+DashUI.swift"
 expect "token without colorset" fail 'Color+DashUI.swift:' 'no colorset named "NoSuchToken"'
 
 fresh; printf '%s\n' 'let fixtureToken = dashAsset(' '    "NoSuchSplit")' >> "$work/tree/$src/Foundation/Color+DashUI.swift"
 expect "token split over two lines" fail 'no colorset named "NoSuchSplit"'
+
+fresh; printf '%s\n' 'extension DashColors { static func' '    dashAsset(_ name: Int) -> Color { .clear } }' >> "$work/tree/$src/Foundation/Color+DashUI.swift"
+expect "dashAsset declared over two lines" pass '!needs one literal colorset name'
+
+fresh; printf '%s\n' 'extension DashColors { static let fixtureToken =' '    dashAsset("NoSuchNextLine") }' >> "$work/tree/$src/Foundation/Color+DashUI.swift"
+expect "token on the line after its declaration" fail 'no colorset named "NoSuchNextLine"'
 
 fresh; echo "let fixtureToken = 1 // was dashAsset(\"NoSuchToken\")" >> "$work/tree/$src/Foundation/Color+DashUI.swift"
 echo 'let other = xdashAsset("NoSuchOther")' >> "$work/tree/$src/Foundation/Color+DashUI.swift"
@@ -165,7 +175,21 @@ fresh; write_fixture \
   'let p = Image(dash: .custom(style.iconName))' \
   'let q = DashButton(title: "x", leadingIcon: .custom(name))' \
   'let r: DashIconSource = .custom(name)' \
-  'let s = Tab("Home", image: "nope-tab")'
+  'let s = Tab("Home", image: "nope-tab")' \
+  'let t = Image(dash:' \
+  "    .custom(\"${img}\"))" \
+  'let u = Image(dash:' \
+  '    // a comment' \
+  '' \
+  '    .custom("nope-gap"))' \
+  'let v = DashButton(title: "x", leadingIcon:' \
+  '    .custom(name))' \
+  'let w: DashIconSource =' \
+  '    .custom("nope-type"))' \
+  'let x = Image(dash:' \
+  '#if DEBUG' \
+  '    .custom("nope-directive"))' \
+  '#endif'
 expect "literal asset names" fail \
   "${fixture}:1: no imageset named \"nope-one\"" \
   "${fixture}:2: no colorset named \"NoSuchColor\"" \
@@ -185,7 +209,12 @@ expect "literal asset names" fail \
   "${fixture}:18: asset looked up in the host app bundle: pass bundle" \
   "${fixture}:19: asset looked up in the host app bundle: pass bundle" \
   "${fixture}:20: asset looked up in the host app bundle: pass bundle" \
-  "${fixture}:21: image: \"…\" is looked up in the host app bundle"
+  "${fixture}:21: image: \"…\" is looked up in the host app bundle" \
+  "${fixture}:23: asset looked up in the host app bundle: pass bundle" \
+  "${fixture}:27: no imageset named \"nope-gap\"" \
+  "${fixture}:29: asset looked up in the host app bundle: pass bundle" \
+  "${fixture}:31: no imageset named \"nope-type\"" \
+  "${fixture}:34: no imageset named \"nope-directive\""
 
 fresh; write_fixture \
   'let a = Font.custom("Inter", size: 12)' \
@@ -208,6 +237,8 @@ fresh; write_fixture \
   'let r: Set<PresentationDetent> = [.medium, .custom(Half.self)]' \
   'let t = Button(style: .custom(style))' \
   'let u = Placement.custom("Compact")' \
+  'let w = Text("x").font(' \
+  '    .custom("Inter", size: 12))' \
   'func v(s: DashIconSource) -> Bool { if case .custom(_, bundle: _) = s { return true }; return false }'
 expect "calls that are not literal asset lookups" pass
 

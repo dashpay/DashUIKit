@@ -229,4 +229,4 @@ VStack(spacing: 0) { /* rows */ }
     .modifier(MenuViewModifier(shadowRadius: 10, innerPadding: 6))
 ```
 
-The shadow uses `Color.dash.shadow`, which is adaptive (subtle on light, `.clear` on dark).
+The shadow uses `Color.dash.shadow`, the `Shadow` colorset (subtle on light, clear on dark).

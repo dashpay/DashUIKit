@@ -18,7 +18,8 @@
 #      image or color, every image it names exists, and no catalog folder provides
 #      a namespace (names would gain a "Folder/" prefix);
 #   5. no color built from components (red:, white:, hue:, gray:, .sRGB, hex,
-#      #colorLiteral) outside Color+DashUI.swift, where tokens are defined;
+#      #colorLiteral), Color+DashUI.swift included, where tokens are read from
+#      colorsets with dashAsset("Name");
 #   6. every NSLocalizedString call, and every String(localized:) /
 #      AttributedString(localized:) call with a literal key, passes the package
 #      bundle;
@@ -38,9 +39,11 @@
 # ImageResource; only UIImage(named:) and .custom are checked for their bundle
 # then), the host bundle written other than .main / nil / .none (Optional.none,
 # Bundle(for:)), a .custom(…) without a bundle that is not after DashIconSource,
-# `dash:` or an `…icon:` label, NSImage(named:), SwiftUI Text("…") and
-# LocalizedStringResource localization. Icon_DashUI.swift is
-# expected to keep each `case` list on one line.
+# `dash:` or an `…icon:` label, on its line or, when it starts the line, on the
+# last line with code before it (past #if / #endif; a label-like `case .icon:`
+# or `icon:` key counts too), NSImage(named:), SwiftUI Text("…") and LocalizedStringResource
+# localization. Icon_DashUI.swift is expected to keep each `case` list on one
+# line.
 # Run from the repository root (tests: .github/scripts/tests/conventions-test.sh).
 # Every rule runs; exits 1 if any reported a violation, 2 if it could not run.
 set -euo pipefail
@@ -49,10 +52,10 @@ scripts=$(cd "$(dirname "$0")" && pwd)
 src=Sources/DashUIKit
 catalog=$src/Resources/Media.xcassets
 icons=$src/Foundation/Icon_DashUI.swift
-colors=$src/Foundation/Color+DashUI.swift
+tokens=$src/Foundation/Color+DashUI.swift
 
 command -v jq > /dev/null || { echo "conventions.sh needs jq" >&2; exit 2; }
-for required in Package.swift "$catalog" "$icons" "$colors"; do
+for required in Package.swift "$catalog" "$icons" "$tokens"; do
   [ -e "$required" ] || { echo "conventions.sh: ${required} not found; run from the repository root" >&2; exit 2; }
 done
 
@@ -97,7 +100,7 @@ list_sets colorset > "$colorsets"
 scan=$work/scan
 # shellcheck disable=SC2016 # awk fields, not shell variables
 find "$src" -name '*.swift' -print0 | sort -z |
-  xargs -0 awk -v exempt="$colors" -v icons="$icons" -v ios_floor="$ios_floor" -v mac_floor="$mac_floor" '
+  xargs -0 awk -v tokens_file="$tokens" -v icons="$icons" -v ios_floor="$ios_floor" -v mac_floor="$mac_floor" '
     # mask(s): string contents become spaces, so a match in M is always code.
     # Interpolated code ("\(x)") stays visible, its "\(" written as " (".
     function mask(s,   i, c, instr, n, pd, out) {
@@ -125,6 +128,14 @@ find "$src" -name '*.swift' -print0 | sort -z |
     function pkg(v) { return trim(v) ~ /^((Bundle[[:space:]]*)?\.(module|dashUIKit)|#bundle)$/ }
     function trim(s) { gsub(/^[[:space:]]+|[[:space:]]+$/, "", s); return s }
     function out(line, message) { print "R\t" file "\t" line "\t" message }
+    # lead(li, before): the code before a call; when the call starts its line, the
+    # last line with code before it too, past #if / #endif (`Image(dash:` /
+    # `.custom(…)`, `func` / `dashAsset(`).
+    function lead(li, before,   k) {
+      if (before !~ /^[[:space:]]*$/) return before
+      for (k = li - 1; k > 0 && M[k] ~ /^[[:space:]]*(#(if|endif)([^A-Za-z0-9_].*)?)?$/; k--) ;
+      return k > 0 ? M[k] " " before : before
+    }
 
     # parse(li, col): the arguments of the call whose "(" is at M[li], col.
     # Fills nargs, alabel[k] ("" when unlabeled), atext[k] (source), amask[k],
@@ -192,13 +203,14 @@ find "$src" -name '*.swift' -print0 | sort -z |
         if (amask[1] ~ /^[[:space:]]*(let|var)[[:space:]]/ || before ~ /(^|[^A-Za-z0-9_])case([[:space:]]+(let|var))?[[:space:]]*$/) continue
         # A name that is not one literal, looked up in the package bundle, is not
         # checked against the catalog. Icon_DashUI.swift and Color+DashUI.swift are
-        # exempt: they hold the resolvers for DashIcon cases and Color.dash tokens,
-        # whose names rules 1 and 2 check where they are declared. In this package
-        # only DashIconSource has a .custom case that takes a bundle. A literal
-        # with an escape counts as computed: its name is not read below.
+        # exempt from this check only: they hold the resolvers for DashIcon cases
+        # and Color.dash tokens, whose names rules 1 and 2 check where they are
+        # declared. In this package only DashIconSource has a .custom case that
+        # takes a bundle. A literal with an escape counts as computed: its name is
+        # not read below.
         k = arg(label)
         computed = (amask[1] !~ /^[[:space:]]*"[[:space:]]*"[[:space:]]*$/ || index(atop[1], "\\"))
-        if (k && pkg(amask[k]) && computed && file != icons && file != exempt)
+        if (k && pkg(amask[k]) && computed && file != icons && file != tokens_file)
           out(li, "asset name is not one literal, so the catalog check cannot follow it; use " (kind == "colorset" ? "a Color.dash token" : "a DashIcon case (DashIcon.<Group>.<case>.source or .image)"))
         # The literal names in the call, each once. "a" + b is an expression, not
         # a name.
@@ -215,6 +227,7 @@ find "$src" -name '*.swift' -print0 | sort -z |
         # where a DashIconSource is expected (after `DashIconSource`, `dash:` or
         # an `…icon:` / `…Icon:` label) or when it passes a bundle, which in this
         # package only DashIconSource.custom does.
+        if (call ~ /^\.custom/) before = lead(li, before)
         context = (call !~ /custom/ || arg("bundle") || before ~ /(DashIconSource[[:space:]]*=?|(dash|[A-Za-z]*[Ii]con):)[[:space:]]*$/)
         # A computed name looked up in the host app bundle, unless bundle_ok
         # below reports the same call for the literals inside it.
@@ -233,9 +246,8 @@ find "$src" -name '*.swift' -print0 | sort -z |
 
     # Rule 5: colors from components.
     function colors(li,   ml, base, open, first, k, hit) {
-      if (file == exempt) return
       ml = M[li]; base = 0
-      if (ml ~ /#colorLiteral/) out(li, "hardcoded color: add a token to Foundation/Color+DashUI.swift backed by a colorset and use Color.dash.<token>")
+      if (ml ~ /#colorLiteral/) out(li, "hardcoded color: add a colorset and a token for it in Foundation/Color+DashUI.swift (dashAsset(\"Name\")), and use Color.dash.<token>")
       while (match(substr(ml, base + 1), /((^|[^A-Za-z0-9_])(Color|UIColor|NSColor|CGColor|CIColor)[[:space:]]*(\.init)?|\.init)[[:space:]]*\(/)) {
         open = base + RSTART + RLENGTH - 1
         base = open
@@ -244,7 +256,7 @@ find "$src" -name '*.swift' -print0 | sort -z |
         for (k = 1; k <= nargs; k++)
           if (alabel[k] ~ /^(red|white|hue|gray|displayP3Red|srgbRed|hex|calibratedRed|calibratedWhite|calibratedHue|deviceRed|deviceWhite|deviceHue|genericGamma22White)$/) hit = 1
         if (hit)
-          out(li, "hardcoded color: add a token to Foundation/Color+DashUI.swift backed by a colorset and use Color.dash.<token>")
+          out(li, "hardcoded color: add a colorset and a token for it in Foundation/Color+DashUI.swift (dashAsset(\"Name\")), and use Color.dash.<token>")
       }
     }
 
@@ -310,13 +322,13 @@ find "$src" -name '*.swift' -print0 | sort -z |
     # A token whose name is not one literal is unchecked, like a computed name
     # in rule 3.
     function tokens(li,   ml, base, open, s, before) {
-      if (file != exempt) return
+      if (file != tokens_file) return
       ml = M[li]; base = 0
       while (match(substr(ml, base + 1), /(^|[^A-Za-z0-9_])dashAsset[[:space:]]*\(/)) {
-        before = substr(ml, 1, base + RSTART)
+        before = lead(li, substr(ml, 1, base + RSTART - 1))
         open = base + RSTART + RLENGTH - 1
         base = open
-        if (before ~ /func[[:space:]]+$/) continue
+        if (before ~ /(^|[^A-Za-z0-9_])func[[:space:]]*$/) continue
         parse(li, open)
         s = atop[1]
         if (alabel[1] == "" && match(s, /^[[:space:]]*"[^"\\]+"[[:space:]]*$/)) {
