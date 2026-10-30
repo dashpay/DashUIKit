@@ -128,6 +128,10 @@ expect "no imagesets at all" fail 'no imageset found'
 fresh; dir=$(first_set colorset); cp -R "$dir" "${dir%/*}/OrphanColor.colorset"
 expect "orphan colorset" fail 'colorset "OrphanColor" is not referenced'
 
+fresh; echo 'let fixtureShadow = Color(red: 0.72, green: 0.76, blue: 0.8, opacity: 0.1)' >> "$work/tree/$src/Foundation/Color+DashUI.swift"
+expect "component color in Color+DashUI.swift" fail \
+  "Color+DashUI.swift:$(wc -l < "$work/tree/$src/Foundation/Color+DashUI.swift" | tr -d ' '): hardcoded color"
+
 fresh; echo 'let fixtureToken = dashAsset( "NoSuchToken" )' >> "$work/tree/$src/Foundation/Color+DashUI.swift"
 expect "token without colorset" fail 'Color+DashUI.swift:' 'no colorset named "NoSuchToken"'
 
