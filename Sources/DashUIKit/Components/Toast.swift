@@ -31,31 +31,19 @@ struct BackgroundBlurView: UIViewRepresentable {
 
 // MARK: - ToastStyle
 
-/// NOTE: Create the 6 imagesets listed below under
-/// `Media.xcassets/Icons & Illustrations/Toast/` before shipping.
-/// Until they exist, the icon slot renders empty — that is expected.
-///
-///   toast-warning.imageset
-///   toast-info.imageset
-///   toast-error.imageset
-///   toast-success.imageset
-///   toast-copied.imageset
-///   toast-loading.imageset   (optional — `loading` uses `LoadingSpinner`)
 public enum ToastStyle {
     case warning, info, error, success, copied, loading, noInternet
 
-    /// Placeholder asset names — REAL ICONS TO BE ADDED by the user into
-    /// `Media.xcassets/Icons & Illustrations/Toast/`.
-    /// (`loading` renders the `LoadingSpinner` instead — see `Toast.leadingIcon`.)
-    var iconName: String {
+    /// The leading icon; `nil` for `loading`, which draws `LoadingSpinner`.
+    var icon: DashIcon.Toast? {
         switch self {
-        case .warning: return "toast-warning"
-        case .info:    return "toast-info"
-        case .error:   return "toast-error"
-        case .success: return "toast-success"
-        case .copied:  return "toast-copied"
-        case .loading: return "toast-loading"
-        case .noInternet: return "toast-no-wifi"
+        case .warning: return .warning
+        case .info:    return .info
+        case .error:   return .error
+        case .success: return .success
+        case .copied:  return .copied
+        case .loading: return nil
+        case .noInternet: return .noWifi
         }
     }
 }
@@ -119,15 +107,15 @@ public struct Toast: View {
 
     @ViewBuilder
     private var leadingIcon: some View {
-        if case .loading = style {
-            // Reuse the design-system spinner (12 white spokes at graduated opacity, 18×18).
-            // LoadingSpinner applies its own per-spoke opacity on top of toastText.
-            LoadingSpinner(size: 16, color: Color.dash.toastText)
-        } else {
-            Image(dash: .custom(style.iconName, bundle: .dashUIKit))
+        if let icon = style.icon {
+            icon.image
                 .resizable()
                 .scaledToFit()
                 .frame(width: 16, height: 16)
+        } else {
+            // Reuse the design-system spinner (12 spokes at graduated opacity).
+            // LoadingSpinner applies its own per-spoke opacity on top of toastText.
+            LoadingSpinner(size: 16, color: Color.dash.toastText)
         }
     }
 }
@@ -144,6 +132,7 @@ public struct Toast: View {
         Toast(style: .success, message: "Done", onDismiss: {})
         Toast(style: .copied, message: "Copied to clipboard")
         Toast(style: .loading, message: "Loading…")
+        Toast(style: .noInternet, message: "No internet connection")
     }
     .padding()
     .background(Color.dash.blue)

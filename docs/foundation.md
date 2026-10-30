@@ -103,9 +103,14 @@ public enum DashIconSource {
 }
 
 Image(dash: .system("info.circle"))
-Image(dash: .custom("menu-send", bundle: .dashUIKit))
+Image(dash: DashIcon.Menu.send.source)
     .resizable().scaledToFit().frame(width: 30, height: 30)
 ```
+
+Every bundled image is a case of a `DashIcon` group (`Foundation/Icon_DashUI.swift`), whose
+raw value is the imageset name: `DashIcon.Menu.send.source` is the `DashIconSource`,
+`.image` the plain `Image`. Inside the library, use these cases rather than
+`.custom(name, bundle:)`; CI rejects a package-bundle lookup whose name is not one literal.
 
 Many components accept a `DashIconSource?` directly (`DashButton.leadingIcon`,
 `MenuItem.leadingIcon`, `RadioButtonRow.icon`, …).
@@ -129,4 +134,5 @@ the unselected segment), and illustrations
 File `Foundation/BundleToken.swift`.
 
 `Bundle.dashUIKit` is a convenience alias for `Bundle.module`, used when loading custom
-assets from the package bundle (`Image(dash: .custom(name, bundle: .dashUIKit))`).
+assets from the package bundle. For a bundled icon, `DashIcon` already does this with a
+compile-checked name: `DashIcon.Menu.send.image` rather than `Image("menu-send", bundle: .dashUIKit)`.

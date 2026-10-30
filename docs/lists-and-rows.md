@@ -43,7 +43,7 @@ help text, and a flexible trailing **accessory**.
 
 ```swift
 MenuItem(
-    leadingIcon: .custom("menu-send", bundle: .dashUIKit),  // DashIconSource?
+    leadingIcon: DashIcon.Menu.send.source,  // DashIconSource?
     title: "Network fee",
     helpText: "Estimated cost for this transaction",
     info: .round(color: Color.dash.gray300Alpha70),

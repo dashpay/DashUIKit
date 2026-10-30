@@ -4,10 +4,16 @@
 #
 #   1. every DashIcon raw value has an imageset, and every imageset is named by a
 #      DashIcon case or a literal (rule 3); no name twice;
-#   2. the same for dashAsset("…") tokens in Color+DashUI.swift and colorsets;
+#   2. the same for dashAsset("…") tokens in Color+DashUI.swift and colorsets; a
+#      dashAsset call whose name is not one literal is flagged;
 #   3. asset names written as literals (Image("…", bundle:), .custom("…", bundle:),
 #      Color("…", bundle:), UIImage(named: "…", in:), …) exist, and are looked up
-#      in the package bundle (.module / .dashUIKit), not the host app's;
+#      in the package bundle (.module / .dashUIKit), not the host app's (a
+#      computed name in .main / nil / .none too); a package-bundle lookup whose
+#      name is not one literal (a variable, interpolation, ternary,
+#      concatenation) is flagged, since the name escapes this check: a bundled
+#      icon is a DashIcon case, a color a Color.dash token; an empty name ("")
+#      is flagged too;
 #   4. every imageset and colorset has a valid Contents.json naming at least one
 #      image or color, every image it names exists, and no catalog folder provides
 #      a namespace (names would gain a "Folder/" prefix);
@@ -22,13 +28,21 @@
 #
 # Calls are parsed with their arguments (labels, nesting, several lines); string
 # contents and `//` comments are ignored, interpolated code is scanned. Not
-# handled: /* block comments */, raw and multi-line string literals, names that
-# are interpolated ("icon-\(x)"), concatenated or passed through a variable
-# (Image(name) may be an ImageResource; only UIImage(named:) and .custom are
-# checked for their bundle then), a .custom(…) that is not after DashIconSource,
-# `dash:` or an `…icon:` label, NSImage(named:), SwiftUI Text("…") and
-# LocalizedStringResource localization. Icon_DashUI.swift is
-# expected to keep each `case` list on one line.
+# handled: /* block comments */, raw and multi-line string literals (as a name
+# they count as computed), computed names inside Icon_DashUI.swift and
+# Color+DashUI.swift (the resolvers), ImageResource / ColorResource written as
+# .init(name:bundle:), names reaching the DashIconAsset resolver
+# from a conformance other than a DashIcon enum case, computed names
+# looked up in a bundle passed in as a variable (Image+DashUI.swift resolves a
+# host's DashIconSource that way) or without one (Image(name) may be an
+# ImageResource; only UIImage(named:) and .custom are checked for their bundle
+# then), the host bundle written other than .main / nil / .none (Optional.none,
+# Bundle(for:)), a .custom(…) without a bundle that is not after DashIconSource,
+# `dash:` or an `…icon:` label, on its line or, when it starts the line, on the
+# last line with code before it (past #if / #endif; a label-like `case .icon:`
+# or `icon:` key counts too), NSImage(named:), SwiftUI Text("…") and LocalizedStringResource
+# localization. Icon_DashUI.swift is expected to keep each `case` list on one
+# line.
 # Run from the repository root (tests: .github/scripts/tests/conventions-test.sh).
 # Every rule runs; exits 1 if any reported a violation, 2 if it could not run.
 set -euo pipefail
@@ -85,7 +99,7 @@ list_sets colorset > "$colorsets"
 scan=$work/scan
 # shellcheck disable=SC2016 # awk fields, not shell variables
 find "$src" -name '*.swift' -print0 | sort -z |
-  xargs -0 awk -v exempt="$colors" -v ios_floor="$ios_floor" -v mac_floor="$mac_floor" '
+  xargs -0 awk -v exempt="$colors" -v icons="$icons" -v ios_floor="$ios_floor" -v mac_floor="$mac_floor" '
     # mask(s): string contents become spaces, so a match in M is always code.
     # Interpolated code ("\(x)") stays visible, its "\(" written as " (".
     function mask(s,   i, c, instr, n, pd, out) {
@@ -113,6 +127,14 @@ find "$src" -name '*.swift' -print0 | sort -z |
     function pkg(v) { return trim(v) ~ /^((Bundle[[:space:]]*)?\.(module|dashUIKit)|#bundle)$/ }
     function trim(s) { gsub(/^[[:space:]]+|[[:space:]]+$/, "", s); return s }
     function out(line, message) { print "R\t" file "\t" line "\t" message }
+    # lead(li, before): the code before a call; when the call starts its line, the
+    # last line with code before it too, past #if / #endif (`Image(dash:` /
+    # `.custom(…)`, `func` / `dashAsset(`).
+    function lead(li, before,   k) {
+      if (before !~ /^[[:space:]]*$/) return before
+      for (k = li - 1; k > 0 && M[k] ~ /^[[:space:]]*(#(if|endif)([^A-Za-z0-9_].*)?)?$/; k--) ;
+      return k > 0 ? M[k] " " before : before
+    }
 
     # parse(li, col): the arguments of the call whose "(" is at M[li], col.
     # Fills nargs, alabel[k] ("" when unlabeled), atext[k] (source), amask[k],
@@ -155,9 +177,9 @@ find "$src" -name '*.swift' -print0 | sort -z |
     }
 
     # Rule 3: literal asset names.
-    function assets(li,   ml, base, call, before, open, kind, label, k, s, n, name) {
+    function assets(li,   ml, base, call, before, open, kind, label, k, s, n, name, computed, seen, names, empty, context, k2) {
       ml = M[li]; base = 0
-      while (match(substr(ml, base + 1), /(^|[^A-Za-z0-9_])(Image|UIImage|Color|UIColor|Label|Button|Toggle|Menu|Tab|ContentUnavailableView)[[:space:]]*(\.init)?[[:space:]]*\(|\.custom[[:space:]]*\(/)) {
+      while (match(substr(ml, base + 1), /(^|[^A-Za-z0-9_])(ImageResource|ColorResource|Image|UIImage|Color|UIColor|Label|Button|Toggle|Menu|Tab|ContentUnavailableView)[[:space:]]*(\.init)?[[:space:]]*\(|\.custom[[:space:]]*\(/)) {
         call = substr(ml, base + RSTART, RLENGTH)
         before = substr(ml, 1, base + RSTART - 1)
         open = base + RSTART + RLENGTH - 1
@@ -172,24 +194,47 @@ find "$src" -name '*.swift' -print0 | sort -z |
         kind = (call ~ /Color/) ? "colorset" : "imageset"
         label = (call ~ /UI/) ? "in" : "bundle"
         if (call ~ /UI/) { if (alabel[1] != "named") continue }
+        else if (call ~ /Resource/) { if (alabel[1] != "name") continue }
         else if (call ~ /Image/) { if (alabel[1] != "" && alabel[1] != "decorative") continue }
         else if (alabel[1] != "") continue
-        # Other enums have a .custom case too: .custom counts only where a
-        # DashIconSource is expected (after `DashIconSource`, `dash:` or an
-        # `…icon:` / `…Icon:` label).
-        if (call ~ /custom/ && before !~ /(DashIconSource[[:space:]]*=?|(dash|[A-Za-z]*[Ii]con):)[[:space:]]*$/) continue
-        # A pattern (`case .custom(let name, let bundle)`) is not a lookup.
-        if (amask[1] ~ /^[[:space:]]*(let|var)[[:space:]]/) continue
-        # "a" + b is an expression, not a name.
-        s = (index(amask[1], "+") ? "" : atop[1]); n = 0
+        # A pattern (`case .custom(let name, let bundle)`, `case let .custom(n,
+        # bundle: b)`) is not a lookup.
+        if (amask[1] ~ /^[[:space:]]*(let|var)[[:space:]]/ || before ~ /(^|[^A-Za-z0-9_])case([[:space:]]+(let|var))?[[:space:]]*$/) continue
+        # A name that is not one literal, looked up in the package bundle, is not
+        # checked against the catalog. Icon_DashUI.swift and Color+DashUI.swift are
+        # exempt: they hold the resolvers for DashIcon cases and Color.dash tokens,
+        # whose names rules 1 and 2 check where they are declared. In this package
+        # only DashIconSource has a .custom case that takes a bundle. A literal
+        # with an escape counts as computed: its name is not read below.
+        k = arg(label)
+        computed = (amask[1] !~ /^[[:space:]]*"[[:space:]]*"[[:space:]]*$/ || index(atop[1], "\\"))
+        if (k && pkg(amask[k]) && computed && file != icons && file != exempt)
+          out(li, "asset name is not one literal, so the catalog check cannot follow it; use " (kind == "colorset" ? "a Color.dash token" : "a DashIcon case (DashIcon.<Group>.<case>.source or .image)"))
+        # The literal names in the call, each once. "a" + b is an expression, not
+        # a name.
+        s = (index(amask[1], "+") ? "" : atop[1]); n = 0; empty = 0
+        split("", seen)
         while (match(s, /"([^"\\]|\\.)*"/)) {
           name = substr(s, RSTART + 1, RLENGTH - 2)
           s = substr(s, RSTART + RLENGTH)
-          if (name == "" || index(name, "\\")) continue
-          print "L\t" kind "\t" name "\t" file "\t" li
-          n++
+          if (name == "") { empty = (trim(amask[1]) == "\"\""); continue }
+          if (index(name, "\\") || (name in seen)) continue
+          seen[name] = 1; names[++n] = name
         }
-        if (n) bundle_ok(label, li)
+        # Other enums have a .custom case too: its literals are read as names only
+        # where a DashIconSource is expected (after `DashIconSource`, `dash:` or
+        # an `…icon:` / `…Icon:` label) or when it passes a bundle, which in this
+        # package only DashIconSource.custom does.
+        if (call ~ /^\.custom/) before = lead(li, before)
+        context = (call !~ /custom/ || arg("bundle") || before ~ /(DashIconSource[[:space:]]*=?|(dash|[A-Za-z]*[Ii]con):)[[:space:]]*$/)
+        # A computed name looked up in the host app bundle, unless bundle_ok
+        # below reports the same call for the literals inside it.
+        if (k && computed && trim(amask[k]) ~ /^(nil|\.none|(Bundle[[:space:]]*)?\.main)$/ && !(context && n))
+          out(li, label ": " trim(amask[k]) " is not the package bundle; use .dashUIKit")
+        if (!context) continue
+        if (empty) out(li, "empty asset name")
+        for (k2 = 1; k2 <= n; k2++) print "L\t" kind "\t" names[k2] "\t" file "\t" li
+        if (n || empty) bundle_ok(label, li)
         # UIImage(named: name) without in: always looks in the host app bundle,
         # and so does DashIconSource.custom(name) (bundle defaults to nil).
         else if (!arg(label) && call ~ /UI|custom/)
@@ -273,18 +318,23 @@ find "$src" -name '*.swift' -print0 | sort -z |
     }
 
     # Color tokens: dashAsset("Name") calls in Color+DashUI.swift.
-    function tokens(li,   ml, base, open, s) {
+    # A token whose name is not one literal is unchecked, like a computed name
+    # in rule 3.
+    function tokens(li,   ml, base, open, s, before) {
       if (file != exempt) return
       ml = M[li]; base = 0
       while (match(substr(ml, base + 1), /(^|[^A-Za-z0-9_])dashAsset[[:space:]]*\(/)) {
+        before = lead(li, substr(ml, 1, base + RSTART - 1))
         open = base + RSTART + RLENGTH - 1
         base = open
+        if (before ~ /(^|[^A-Za-z0-9_])func[[:space:]]*$/) continue
         parse(li, open)
         s = atop[1]
         if (alabel[1] == "" && match(s, /^[[:space:]]*"[^"\\]+"[[:space:]]*$/)) {
           match(s, /"[^"]+"/)
           print "T\t" substr(s, RSTART + 1, RLENGTH - 2) "\t" file "\t" li
-        }
+        } else
+          out(li, "dashAsset(…) needs one literal colorset name, or it is not checked against the catalog")
       }
     }
 

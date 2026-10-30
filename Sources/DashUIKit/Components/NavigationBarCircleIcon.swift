@@ -72,7 +72,7 @@ nonisolated struct NavigationBarCircleIconContent: View {
 #if DEBUG
 #Preview("NavigationBarCircleIcon") {
     HStack(spacing: 10) {
-        NavigationBarCircleIcon(.custom(NavigationBarElement.back.rawValue, bundle: .module))
+        NavigationBarCircleIcon(DashIcon.NavigationBar.back.source)
         NavigationBarCircleIcon(.system("arrow.clockwise"))
         NavigationBarCircleIcon(.system("ellipsis"))
     }

@@ -21,13 +21,8 @@ Toast(
 ```
 
 **`ToastStyle`** — `.warning` · `.info` · `.error` · `.success` · `.copied` · `.loading`
-· `.noInternet`. Each maps to an icon asset under
-`Media.xcassets/Icons & Illustrations/Toast/` (`toast-warning`, `toast-info`, …,
-`toast-no-wifi`). `.loading` instead renders the DS `LoadingSpinner`.
-
-> ⚠️ The toast icon assets are placeholders to be supplied. Until the imagesets exist the
-> icon slot renders empty for the non-loading styles — that's expected, not a bug. See the
-> note at the top of `Toast.swift` for the exact asset names.
+· `.noInternet`. Each draws a `DashIcon.Toast` case (`.warning`, `.info`, …, `.noWifi`
+for `.noInternet`). `.loading` instead renders the DS `LoadingSpinner`.
 
 This is just the toast *view* — presentation/animation/auto-dismiss timing is the host's
 responsibility (e.g. overlay it and drive visibility yourself).

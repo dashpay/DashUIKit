@@ -85,7 +85,7 @@ public extension NavigationBar where Leading == EmptyView, Central == EmptyView 
     }
 }
 
-public enum NavigationBarElement: String {
+public enum NavigationBarElement: String, CaseIterable {
     case back = "navigationbar-back"
     case close = "navigationbar-close"
     case plus = "navigationbar-plus"
@@ -104,9 +104,19 @@ public enum NavigationBarElement: String {
         }
     }
 
-    private var source: DashIconSource {
-        .custom(rawValue, bundle: .module)
+    /// The imageset drawn for the element. The raw value is the same name,
+    /// kept for hosts; drawing goes through `DashIcon` so the catalog check
+    /// sees it.
+    var asset: DashIcon.NavigationBar {
+        switch self {
+        case .back: return .back
+        case .close: return .close
+        case .plus: return .plus
+        case .info: return .info
+        }
     }
+
+    private var source: DashIconSource { asset.source }
 
     public func button(action: @escaping () -> Void) -> some View {
         NavigationBarButton(accessibilityLabel: Text(accessibilityLabelText), action: action) {

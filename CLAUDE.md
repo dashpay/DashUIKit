@@ -56,6 +56,12 @@ Sources/DashUIKit/
   or `Font.dash.subhead` when you only need the font. Tokens defined in `DashTextStyle.swift`.
 - **Icons:** pass a `DashIconSource` (`.system` / `.custom(name, bundle:)` / `.uiImage`) and
   render with `Image(dash: source)`. Custom assets resolve from `.dashUIKit`/`.module`.
+  Inside the library a bundled icon is a `DashIcon` case (`DashIcon.Toast.info.source`,
+  `.image`), never a name built at runtime: CI rejects a lookup in `.dashUIKit` /
+  `.module` whose name is not one literal, and a lookup in the host bundle (`.main`,
+  `nil`, `.none`). It is a text scan: the call shapes it cannot follow (a bundle in a
+  variable, `.custom(name)` with no bundle and no `dash:` / `icon:` label, …) are listed
+  in the script header.
 - **Availability:** don't annotate. The floor is declared in `Package.swift`; gate an API
   that needs something *newer* than it with `if #available(...)` in the body.
 - **UIKit-only files** are wrapped in `#if canImport(UIKit)` (e.g. `SearchBar`, `Toast`,
@@ -70,8 +76,9 @@ Sources/DashUIKit/
   host. Don't add view models or persistence here.
 - CI enforces the mechanical ones with `.github/scripts/conventions.sh`: `DashIcon` ↔
   imagesets, `Color.dash` tokens ↔ colorsets, literal asset names and their bundle, no
-  colors built from components (`Color(red:…)`, hex), `NSLocalizedString` /
-  `String(localized:)` with the package bundle, no `@available` at or below the floor.
+  computed names in the package bundle, no colors built from components (`Color(red:…)`,
+  hex), `NSLocalizedString` / `String(localized:)` with the package bundle, no
+  `@available` at or below the floor.
   It does not check system colors (`Color.red`) or `Text("…")` keys. Run it from the repo
   root before pushing.
 
