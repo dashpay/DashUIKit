@@ -39,9 +39,11 @@
 # ImageResource; only UIImage(named:) and .custom are checked for their bundle
 # then), the host bundle written other than .main / nil / .none (Optional.none,
 # Bundle(for:)), a .custom(…) without a bundle that is not after DashIconSource,
-# `dash:` or an `…icon:` label, NSImage(named:), SwiftUI Text("…") and
-# LocalizedStringResource localization. Icon_DashUI.swift is
-# expected to keep each `case` list on one line.
+# `dash:` or an `…icon:` label, on its line or, when it starts the line, on the
+# last line with code before it (past #if / #endif; a label-like `case .icon:`
+# or `icon:` key counts too), NSImage(named:), SwiftUI Text("…") and LocalizedStringResource
+# localization. Icon_DashUI.swift is expected to keep each `case` list on one
+# line.
 # Run from the repository root (tests: .github/scripts/tests/conventions-test.sh).
 # Every rule runs; exits 1 if any reported a violation, 2 if it could not run.
 set -euo pipefail
@@ -126,6 +128,14 @@ find "$src" -name '*.swift' -print0 | sort -z |
     function pkg(v) { return trim(v) ~ /^((Bundle[[:space:]]*)?\.(module|dashUIKit)|#bundle)$/ }
     function trim(s) { gsub(/^[[:space:]]+|[[:space:]]+$/, "", s); return s }
     function out(line, message) { print "R\t" file "\t" line "\t" message }
+    # lead(li, before): the code before a call; when the call starts its line, the
+    # last line with code before it too, past #if / #endif (`Image(dash:` /
+    # `.custom(…)`, `func` / `dashAsset(`).
+    function lead(li, before,   k) {
+      if (before !~ /^[[:space:]]*$/) return before
+      for (k = li - 1; k > 0 && M[k] ~ /^[[:space:]]*(#(if|endif)([^A-Za-z0-9_].*)?)?$/; k--) ;
+      return k > 0 ? M[k] " " before : before
+    }
 
     # parse(li, col): the arguments of the call whose "(" is at M[li], col.
     # Fills nargs, alabel[k] ("" when unlabeled), atext[k] (source), amask[k],
@@ -217,6 +227,7 @@ find "$src" -name '*.swift' -print0 | sort -z |
         # where a DashIconSource is expected (after `DashIconSource`, `dash:` or
         # an `…icon:` / `…Icon:` label) or when it passes a bundle, which in this
         # package only DashIconSource.custom does.
+        if (call ~ /^\.custom/) before = lead(li, before)
         context = (call !~ /custom/ || arg("bundle") || before ~ /(DashIconSource[[:space:]]*=?|(dash|[A-Za-z]*[Ii]con):)[[:space:]]*$/)
         # A computed name looked up in the host app bundle, unless bundle_ok
         # below reports the same call for the literals inside it.
@@ -314,10 +325,10 @@ find "$src" -name '*.swift' -print0 | sort -z |
       if (file != tokens_file) return
       ml = M[li]; base = 0
       while (match(substr(ml, base + 1), /(^|[^A-Za-z0-9_])dashAsset[[:space:]]*\(/)) {
-        before = substr(ml, 1, base + RSTART)
+        before = lead(li, substr(ml, 1, base + RSTART - 1))
         open = base + RSTART + RLENGTH - 1
         base = open
-        if (before ~ /func[[:space:]]+$/) continue
+        if (before ~ /(^|[^A-Za-z0-9_])func[[:space:]]*$/) continue
         parse(li, open)
         s = atop[1]
         if (alabel[1] == "" && match(s, /^[[:space:]]*"[^"\\]+"[[:space:]]*$/)) {
