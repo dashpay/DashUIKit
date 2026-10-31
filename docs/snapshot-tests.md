@@ -62,8 +62,9 @@ size renders the same every time), and compared only on that environment:
   (`SNAPSHOT_REQUIRE_REFERENCE_ENVIRONMENT=1`), so a runner image update cannot turn the
   suite into skips.
 - `SNAPSHOT_FORCE=1` compares anyway, for example on a local simulator with the same iOS
-  version. It never writes a reference: only a run that sets `SNAPSHOT_TESTING_RECORD` (or
-  wraps the test in `withSnapshotTesting(record:)`) does.
+  version. It never writes a reference: only a run that sets `SNAPSHOT_TESTING_RECORD` does
+  (the helper passes `record: .never` otherwise, which also overrides
+  `withSnapshotTesting(record:)`).
 - The job also fails when its last `Executed … tests` line reports no tests or any skipped
   one, so a broken environment check cannot pass as skips.
 

@@ -89,9 +89,11 @@ enum SnapshotLayout {
 /// Asserts `view` against its light and its dark reference, rendered at
 /// `SnapshotLayout.width` on `background`, with `SnapshotLayout.padding` around it.
 ///
-/// Only a run that sets `SNAPSHOT_TESTING_RECORD` (or `withSnapshotTesting(record:)`)
-/// writes references; otherwise a missing one fails without being recorded, so a local
-/// `SNAPSHOT_FORCE=1` run cannot leave images from another simulator in the tree.
+/// Only a run that sets `SNAPSHOT_TESTING_RECORD` writes references; otherwise a
+/// missing one fails without being recorded, so a local `SNAPSHOT_FORCE=1` run cannot
+/// leave images from another simulator in the tree. The record mode passed here
+/// overrides `withSnapshotTesting(record:)`, so the environment variable is the one
+/// switch.
 ///
 /// `precision: 1` checks every pixel; `perceptualPrecision: 0.98` lets a pixel
 /// differ by a colour distance (ΔE) of at most 2, which absorbs anti-aliasing noise
@@ -109,9 +111,8 @@ func assertComponentSnapshots(
 ) throws {
     try ReferenceEnvironment.check()
 
-    let recordingAsked = ProcessInfo.processInfo.environment["SNAPSHOT_TESTING_RECORD"] != nil
-        || SnapshotTestingConfiguration.current?.record != nil
-    let record: SnapshotTestingConfiguration.Record? = recordingAsked ? nil : .never
+    let record: SnapshotTestingConfiguration.Record? =
+        ProcessInfo.processInfo.environment["SNAPSHOT_TESTING_RECORD"] == nil ? .never : nil
 
     for style in [UIUserInterfaceStyle.light, .dark] {
         let traits = UITraitCollection { traits in
