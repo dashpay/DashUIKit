@@ -74,6 +74,7 @@ Behavior:
 
 - An animated **Cancel** button slides in while the field has focus (clears text + resigns
   focus on tap).
+- Focus is internal (`@FocusState`): a host can neither read nor set it.
 - Typed text is `.subhead` in `Color.dash.primaryText`, the same size as the placeholder.
   Like every `Font.dash` token it is a fixed size and does not scale with Dynamic Type.
 
