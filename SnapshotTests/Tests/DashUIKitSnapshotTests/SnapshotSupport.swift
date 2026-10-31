@@ -26,21 +26,22 @@ import XCTest
 /// differently on another iOS release or locale, so the references are only
 /// compared there (see docs/snapshot-tests.md).
 enum ReferenceEnvironment {
-    /// iOS major.minor of the CI simulator runtime.
-    static let iOS = "26.5"
+    /// The CI simulator runtime: its version and build. A runtime update with the
+    /// same version number can still render differently.
+    static let iOS = "26.5 (23F77)"
     /// Amounts are formatted with `Locale.current`; this is 1234.5 in the
     /// reference locale's separators.
     static let number = "1,234.5"
 
     static var current: (iOS: String, number: String) {
-        let version = ProcessInfo.processInfo.operatingSystemVersion
         let formatter = NumberFormatter()
         formatter.numberStyle = .decimal
         formatter.locale = .current
-        return (
-            "\(version.majorVersion).\(version.minorVersion)",
-            formatter.string(from: 1234.5) ?? ""
-        )
+        // "Version 26.5 (Build 23F77)" → "26.5 (23F77)"
+        let os = ProcessInfo.processInfo.operatingSystemVersionString
+            .replacingOccurrences(of: "Version ", with: "")
+            .replacingOccurrences(of: "Build ", with: "")
+        return (os, formatter.string(from: 1234.5) ?? "")
     }
 
     struct Mismatch: Error, CustomStringConvertible {
@@ -71,7 +72,7 @@ enum ReferenceEnvironment {
 
 enum SnapshotLayout {
     /// The iPhone 17 Pro width in points, rendered at its 3× scale.
-    static let width: CGFloat = 390
+    static let width: CGFloat = 402
     static let scale: CGFloat = 3
     static let padding: CGFloat = 16
 }

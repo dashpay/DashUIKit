@@ -21,8 +21,9 @@ import XCTest
 @MainActor
 final class ToastSnapshotTests: XCTestCase {
 
-    /// Every style, on the blue surface the preview uses, and one message
-    /// longer than the toast is wide.
+    /// Every style but `.loading`, on the blue surface the preview uses, and one
+    /// message longer than the toast is wide. `.loading` draws `LoadingSpinner`,
+    /// whose timer moves the bright spoke while the image is taken.
     func testStyles() throws {
         let view = VStack(spacing: 12) {
             Toast(style: .warning, message: "Some coins are not available", onDismiss: {})
@@ -34,7 +35,6 @@ final class ToastSnapshotTests: XCTestCase {
             )
             Toast(style: .success, message: "Done", onDismiss: {})
             Toast(style: .copied, message: "Copied to clipboard")
-            Toast(style: .loading, message: "Loading…")
             Toast(style: .noInternet, message: "No internet connection")
         }
         try assertComponentSnapshots(of: view, named: "styles", background: .dash.blue)

@@ -21,13 +21,13 @@ manifest that apps resolve. `swift build` and `xcodebuild -scheme DashUIKit` at 
 root do not see them.
 
 Each test calls `assertComponentSnapshots(of:named:background:)`. It renders the view
-390 pt wide (iPhone 17 Pro) at 3×, with 16 pt of padding, on `Color.dash.primaryBackground`
+402 pt wide (iPhone 17 Pro) at 3×, with 16 pt of padding, on `Color.dash.primaryBackground`
 unless a background is given. A test fails when any pixel differs by more than a colour
 distance (ΔE) of 2. That absorbs anti-aliasing noise; a moved edge or a changed token does
 not pass.
 
 Covered: `DashButton` (every style and size, enabled and disabled, icons, full width),
-`MenuItem`, `Toast`, `SwitchView`, `NavigationBar`, `BottomSheet` and `SheetFeature`,
+`MenuItem`, `Toast` (every style but `.loading`, whose spinner animates on a timer), `SwitchView`, `NavigationBar`, `BottomSheet` and `SheetFeature`,
 `SearchBar`, `TransactionView`. There is no Dynamic Type snapshot: the type tokens are fixed
 sizes (`Font.system(size:)`), so a larger content size renders the same pixels.
 
@@ -38,8 +38,9 @@ rendered on one simulator does not match another one. The references are therefo
 by the `Snapshot tests (iOS Simulator)` CI job (the Xcode in `.github/actions/select-xcode`,
 the newest iPhone simulator it runs), and compared only on that environment:
 
-- `ReferenceEnvironment` in `SnapshotSupport.swift` names it: the iOS version (major.minor)
-  and how the locale writes 1234.5 (amounts use `Locale.current`).
+- `ReferenceEnvironment` in `SnapshotSupport.swift` names it: the simulator runtime's
+  version and build, and how the locale writes 1234.5 (amounts use `Locale.current`; the
+  job runs with `-testLanguage en -testRegion US`).
 - **Anywhere else** every snapshot test is **skipped**, with a message naming both
   environments. Locally on a newer Xcode, `xcodebuild test` reports them as skipped, not
   passed.
@@ -53,9 +54,10 @@ the newest iPhone simulator it runs), and compared only on that environment:
 
 Changed a component on purpose, or added a test? CI records the new images for you:
 
-1. Push the branch. The snapshot job fails on every missing or changed reference, writes the
-   new image in its place and uploads the whole `__Snapshots__` folder as the artifact
-   `snapshots`.
+1. Push the branch. The snapshot job renders the PR head (not its merge with `master`, so
+   the images show the branch's own code). It fails on every missing or changed reference,
+   writes the new image in its place and uploads the whole `__Snapshots__` folder as the
+   artifact `snapshots`.
 2. When the run has finished, from the repo root, on the same commit:
 
    ```sh
@@ -65,21 +67,25 @@ Changed a component on purpose, or added a test? CI records the new images for y
 
    It replaces `SnapshotTests/Tests/DashUIKitSnapshotTests/__Snapshots__` with the artifact
    and lists the changed files.
-3. Look at the changed images (`git diff`, or open them), commit and push. The next run
-   passes.
+3. Look at the changed images (open them, or compare with `git difftool`). If the change is
+   the one you meant, commit and push; the next run passes, and the PR's file view shows
+   each image before and after. If it is not, the images still show what CI rendered:
+   discard them (`git checkout -- SnapshotTests`) and fix the code.
 
 After `master` changed a component your branch also renders, merge `master`, push, and run
 step 2 again. Delete the references of a removed test by hand.
 
-Xcode shows the reference, the new image and a difference image as attachments of a failing
-test, in the test report and in the CI log's result bundle.
+Run locally, Xcode also shows the reference, the new image and a difference image as
+attachments of a failing test. CI does not keep its result bundle; the artifact is the way
+to see what it rendered.
 
 ### Running locally
 
 ```sh
 cd SnapshotTests
 xcodebuild test -scheme DashUIKitSnapshotTests-Package \
-  -destination "platform=iOS Simulator,name=<iPhone>"
+  -destination "platform=iOS Simulator,name=<iPhone>" \
+  -testLanguage en -testRegion US
 ```
 
 Environment variables reach the tests with the `TEST_RUNNER_` prefix:
@@ -89,8 +95,8 @@ another environment are only good for trying things out; do not commit them.
 
 ### Moving CI to a new Xcode
 
-When `select-xcode` (or the runner image) moves to a new iOS runtime, the job fails with the
-environment message. Update `ReferenceEnvironment.iOS` to the version it names, push, and
+When `select-xcode` (or the runner image) moves to a new iOS runtime or runtime build, the
+job fails with the environment message. Update `ReferenceEnvironment.iOS` to what it names, push, and
 fetch the re-recorded set as above.
 
 ### Bumping swift-snapshot-testing

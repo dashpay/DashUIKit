@@ -7,6 +7,7 @@
 #
 # Usage: fetch-snapshots.sh [<run-id>]
 #   Without a run id: the newest CI run of HEAD, which must be pushed and finished.
+#   A run id must be a run of HEAD too.
 # Env: REPO (default dashpay/DashUIKit). Needs gh, logged in.
 set -euo pipefail
 
@@ -19,21 +20,30 @@ if [ $# -gt 1 ]; then
   exit 2
 fi
 
+sha=$(git rev-parse HEAD)
 if [ $# -eq 1 ]; then
   run=$1
+  info=$(gh run view "$run" -R "$repo" --json headSha,status --jq '"\(.headSha) \(.status)"')
+  read -r run_sha status <<< "$info"
+  if [ "$run_sha" != "$sha" ]; then
+    echo "Run $run is for ${run_sha:0:7}, not HEAD ${sha:0:7}; its references would not match" >&2
+    echo "this commit. Check out ${run_sha:0:7} or pass a run of HEAD." >&2
+    exit 1
+  fi
 else
-  sha=$(git rev-parse HEAD)
-  read -r run status < <(gh run list -R "$repo" --workflow ci.yml --commit "$sha" \
-    --limit 1 --json databaseId,status --jq '.[] | "\(.databaseId) \(.status)"') || true
-  if [ -z "${run:-}" ]; then
+  # gh errors (not logged in, no network) end the script here, with gh's message.
+  info=$(gh run list -R "$repo" --workflow ci.yml --commit "$sha" \
+    --limit 1 --json databaseId,status --jq '.[] | "\(.databaseId) \(.status)"')
+  if [ -z "$info" ]; then
     echo "No CI run for ${sha:0:7} in $repo. Push the branch and wait for CI." >&2
     exit 1
   fi
-  if [ "$status" != completed ]; then
-    echo "CI run $run for ${sha:0:7} is $status; run this again when it has finished:" >&2
-    echo "  gh run watch $run -R $repo" >&2
-    exit 1
-  fi
+  read -r run status <<< "$info"
+fi
+if [ "$status" != completed ]; then
+  echo "CI run $run for ${sha:0:7} is $status; run this again when it has finished:" >&2
+  echo "  gh run watch $run -R $repo" >&2
+  exit 1
 fi
 
 work=$(mktemp -d)

@@ -93,7 +93,7 @@ Sources/DashUIKit/
   `SnapshotTests/` (swift-snapshot-testing stays out of the library's manifest). See
   [`docs/snapshot-tests.md`](docs/snapshot-tests.md).
 - The references are rendered by the `Snapshot tests (iOS Simulator)` CI job and compared only
-  on its iOS version; elsewhere the tests are skipped. **Don't commit references recorded on
+  on its simulator runtime; elsewhere the tests are skipped. **Don't commit references recorded on
   your own simulator.**
 - To update them after a deliberate visual change: push, let the snapshot job fail, then run
   `.github/scripts/fetch-snapshots.sh` from the repo root, review the images, commit.

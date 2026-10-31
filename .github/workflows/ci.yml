@@ -72,26 +72,38 @@ jobs:
     runs-on: macos-26
     timeout-minutes: 30
     steps:
+      # The PR head, not the merge with master: the references it records are committed
+      # to the branch, so they must show the branch's own code.
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
           persist-credentials: false
 
       - uses: ./.github/actions/select-xcode
 
+      # swift-snapshot-testing pulls swift-syntax into the graph; keep the clones.
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ runner.temp }}/SourcePackages
+          key: snapshot-packages-${{ hashFiles('SnapshotTests/Package.resolved') }}
+
       # The references are rendered here and only compared here (docs/snapshot-tests.md).
-      # REQUIRE turns a runner on another iOS release into a failure, not a skip.
+      # REQUIRE turns a runner on another iOS runtime into a failure, not a skip.
       # RECORD=failed rewrites a missing or changed reference in the checkout and still
       # fails the test; the next step uploads the rewritten set for
       # .github/scripts/fetch-snapshots.sh.
       - name: Run snapshot tests
         working-directory: SnapshotTests
         env:
+          PACKAGES: ${{ runner.temp }}/SourcePackages
           TEST_RUNNER_SNAPSHOT_REQUIRE_REFERENCE_ENVIRONMENT: "1"
           TEST_RUNNER_SNAPSHOT_TESTING_RECORD: failed
         run: |
           udid=$(../.github/scripts/pick-simulator.sh)
           xcodebuild -scheme DashUIKitSnapshotTests-Package \
             -destination "platform=iOS Simulator,id=${udid}" \
+            -clonedSourcePackagesDirPath "$PACKAGES" \
+            -testLanguage en -testRegion US \
             -collect-test-diagnostics never \
             CODE_SIGNING_ALLOWED=NO \
             test
@@ -103,6 +115,8 @@ jobs:
           name: snapshots
           path: SnapshotTests/Tests/DashUIKitSnapshotTests/__Snapshots__
           if-no-files-found: ignore
+          # A re-run of the job replaces the set of the earlier attempt.
+          overwrite: true
           retention-days: 14
 
   conventions:
