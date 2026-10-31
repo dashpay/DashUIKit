@@ -47,7 +47,7 @@ nonisolated struct NavigationBarCircleIconContent: View {
 
     var body: some View {
         glyph
-            .foregroundColor(.dash.toolbarRoundContent)
+            .foregroundStyle(Color.dash.toolbarRoundContent)
             .frame(width: 34, height: 34)
             .overlay(
                 Circle()

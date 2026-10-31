@@ -161,7 +161,7 @@ private struct CriterionRow: View {
 
             Text(criterion.text)
                 .dashFont(.footnote)
-                .foregroundColor(textColor)
+                .foregroundStyle(textColor)
                 // Without this a two-line requirement is truncated to one:
                 // the row offers the text its ideal single-line height.
                 .fixedSize(horizontal: false, vertical: true)

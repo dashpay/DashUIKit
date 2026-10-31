@@ -66,20 +66,20 @@ public extension View {
         VStack(alignment: .leading, spacing: 4) {
             Text("Default (.system natural ≈ 15.5pt)")
                 .dashFont(.caption2)
-                .foregroundColor(Color.dash.secondaryText)
+                .foregroundStyle(Color.dash.secondaryText)
             Text(sample)
                 .font(Font.dash.footnote)
-                .foregroundColor(Color.dash.primaryText)
+                .foregroundStyle(Color.dash.primaryText)
                 .background(Color.dash.blueAlpha10)
         }
 
         VStack(alignment: .leading, spacing: 4) {
             Text("dashLineHeight(size: 13, lineHeight: 18)")
                 .dashFont(.caption2)
-                .foregroundColor(Color.dash.secondaryText)
+                .foregroundStyle(Color.dash.secondaryText)
             Text(sample)
                 .font(Font.dash.footnote)
-                .foregroundColor(Color.dash.primaryText)
+                .foregroundStyle(Color.dash.primaryText)
                 .dashLineHeight(size: 13, lineHeight: 18)
                 .background(Color.dash.blueAlpha10)
         }

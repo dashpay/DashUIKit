@@ -102,7 +102,7 @@ public struct SwapAmountView: View {
             if let top = topText {
                 Text(top)
                     .dashFont(.caption1)
-                    .foregroundColor(Color.dash.tertiaryText)
+                    .foregroundStyle(Color.dash.tertiaryText)
             }
 
             if let animKey = swapAnimationKey {
@@ -114,7 +114,7 @@ public struct SwapAmountView: View {
             if let bottom = bottomText {
                 Text(bottom)
                     .dashFont(.caption1)
-                    .foregroundColor(Color.dash.tertiaryText)
+                    .foregroundStyle(Color.dash.tertiaryText)
             }
         }
         .frame(maxWidth: .infinity)
@@ -129,7 +129,7 @@ public struct SwapAmountView: View {
             if let secondary = secondaryText {
                 Text(secondary)
                     .dashFont(.subhead)
-                    .foregroundColor(Color.dash.tertiaryText)
+                    .foregroundStyle(Color.dash.tertiaryText)
             }
         }
     }
@@ -166,7 +166,7 @@ public struct SwapAmountView: View {
         // the amount). Renders full-size when it fits; shrinks uniformly when it doesn't.
         HStack(spacing: 6) {
             amountView(font: Font.dash.largeTitle, dashSize: .init(width: 19, height: 16))
-                .foregroundColor(Color.dash.primaryText)
+                .foregroundStyle(Color.dash.primaryText)
 
             if showCurrencyButton {
                 Button {
@@ -362,7 +362,7 @@ private struct AnimatedSwapLayout: View {
                 showLogo: showDashLogo,
                 dashSize: dashSize
             )
-            .foregroundColor(iconForegroundColor)
+            .foregroundStyle(iconForegroundColor)
             .scaleToFitWidth()
             .frame(maxWidth: .infinity)
             .contentShape(Rectangle())
@@ -380,7 +380,7 @@ private struct AnimatedSwapLayout: View {
                     // figure it replaces however the slots are arranged.
                     Text(secondaryErrorMessage)
                         .font(Font.dash.subhead)
-                        .foregroundColor(Color.dash.red)
+                        .foregroundStyle(Color.dash.red)
                         .lineLimit(1)
                 } else {
                     rowContent(
@@ -404,7 +404,7 @@ private struct AnimatedSwapLayout: View {
                     .accessibilityValue(Text(secondaryCurrencyAccessibilityValue))
                 }
             }
-            .foregroundColor(fontPrimary ? Color.dash.tertiaryText : Color.dash.primaryText)
+            .foregroundStyle(fontPrimary ? Color.dash.tertiaryText : Color.dash.primaryText)
             .scaleToFitWidth()
             .frame(maxWidth: .infinity)
             .contentShape(Rectangle())
@@ -653,7 +653,7 @@ private struct SwapAmountAnimatedPreview: View {
         VStack(spacing: 16) {
             Text(isPrimarySelected ? "Dash is primary (large)" : "Fiat is primary (large)")
                 .dashFont(.caption1)
-                .foregroundColor(Color.dash.tertiaryText)
+                .foregroundStyle(Color.dash.tertiaryText)
 
             SwapAmountView(
                 amount: "1.23456",
@@ -674,7 +674,7 @@ private struct SwapAmountAnimatedPreview: View {
 
             Button("Tap to swap") { isPrimarySelected.toggle() }
                 .dashFont(.footnote)
-                .foregroundColor(Color.dash.blue)
+                .foregroundStyle(Color.dash.blue)
         }
     }
 }

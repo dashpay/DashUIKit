@@ -16,7 +16,7 @@ struct ThumbView: View {
 
     var body: some View {
         Rectangle()
-          .foregroundColor(.clear)
+          .foregroundStyle(Color.clear)
           .frame(width: 39, height: 24)
           .background(Constants.switchThumbFill)
           .cornerRadius(Constants.switchThumbRadius)

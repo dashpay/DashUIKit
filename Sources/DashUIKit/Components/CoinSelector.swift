@@ -72,12 +72,12 @@ public struct CoinSelector<Icon: View>: View {
         VStack(alignment: .leading, spacing: CoinSelectorLayout.textSpacing) {
             Text(name)
                 .dashFont(.subheadMedium)
-                .foregroundColor(Color.dash.primaryText)
+                .foregroundStyle(Color.dash.primaryText)
                 .lineLimit(1)
                 .truncationMode(.tail)
             Text(code)
                 .dashFont(.footnote)
-                .foregroundColor(Color.dash.tertiaryText)
+                .foregroundStyle(Color.dash.tertiaryText)
                 .lineLimit(1)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -92,13 +92,13 @@ public struct CoinSelector<Icon: View>: View {
                 if case .price(let value) = trailing {
                     Text(value)
                         .dashFont(.caption1)
-                        .foregroundColor(Color.dash.primaryText)
+                        .foregroundStyle(Color.dash.primaryText)
                         .lineLimit(1)
                 }
                 if let network {
                     Text(network)
                         .dashFont(.caption1)
-                        .foregroundColor(Color.dash.tertiaryText)
+                        .foregroundStyle(Color.dash.tertiaryText)
                         .lineLimit(1)
                         .fixedSize()
                 }
@@ -109,7 +109,7 @@ public struct CoinSelector<Icon: View>: View {
     private var haltedLabel: some View {
         Text(NSLocalizedString("halted", bundle: .module, comment: "DashUIKit"))
             .dashFont(.caption1)
-            .foregroundColor(Color.dash.tertiaryText)
+            .foregroundStyle(Color.dash.tertiaryText)
             .padding(.horizontal, CoinSelectorLayout.badgeHPadding)
             .padding(.vertical, CoinSelectorLayout.badgeVPadding)
             .background(Color.dash.black1000Alpha8)

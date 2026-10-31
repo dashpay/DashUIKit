@@ -150,7 +150,7 @@ public enum NavigationBarElement: String, CaseIterable {
         central: {
             Text("Title")
                 .dashFont(.subheadMedium)
-                .foregroundColor(.dash.primaryText)
+                .foregroundStyle(Color.dash.primaryText)
         }
     )
 }
@@ -161,7 +161,7 @@ public enum NavigationBarElement: String, CaseIterable {
         central: {
             Text("Title")
                 .dashFont(.subheadMedium)
-                .foregroundColor(.dash.primaryText)
+                .foregroundStyle(Color.dash.primaryText)
         },
         trailing: { NavigationBarElement.info.button { } }
     )
@@ -216,7 +216,7 @@ public enum NavigationBarElement: String, CaseIterable {
         central: {
             Text("Title")
                 .dashFont(.subheadMedium)
-                .foregroundColor(.dash.primaryText)
+                .foregroundStyle(Color.dash.primaryText)
         },
         trailing: { NavigationBarElement.close.button { } }
     )

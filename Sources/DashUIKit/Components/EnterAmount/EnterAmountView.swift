@@ -234,7 +234,7 @@ public struct EnterAmountView: View {
 
                 Text(NSLocalizedString("Max", bundle: .module, comment: ""))
                     .dashFont(.caption2)
-                    .foregroundColor(Color.dash.blue)
+                    .foregroundStyle(Color.dash.blue)
             }
         }
     }
@@ -340,7 +340,7 @@ private struct DualSwapPreviewContainer: View {
         VStack(spacing: 20) {
             Text(showMax ? "With Max button" : "No Max button — amount stays centered")
                 .dashFont(.caption1)
-                .foregroundColor(Color.dash.tertiaryText)
+                .foregroundStyle(Color.dash.tertiaryText)
 
             EnterAmountView(
                 primaryAmount: "1.23456",
@@ -359,7 +359,7 @@ private struct DualSwapPreviewContainer: View {
 
             Button("Tap to swap") { isPrimarySelected.toggle() }
                 .dashFont(.footnote)
-                .foregroundColor(Color.dash.blue)
+                .foregroundStyle(Color.dash.blue)
         }
         .padding(.vertical, 20)
     }

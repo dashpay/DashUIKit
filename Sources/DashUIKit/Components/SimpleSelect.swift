@@ -52,12 +52,12 @@ public struct SimpleSelect: View {
             VStack(alignment: .leading, spacing: 1) {
                 Text(title)
                     .dashFont(.subheadMedium)
-                    .foregroundColor(Color.dash.primaryText)
+                    .foregroundStyle(Color.dash.primaryText)
 
                 if let description {
                     Text(description)
                         .dashFont(.footnote)
-                        .foregroundColor(Color.dash.secondaryText)
+                        .foregroundStyle(Color.dash.secondaryText)
                 }
             }
             .multilineTextAlignment(.leading)

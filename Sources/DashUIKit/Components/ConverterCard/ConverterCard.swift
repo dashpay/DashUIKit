@@ -105,12 +105,12 @@ public struct ConverterCard: View {
             VStack(alignment: .leading, spacing: 1) {
                 Text(item.title)
                     .dashFont(.subheadMedium)
-                    .foregroundColor(Color.dash.primaryText)
+                    .foregroundStyle(Color.dash.primaryText)
 
                 if let subtitle = item.subtitle {
                     Text(subtitle)
                         .dashFont(.footnote)
-                        .foregroundColor(Color.dash.secondaryText)
+                        .foregroundStyle(Color.dash.secondaryText)
                         .lineLimit(item.subtitleLineLimit)
                         .fixedSize(horizontal: false, vertical: true)
                         .frame(maxWidth: .infinity, alignment: .leading)
@@ -152,12 +152,12 @@ public struct ConverterCard: View {
         } else if item.showsBalance {
             VStack(alignment: .trailing, spacing: 1) {
                 DashAmount(amount: item.dashBalance, sign: .none)
-                    .foregroundColor(Color.dash.primaryText)
+                    .foregroundStyle(Color.dash.primaryText)
 
                 if item.dashBalance != 0, let fiat = item.fiat {
                     Text(fiat)
                         .dashFont(.footnote)
-                        .foregroundColor(Color.dash.secondaryText)
+                        .foregroundStyle(Color.dash.secondaryText)
                 }
             }
         }

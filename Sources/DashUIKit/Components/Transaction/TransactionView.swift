@@ -166,20 +166,20 @@ public struct TransactionView: View {
             if let topText {
                 Text(topText)
                     .dashFont(.footnote)
-                    .foregroundColor(Color.dash.secondaryText)
+                    .foregroundStyle(Color.dash.secondaryText)
             }
 
             HStack(alignment: .center, spacing: 8) {
                 VStack(alignment: .leading, spacing: 1) {
                     Text(title)
                         .dashFont(.footnoteMedium)
-                        .foregroundColor(Color.dash.primaryText)
+                        .foregroundStyle(Color.dash.primaryText)
 
                     HStack(spacing: 8) {
                         if let subtitle {
                             Text(subtitle)
                                 .dashFont(.footnote)
-                                .foregroundColor(Color.dash.secondaryText)
+                                .foregroundStyle(Color.dash.secondaryText)
                         }
 
                         // Badge
@@ -187,7 +187,7 @@ public struct TransactionView: View {
                             HStack(spacing: 2) {
                                 Text(details)
                                     .dashFont(.caption1Medium)
-                                    .foregroundColor(Color.dash.blueText)
+                                    .foregroundStyle(Color.dash.blueText)
                             }
                             .padding(.horizontal, 4)
                             .background(Color.dash.blueAlpha10)
@@ -208,23 +208,23 @@ public struct TransactionView: View {
                 if let trailingStatusText {
                     Text(trailingStatusText)
                         .dashFont(.caption1Medium)
-                        .foregroundColor(Color.dash.orange)
+                        .foregroundStyle(Color.dash.orange)
                 }
 
                 if let amountAccessorySystemImage {
                     Image(systemName: amountAccessorySystemImage)
                         .font(.system(size: 11, weight: .semibold))
-                        .foregroundColor(Color.dash.secondaryText)
+                        .foregroundStyle(Color.dash.secondaryText)
                 }
 
                 DashAmount(amount: dashAmount, sign: amountSign)
-                    .foregroundColor(Color.dash.primaryText)
+                    .foregroundStyle(Color.dash.primaryText)
             }
 
             if let fiat {
                 Text(fiat)
                     .dashFont(.footnote)
-                    .foregroundColor(Color.dash.secondaryText)
+                    .foregroundStyle(Color.dash.secondaryText)
             }
         }
     }
