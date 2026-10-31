@@ -35,7 +35,7 @@ enum ReferenceEnvironment {
     /// reference locale's separators.
     static let number = "1,234.5"
 
-    static var current: (iOS: String, model: String, number: String) {
+    static let current: (iOS: String, model: String, number: String) = {
         let environment = ProcessInfo.processInfo.environment
         let version = environment["SIMULATOR_RUNTIME_VERSION"] ?? "?"
         let build = environment["SIMULATOR_RUNTIME_BUILD_VERSION"] ?? "?"
@@ -47,7 +47,7 @@ enum ReferenceEnvironment {
             environment["SIMULATOR_MODEL_IDENTIFIER"] ?? "?",
             formatter.string(from: 1234.5) ?? ""
         )
-    }
+    }()
 
     struct Mismatch: Error, CustomStringConvertible {
         let description: String

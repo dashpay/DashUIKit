@@ -26,7 +26,8 @@ When writing or changing code:
   declaration stays unannotated — `selfSizingSheet` does this for the iOS 26 corner
   styling (`#unavailable(iOS 26.0)`).
 - Raising the floor again is a package-level decision, not a per-component one. It is
-  declared twice: `SnapshotTests/Package.swift` repeats it and must move with it. If a
+  declared twice: `SnapshotTests/Package.swift` repeats it and must move with it (the snapshot
+  job fails on a raised floor until it does). If a
   component cannot work at the declared floor, say so in review rather than annotating
   around it.
 

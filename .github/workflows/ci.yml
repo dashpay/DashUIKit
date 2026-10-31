@@ -68,6 +68,7 @@ jobs:
             test
 
   snapshots:
+    # fetch-snapshots.sh finds the job by this name.
     name: Snapshot tests (iOS Simulator)
     runs-on: macos-26
     timeout-minutes: 30

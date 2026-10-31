@@ -23,8 +23,9 @@ root do not see them.
 Each test calls `assertComponentSnapshots(of:named:background:)`. It renders the view
 402 pt wide (iPhone 17 / 17 Pro) at 3×, with 16 pt of padding, on `Color.dash.primaryBackground`
 unless a background is given. A test fails when any pixel differs by more than a colour
-distance (ΔE) of 2. That absorbs anti-aliasing noise; a moved edge or a changed token does
-not pass.
+distance (ΔE) of 2. That absorbs anti-aliasing noise. A moved edge fails; a colour token
+change fails when it moves a colour by more than ΔE 2, about the smallest difference the eye
+sees.
 
 Covered: `DashButton` (every style and size, enabled and disabled, icons, full width),
 `MenuItem`, `Toast` (every style but `.loading`, whose spinner animates on a timer), `SwitchView`, `NavigationBar`, `BottomSheet` and `SheetFeature`,
@@ -39,7 +40,8 @@ blur behind `Toast`) is not in them; a change to it does not fail a test.
 Text, SF Symbols and SwiftUI layout render differently on each iOS release, so a reference
 rendered on one simulator does not match another one. The references are therefore rendered
 by the `Snapshot tests (iOS Simulator)` CI job (the Xcode in `.github/actions/select-xcode`,
-the newest iPhone simulator it runs), and compared only on that environment:
+the simulator `pick-simulator.sh` picks for it), and compared only on that environment. The
+Xcode version fixes the SDK, and so the runtime and device types the picker can choose:
 
 - `ReferenceEnvironment` in `SnapshotSupport.swift` names it: the simulator runtime's
   version and build, the simulator model, and how the locale writes 1234.5 (amounts use `Locale.current`; the
@@ -76,8 +78,8 @@ Changed a component on purpose, or added a test? CI records the new images for y
    discard them and fix the code:
 
    ```sh
-   git checkout -- SnapshotTests/Tests/DashUIKitSnapshotTests/__Snapshots__
    git clean -fd -- SnapshotTests/Tests/DashUIKitSnapshotTests/__Snapshots__
+   git checkout -- SnapshotTests/Tests/DashUIKitSnapshotTests/__Snapshots__   # when some are committed
    ```
 
 The job renders the branch, not its merge with `master`. After `master` changed a component
