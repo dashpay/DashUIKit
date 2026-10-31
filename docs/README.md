@@ -27,6 +27,8 @@ and callbacks; they render and report intent. They require `import DashUIKit` an
   `XmarkIcon`, `CheckmarkIcon`, `ChevronIcon`, `InfoRoundIcon`.
 - **[Utilities](utilities.md)** — geometry readers (`readingFrame`, `readingLocation`),
   `ScrollViewWithOnScrollChanged`, `scaleToFitWidth`.
+- **[Snapshot tests](snapshot-tests.md)** — light / dark reference images of the
+  components, and how to record them.
 
 ## Alphabetical index
 
