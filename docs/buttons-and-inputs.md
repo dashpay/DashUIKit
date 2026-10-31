@@ -229,6 +229,37 @@ For a row with an icon, a trailing value or an explicit radio/checkbox mark, use
 
 ---
 
+## SegmentedControl
+
+File `Components/SegmentedControl.swift`
+
+A row of mutually exclusive options on a grey track, with a white pill under the selected one.
+Tap a segment or drag across the track; the pill springs to the new segment.
+
+```swift
+SegmentedControl(options: ["Active", "Disconnected", "Expired"], selection: $filter)
+
+SegmentedControl(
+    options: Direction.allCases,
+    selection: $direction,
+    label: { $0.title },
+    icon: { option, isSelected in option.icon(isSelected: isSelected).source })
+```
+
+- `init(options: [T], selection: Binding<T>, label: @escaping (T) -> String, icon: ((T, Bool) -> DashIconSource)? = nil)`
+- `init(options: [String], selection: Binding<String>)` — the options are their own labels.
+
+`icon` gets the option and whether it is selected, so a segment can switch between two
+artworks (`DashIcon.SegmentedControl.receive` / `.receiveDisabled`) rather than tint one.
+
+The text-only control is 40pt tall; with icons it sizes to its content (17pt artwork over
+the label). Labels are `.footnoteMedium`, `primaryText` when selected and at 40% opacity
+otherwise. Track `gray300Alpha20`, 20pt corners, 4pt inset; pill `white` (`whiteAlpha20` in
+dark) with 16pt corners and the `shadow` token. VoiceOver reads one button per segment, with
+the selected trait on the chosen one.
+
+---
+
 ## NumericKeyboardView
 
 File `Components/NumericKeyboardView.swift`
