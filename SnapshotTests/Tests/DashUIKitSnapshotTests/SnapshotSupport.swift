@@ -110,6 +110,9 @@ func assertComponentSnapshots(
         let framed = view
             .padding(SnapshotLayout.padding)
             .frame(width: SnapshotLayout.width)
+            // `.sizeThatFits` proposes a zero height; without this, text that wraps
+            // in the app is cut to one line.
+            .fixedSize(horizontal: false, vertical: true)
             .background(background)
             .environment(\.colorScheme, style == .dark ? .dark : .light)
 

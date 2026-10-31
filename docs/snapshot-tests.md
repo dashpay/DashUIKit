@@ -102,7 +102,8 @@ xcodebuild test -scheme DashUIKitSnapshotTests-Package \
 
 Environment variables reach the tests with the `TEST_RUNNER_` prefix:
 `TEST_RUNNER_SNAPSHOT_FORCE=1` compares on another environment;
-`TEST_RUNNER_SNAPSHOT_TESTING_RECORD=all` rewrites every reference. Images recorded on
+`TEST_RUNNER_SNAPSHOT_TESTING_RECORD=all` rewrites every reference (off the reference
+environment, together with `TEST_RUNNER_SNAPSHOT_FORCE=1`, or the tests skip first). Images recorded on
 another environment are only good for trying things out; do not commit them.
 
 ### Moving CI to a new Xcode

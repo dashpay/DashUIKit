@@ -57,21 +57,26 @@ fi
 # Jobs of the run's latest attempt. A passing re-run of a failed attempt keeps the
 # failed attempt's artifact; it must not be installed.
 job=$(gh run view "$run" -R "$repo" --json jobs \
-  --jq '.jobs[] | select(.name == "Snapshot tests (iOS Simulator)") | .conclusion')
-if [ "$job" != failure ]; then
-  echo "The snapshot job of run $run ended with '${job:-no such job}', not 'failure':" >&2
+  --jq '.jobs[] | select(.name == "Snapshot tests (iOS Simulator)") | "\(.conclusion) \(.startedAt)"')
+read -r conclusion started <<< "$job"
+if [ "${conclusion:-}" != failure ]; then
+  echo "The snapshot job of run $run ended with '${conclusion:-no such job}', not 'failure':" >&2
   echo "there is nothing it recorded to fetch." >&2
+  exit 1
+fi
+# The artifact must come from that attempt, not from an earlier one of the same run.
+created=$(gh api "repos/$repo/actions/runs/$run/artifacts" \
+  --jq '.artifacts[] | select(.name == "snapshots" and (.expired | not)) | .created_at')
+if [ -z "$created" ] || [[ "$created" < "$started" ]]; then
+  echo "Run $run has no 'snapshots' artifact from its latest attempt: the job re-recorded" >&2
+  echo "nothing (it failed before rendering; see its log), or the artifact expired." >&2
   exit 1
 fi
 
 work=$(mktemp -d)
 trap 'rm -rf "$work"' EXIT
 
-if ! gh run download "$run" -R "$repo" -n snapshots -D "$work/snapshots"; then
-  echo "Run $run has no 'snapshots' artifact: the job re-recorded nothing (it failed before" >&2
-  echo "rendering; see its log), or the artifact expired." >&2
-  exit 1
-fi
+gh run download "$run" -R "$repo" -n snapshots -D "$work/snapshots"
 
 rm -rf "$dest"
 mkdir -p "$dest"
