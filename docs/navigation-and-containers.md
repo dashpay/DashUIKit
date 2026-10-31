@@ -171,7 +171,8 @@ the modifier are applied together:
         fallback: 240,            // height before first measurement (avoids .medium flash)
         maxHeightFraction: 0.95,  // cap at 95% of window height (clip taller → use ScrollView)
         background: .dash.secondaryBackground, // also fills the home-indicator strip
-        cornerRadius: 24          // below iOS 26; iOS 26+ keeps system corners
+        cornerRadius: 24,         // below iOS 26; iOS 26+ keeps system corners
+        animation: .easeInOut     // animate height changes after the first (nil = no animation)
     ) {
         MyContent()
     }
@@ -183,6 +184,24 @@ the modifier are applied together:
 content must have a finite intrinsic height (no
 greedy `Spacer`/`maxHeight: .infinity`), or the measurement is wrong.
 `BottomSheetHeightPreferenceKey` is exposed for advanced cases.
+
+`animation` (default `nil`) is for content that switches in place between views of
+different heights — a preset list and a keypad or a calendar. With it, every change of the
+measured height after the first one is applied inside `withAnimation(animation)`: the
+content changes first, and the detent follows it in an animation instead of jumping once
+the new content is measured.
+
+- The sheet itself resizes with the system sheet animation; the given animation applies to
+  the SwiftUI side of the change (the measured height), so its curve may not show on the
+  sheet's edge.
+- The first measurement replaces `fallback` (or `.medium` when there is none) without
+  animation.
+- A change that leaves the capped detent where it is (both heights above the
+  `maxHeightFraction` cap) is not animated.
+- Limit: if the content reports a provisional height while the sheet is being presented
+  and then the settled one, the second step counts as a change and can animate.
+
+`nil` keeps every change unanimated, exactly as before.
 
 `background` fills the sheet **and** its presentation. The measured height excludes the
 home-indicator inset that `presentationDetents([.height])` adds back, so that strip lies

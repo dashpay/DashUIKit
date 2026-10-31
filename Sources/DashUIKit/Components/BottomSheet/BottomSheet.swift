@@ -205,6 +205,7 @@ public extension BottomSheet {
         maxHeightFraction: CGFloat = 0.95,
         background: Color = .dash.primaryBackground,
         cornerRadius: CGFloat? = nil,
+        animation: Animation? = nil,
         @ViewBuilder content: @escaping () -> Content
     ) -> some View {
         BottomSheet(
@@ -223,7 +224,8 @@ public extension BottomSheet {
             fallback: fallback,
             maxHeightFraction: maxHeightFraction,
             background: background,
-            cornerRadius: cornerRadius)
+            cornerRadius: cornerRadius,
+            animation: animation)
     }
 }
 
@@ -271,14 +273,27 @@ public extension View {
     ///     forwards a single `background` to both.
     ///   - cornerRadius: Optional corner radius applied via `presentationCornerRadius`
     ///     below iOS 26 (iOS 26+ keeps the system corner styling).
+    ///   - animation: For content that switches in place between views of different heights
+    ///     (a preset list and a keypad). When set, a change of the measured height after the
+    ///     first one is applied in `withAnimation(animation)`: the content changes first, and
+    ///     the detent follows it in an animation instead of jumping. The sheet's own resize
+    ///     runs with the system sheet animation; `animation` applies to the SwiftUI side of the
+    ///     change. The first measurement replaces `fallback` (or `.medium` when there is none)
+    ///     without animation. A provisional measurement during presentation followed by the
+    ///     settled one counts as a change, so that second step can animate. `nil` (default)
+    ///     applies every change without animation.
     @ViewBuilder
     func selfSizingSheet(
         fallback: CGFloat = 0,
         maxHeightFraction: CGFloat = 0.95,
         background: Color = .dash.primaryBackground,
-        cornerRadius: CGFloat? = nil
+        cornerRadius: CGFloat? = nil,
+        animation: Animation? = nil
     ) -> some View {
-        let modified = modifier(SelfSizingSheetModifier(fallback: fallback, maxHeightFraction: maxHeightFraction))
+        let modified = modifier(SelfSizingSheetModifier(
+            fallback: fallback,
+            maxHeightFraction: maxHeightFraction,
+            animation: animation))
         #if os(iOS)
         // The background is filled whatever the corner radius: the measured
         // height excludes the home-indicator inset that
@@ -305,7 +320,12 @@ public extension View {
 private struct SelfSizingSheetModifier: ViewModifier {
     let fallback: CGFloat
     let maxHeightFraction: CGFloat
+    let animation: Animation?
     @State private var measured: CGFloat = 0
+    /// The capped detent height the last measurement was applied at, kept only when an
+    /// `animation` is requested, so a change of the cap (rotation) between two measurements
+    /// is compared against the detent actually shown. Zero before the first measurement.
+    @State private var appliedHeight: CGFloat = 0
 
     func body(content: Content) -> some View {
         // Measure the wrapped content directly — reliable on first layout (`onAppear`) and on
@@ -323,7 +343,8 @@ private struct SelfSizingSheetModifier: ViewModifier {
     }
 
     private var detents: Set<PresentationDetent> {
-        let resolved = min(measured > 0 ? measured : fallback, maxSheetHeight)
+        let resolved = SelfSizingSheetHeight.resolved(
+            measured: measured, fallback: fallback, maxHeight: maxSheetHeight)
         // Before the first measurement (and when no fallback is provided) use .medium so the
         // sheet is never given an invalid 0-height detent.
         return resolved > 0 ? [.height(resolved)] : [.medium]
@@ -331,7 +352,20 @@ private struct SelfSizingSheetModifier: ViewModifier {
 
     private func update(_ newHeight: CGFloat) {
         guard newHeight > 0, newHeight != measured else { return }
-        measured = newHeight
+        guard let animation else {
+            measured = newHeight
+            return
+        }
+        let next = SelfSizingSheetHeight.resolved(
+            measured: newHeight, fallback: fallback, maxHeight: maxSheetHeight)
+        let heightAnimation = SelfSizingSheetHeight.animation(
+            for: animation, from: appliedHeight, to: next)
+        appliedHeight = next
+        if let heightAnimation {
+            withAnimation(heightAnimation) { measured = newHeight }
+        } else {
+            measured = newHeight
+        }
     }
 
     private var maxSheetHeight: CGFloat {
@@ -345,6 +379,29 @@ private struct SelfSizingSheetModifier: ViewModifier {
         #else
         return .greatestFiniteMagnitude
         #endif
+    }
+}
+
+/// The height decisions of `selfSizingSheet`, kept apart from the view so they can be tested.
+enum SelfSizingSheetHeight {
+    /// The detent height: the measurement once there is one, `fallback` before it, capped at
+    /// `maxHeight`. Zero means "nothing to size to yet".
+    static func resolved(measured: CGFloat, fallback: CGFloat, maxHeight: CGFloat) -> CGFloat {
+        min(measured > 0 ? measured : fallback, maxHeight)
+    }
+
+    /// The animation to apply a new measurement in, or `nil` to apply it as is. Both heights
+    /// are capped detent heights: `applied` the one the last measurement was applied at (zero
+    /// before the first), `next` the new one at the current cap. `nil` without a requested
+    /// animation, for the first measurement (it replaces the fallback as is), and when the
+    /// detent does not move.
+    static func animation(
+        for requested: Animation?,
+        from applied: CGFloat,
+        to next: CGFloat
+    ) -> Animation? {
+        guard let requested, applied > 0, applied != next else { return nil }
+        return requested
     }
 }
 
@@ -460,6 +517,65 @@ private struct SelfSizingSheetModifier: ViewModifier {
         }
     }
     .background(Color.dash.primaryBackground)
+}
+
+/// A presented self-sizing sheet whose content switches in place between a short and a tall
+/// view, so the height change can be watched with and without `animation`.
+private struct SelfSizingSheetResizePreview: View {
+    let animation: Animation?
+    @State private var isPresented = true
+    @State private var isTall = false
+
+    var body: some View {
+        Button("Show sheet") { isPresented = true }
+            .sheet(isPresented: $isPresented) {
+                BottomSheet.selfSizing(
+                    title: animation == nil ? "Jumps" : "Animates",
+                    showBackButton: .constant(false),
+                    animation: animation
+                ) {
+                    SelfSizingSheetResizeContent(isTall: $isTall)
+                }
+            }
+    }
+}
+
+private struct SelfSizingSheetResizeContent: View {
+    @Binding var isTall: Bool
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text(isTall ? "Tall content" : "Short content")
+                .dashFont(.calloutMedium)
+                .foregroundColor(.dash.primaryText)
+
+            if isTall {
+                ForEach(1...6, id: \.self) { row in
+                    Text("Row \(row)")
+                        .dashFont(.body)
+                        .foregroundColor(.dash.secondaryText)
+                        .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+                        .modifier(MenuViewModifier())
+                }
+            }
+
+            DashButton(
+                text: isTall ? "Show less" : "Show more",
+                fillsWidth: true,
+                size: .large,
+                style: .tintedBlue
+            ) { isTall.toggle() }
+        }
+        .padding()
+    }
+}
+
+#Preview("BottomSheet Self-Sizing Resize, animated") {
+    SelfSizingSheetResizePreview(animation: .easeInOut)
+}
+
+#Preview("BottomSheet Self-Sizing Resize, no animation") {
+    SelfSizingSheetResizePreview(animation: nil)
 }
 
 #endif
