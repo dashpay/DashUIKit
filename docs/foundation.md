@@ -37,7 +37,7 @@ Token groups (see the source for the full list):
 - **Raw tokens:** `blue` (+ `blueAlpha5…90`), `black`/`black1000Alpha5…90`/`black800/900`,
   `gray50…500` (+ alpha variants), `green`/`greenAlpha10`, `red`/`redAlpha5/10`,
   `white`/`whiteAlpha5…90`, `orange`, `yellow`, `lightBlue`, `purple`, `topper`, `uphold`
-- **`shadow`** — a code-defined adaptive color (subtle on light, `.clear` on dark);
+- **`shadow`** — the `Shadow` colorset (subtle on light, clear on dark);
   used by `MenuViewModifier`.
 
 Adding a color: add the color set to the catalog, then add a matching
@@ -103,9 +103,14 @@ public enum DashIconSource {
 }
 
 Image(dash: .system("info.circle"))
-Image(dash: .custom("menu-send", bundle: .dashUIKit))
+Image(dash: DashIcon.Menu.send.source)
     .resizable().scaledToFit().frame(width: 30, height: 30)
 ```
+
+Every bundled image is a case of a `DashIcon` group (`Foundation/Icon_DashUI.swift`), whose
+raw value is the imageset name: `DashIcon.Menu.send.source` is the `DashIconSource`,
+`.image` the plain `Image`. Inside the library, use these cases rather than
+`.custom(name, bundle:)`; CI rejects a package-bundle lookup whose name is not one literal.
 
 Many components accept a `DashIconSource?` directly (`DashButton.leadingIcon`,
 `MenuItem.leadingIcon`, `RadioButtonRow.icon`, …).
@@ -129,4 +134,5 @@ the unselected segment), and illustrations
 File `Foundation/BundleToken.swift`.
 
 `Bundle.dashUIKit` is a convenience alias for `Bundle.module`, used when loading custom
-assets from the package bundle (`Image(dash: .custom(name, bundle: .dashUIKit))`).
+assets from the package bundle. For a bundled icon, `DashIcon` already does this with a
+compile-checked name: `DashIcon.Menu.send.image` rather than `Image("menu-send", bundle: .dashUIKit)`.

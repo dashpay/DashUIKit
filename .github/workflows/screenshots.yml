@@ -1,0 +1,51 @@
+name: PR description
+
+# pull_request_target runs this file and the script as the base branch has them, so a PR
+# cannot edit its own check. The job checks out the base branch only and runs no code from
+# the PR: the script reads the PR's changed files and its rendered description through the
+# API. Keep it that way: never check out or run the PR's head here.
+# A stacked PR gets the check its base branch has; a feat/* base cut before this landed has
+# none until it is merged up from master or the PR is retargeted.
+# `edited` re-runs it when the author adds screenshots, so it lives apart from CI to keep
+# body edits from rebuilding.
+on:
+  pull_request_target:
+    types:
+      - opened
+      - edited
+      - synchronize
+      - reopened
+      - ready_for_review
+
+permissions:
+  contents: read
+  pull-requests: read
+
+concurrency:
+  # github.ref is the base branch under pull_request_target; key on the PR.
+  group: screenshots-${{ github.event.pull_request.number }}
+  # A new commit replaces the run for the old one; a body edit must not cancel a running
+  # check and leave the required check pending.
+  cancel-in-progress: ${{ github.event.action == 'synchronize' }}
+
+jobs:
+  screenshots:
+    name: Before / After screenshots
+    # `edited` also fires on closed PRs.
+    if: github.event.pull_request.state == 'open'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          # The script is all it needs; skip the sources and the asset catalog.
+          sparse-checkout: .github/scripts
+          sparse-checkout-cone-mode: false
+
+      - name: Check the description
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          REPO: ${{ github.repository }}
+        run: python3 .github/scripts/screenshots-check.py

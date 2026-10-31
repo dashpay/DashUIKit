@@ -21,13 +21,22 @@ Toast(
 ```
 
 **`ToastStyle`** — `.warning` · `.info` · `.error` · `.success` · `.copied` · `.loading`
-· `.noInternet`. Each maps to an icon asset under
-`Media.xcassets/Icons & Illustrations/Toast/` (`toast-warning`, `toast-info`, …,
-`toast-no-wifi`). `.loading` instead renders the DS `LoadingSpinner`.
+· `.noInternet`. Each draws a `DashIcon.Toast` case (`.warning`, `.info`, …, `.noWifi`
+for `.noInternet`). `.loading` instead renders the DS `LoadingSpinner`.
 
-> ⚠️ The toast icon assets are placeholders to be supplied. Until the imagesets exist the
-> icon slot renders empty for the non-loading styles — that's expected, not a bug. See the
-> note at the top of `Toast.swift` for the exact asset names.
+VoiceOver reads only the message; the icon is hidden from it. When the style matters to a
+listener and the message does not say it, pass an `accessibilityLabel:` to read instead of
+the message. It is a `Text`: a literal `Text("…")` is looked up in the app's main bundle,
+`Text("…", bundle: .module)` in a package's, and a `String` variable is read as is. VoiceOver
+reads it when focus lands on the message (the dismiss button is a separate stop); announcing
+the toast as it appears is the host's job, like its presentation. The label replaces the
+message's, for UI tests too, so build it from the same localized message, and add the new
+key to the host's strings like any other:
+
+```swift
+Toast(style: .error, message: paymentFailed,
+      accessibilityLabel: Text("Error, \(paymentFailed)")) // key "Error, %@"
+```
 
 This is just the toast *view* — presentation/animation/auto-dismiss timing is the host's
 responsibility (e.g. overlay it and drive visibility yourself).

@@ -43,7 +43,7 @@ help text, and a flexible trailing **accessory**.
 
 ```swift
 MenuItem(
-    leadingIcon: .custom("menu-send", bundle: .dashUIKit),  // DashIconSource?
+    leadingIcon: DashIcon.Menu.send.source,  // DashIconSource?
     title: "Network fee",
     helpText: "Estimated cost for this transaction",
     info: .round(color: Color.dash.gray300Alpha70),
@@ -166,8 +166,8 @@ RadioButtonRow(
 ```
 
 **`Style`** — `.radio` (a ring that thickens/fills blue when selected) or `.checkbox`
-(uses the bundled `icon_checkbox_square[_checked]` assets). Row min-height is 60 with a
-subtitle, otherwise 54; the whole row is the tap target.
+(draws `DashIcon.Checkbox.checkmarkChecked` / `.checkmarkUnchecked`). Row min-height is
+60 with a subtitle, otherwise 54; the whole row is the tap target.
 
 ---
 
