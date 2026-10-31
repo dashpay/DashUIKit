@@ -187,11 +187,11 @@ public struct DashButton: View {
                     .background(style.backgroundColor(isEnabled: isEnabled))
                     .clipShape(RoundedRectangle(cornerRadius: size.radius, style: .continuous))
                     .frame(maxWidth: fillsWidth ? .infinity : nil)
-                    .overlay(
+                    .overlay {
                         RoundedRectangle(cornerRadius: size.radius)
                             .inset(by: 0.5)
                             .stroke(Color.dash.buttonStrokeGrayStroke, lineWidth: 1)
-                    )
+                    }
             } else {
                 content
                     .padding(.horizontal, size.hPadding)

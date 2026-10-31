@@ -128,7 +128,7 @@ public extension SheetFeature where Icon == AnyView {
         description: "The icon is a ViewBuilder, so a badge or a coloured container fits too."
     ) {
         Circle().fill(Color.dash.blueAlpha10)
-            .overlay(InfoRoundIcon(size: 20))
+            .overlay { InfoRoundIcon(size: 20) }
     }
     .padding(20)
     .background(Color.dash.primaryBackground)

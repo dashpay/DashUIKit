@@ -79,7 +79,7 @@ struct FrameReader_Previews: PreviewProvider {
                             .frame(maxWidth: .infinity)
                             .frame(height: 160)
                             .clipShape(.rect(cornerRadius: 10))
-                            .overlay(Text("\(index)"))
+                            .overlay { Text("\(index)") }
                             // Track only the first tile's position within the named space.
                             .readingFrame(coordinateSpace: .named("demo")) { frame in
                                 if index == 0 { topY = frame.minY }
@@ -89,7 +89,7 @@ struct FrameReader_Previews: PreviewProvider {
                 .padding()
             }
             .coordinateSpace(name: "demo")
-            .overlay(Text(String(format: "minY: %.1f", topY)).padding(), alignment: .top)
+            .overlay(alignment: .top) { Text(String(format: "minY: %.1f", topY)).padding() }
         }
     }
 

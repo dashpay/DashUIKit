@@ -63,14 +63,13 @@ public struct ConverterCard: View {
             }
         }
         .animation(.spring(response: 0.35, dampingFraction: 0.82), value: fromItem.id)
-        .overlay(
+        .overlay(alignment: .top) {
             ConverterArrowBadge(onSwap: onSwap)
                 // Anchor the badge's CENTER to the overlay's .top point, so the offset below
                 // places the badge centre exactly on the seam — independent of the badge's height.
                 .alignmentGuide(VerticalAlignment.top) { $0[VerticalAlignment.center] }
-                .offset(y: seamY),
-            alignment: .top
-        )
+                .offset(y: seamY)
+        }
         .onPreferenceChange(ConverterRowHeightKey.self) { heights in
             if let h = heights[.top], h > 0 { topRowHeight = h }
         }
