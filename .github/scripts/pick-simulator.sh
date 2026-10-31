@@ -2,8 +2,9 @@
 # Prints the UDID of an available iPhone simulator on the newest iOS runtime the
 # selected Xcode can run: runtime major.minor <= the iOS Simulator SDK version
 # (a patch runtime such as 26.6.1 runs on the 26.6 SDK), and that has an iPhone.
-# Usage: pick-simulator.sh [<device name>]  (an exact name, e.g. "iPhone 17"; default:
-# any iPhone)
+# Usage: pick-simulator.sh [<device name>]
+#   With an exact name (e.g. "iPhone 17"), that device on the same runtime; it fails when
+#   that runtime has no such device rather than fall back to an older runtime.
 set -euo pipefail
 
 name=${1:-}
@@ -22,15 +23,16 @@ udid=$(jq -rn --arg sdk "$sdk" --arg name "$name" \
   [$runtimes[0].runtimes[]
     | select(.platform == "iOS" and (.version | mm) <= ($sdk | mm))
     | . as $rt
-    | [$devices[0].devices[$rt.identifier][]? | select(if $name == "" then (.name | startswith("iPhone")) else .name == $name end)]
+    | [$devices[0].devices[$rt.identifier][]? | select(.name | startswith("iPhone"))]
     | select(length > 0)
-    | {version: ($rt.version | split(".") | map(tonumber)), runtime: $rt.identifier, udid: (last | .udid)}]
+    | {version: ($rt.version | split(".") | map(tonumber)), runtime: $rt.identifier,
+       udid: (if $name == "" then last else (map(select(.name == $name)) | last) end | .udid?)}]
   | sort_by(.version) | last
-  | if . == null then empty else "\(.udid) \(.runtime)" end')
+  | if . == null or .udid == null then empty else "\(.udid) \(.runtime)" end')
 rm -rf "$work"
 
 if [ -z "$udid" ]; then
-  echo "::error::No iOS runtime <= SDK ${sdk} with an available ${name:-iPhone} simulator" >&2
+  echo "::error::No ${name:-iPhone} simulator on the newest iOS runtime <= SDK ${sdk} that has an iPhone" >&2
   xcrun simctl list devices available >&2
   exit 1
 fi

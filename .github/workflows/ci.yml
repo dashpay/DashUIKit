@@ -151,6 +151,7 @@ jobs:
             -clonedSourcePackagesDirPath "$PACKAGES" \
             -disableAutomaticPackageResolution \
             -testLanguage en -testRegion US \
+            -parallel-testing-enabled NO \
             -collect-test-diagnostics never \
             CODE_SIGNING_ALLOWED=NO \
             test 2>&1 | tee "$LOG"

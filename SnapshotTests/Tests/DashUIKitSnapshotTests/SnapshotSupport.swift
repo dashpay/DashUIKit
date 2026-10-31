@@ -34,10 +34,12 @@ enum ReferenceEnvironment {
     static let number = "1,234.5"
     /// Leading and trailing swap in a right-to-left language.
     static let rightToLeft = false
+    /// An iPhone: an iPad lays out with a regular size class.
+    static let iPhone = true
 
     /// The device model is not part of it: the width and the scale are fixed, so any
     /// iPhone renders the same pixels.
-    static let current: (iOS: String, number: String, rightToLeft: Bool) = {
+    static let current: (iOS: String, number: String, rightToLeft: Bool, iPhone: Bool) = {
         let environment = ProcessInfo.processInfo.environment
         let version = environment["SIMULATOR_RUNTIME_VERSION"] ?? "?"
         let build = environment["SIMULATOR_RUNTIME_BUILD_VERSION"] ?? "?"
@@ -48,7 +50,8 @@ enum ReferenceEnvironment {
             "\(version) (\(build))",
             formatter.string(from: 1234.5) ?? "",
             Locale.Language(identifier: Locale.preferredLanguages.first ?? "en")
-                .characterDirection == .rightToLeft
+                .characterDirection == .rightToLeft,
+            environment["SIMULATOR_MODEL_IDENTIFIER"]?.hasPrefix("iPhone") == true
         )
     }()
 
@@ -64,11 +67,12 @@ enum ReferenceEnvironment {
         if environment["SNAPSHOT_FORCE"] == "1" { return }
 
         let current = current
-        if current == (iOS, number, rightToLeft) { return }
+        if current == (iOS, number, rightToLeft, iPhone) { return }
 
         let message = """
             References are rendered on iOS \(iOS), numbers as "\(number)", right-to-left \
-            \(rightToLeft); this is iOS \(current.iOS), "\(current.number)", right-to-left \(current.rightToLeft). Set SNAPSHOT_FORCE=1 to \
+            \(rightToLeft), iPhone \(iPhone); this is iOS \(current.iOS), "\(current.number)", \
+            iPhone \(current.iPhone), right-to-left \(current.rightToLeft). Set SNAPSHOT_FORCE=1 to \
             compare anyway, or update ReferenceEnvironment and re-record \
             (docs/snapshot-tests.md).
             """
@@ -111,8 +115,9 @@ func assertComponentSnapshots(
 ) throws {
     try ReferenceEnvironment.check()
 
-    let record: SnapshotTestingConfiguration.Record? =
-        ProcessInfo.processInfo.environment["SNAPSHOT_TESTING_RECORD"] == nil ? .never : nil
+    // An unset or unknown value is .never, where the library would fall back to .missing.
+    let record = ProcessInfo.processInfo.environment["SNAPSHOT_TESTING_RECORD"]
+        .flatMap(SnapshotTestingConfiguration.Record.init(rawValue:)) ?? .never
 
     for style in [UIUserInterfaceStyle.light, .dark] {
         let traits = UITraitCollection { traits in

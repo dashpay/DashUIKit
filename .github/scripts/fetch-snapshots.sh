@@ -27,7 +27,7 @@ fi
 # what CI rendered.
 changes=$( (git -C "$root" status --porcelain --untracked-files=no -- . \
     ':!SnapshotTests/Package.resolved'
-  git -C "$root" status --porcelain --untracked-files=all -- "$dest") | sort -u)
+  git -C "$root" status --porcelain --untracked-files=all -- SnapshotTests/Tests) | sort -u)
 if [ -n "$changes" ]; then
   echo "Uncommitted changes; the fetched references would show HEAD, not this tree." >&2
   echo "Commit or discard them first:" >&2
