@@ -57,8 +57,9 @@ fi
 # Jobs of the run's latest attempt. A passing re-run of a failed attempt keeps the
 # failed attempt's artifact; it must not be installed.
 job=$(gh run view "$run" -R "$repo" --json jobs \
-  --jq '.jobs[] | select(.name == "Snapshot tests (iOS Simulator)") | "\(.conclusion) \(.startedAt)"')
-read -r conclusion started <<< "$job"
+  --jq '.jobs[] | select(.name == "Snapshot tests (iOS Simulator)")
+    | "\(.conclusion // "" | if . == "" then "unfinished" else . end)|\(.startedAt)"')
+IFS='|' read -r conclusion started <<< "$job"
 if [ "${conclusion:-}" != failure ]; then
   echo "The snapshot job of run $run ended with '${conclusion:-no such job}', not 'failure':" >&2
   echo "there is nothing it recorded to fetch." >&2

@@ -34,8 +34,10 @@ enum ReferenceEnvironment {
     /// Amounts are formatted with `Locale.current`; this is 1234.5 in the
     /// reference locale's separators.
     static let number = "1,234.5"
+    /// Leading and trailing swap in a right-to-left language.
+    static let rightToLeft = false
 
-    static let current: (iOS: String, model: String, number: String) = {
+    static let current: (iOS: String, model: String, number: String, rightToLeft: Bool) = {
         let environment = ProcessInfo.processInfo.environment
         let version = environment["SIMULATOR_RUNTIME_VERSION"] ?? "?"
         let build = environment["SIMULATOR_RUNTIME_BUILD_VERSION"] ?? "?"
@@ -45,7 +47,9 @@ enum ReferenceEnvironment {
         return (
             "\(version) (\(build))",
             environment["SIMULATOR_MODEL_IDENTIFIER"] ?? "?",
-            formatter.string(from: 1234.5) ?? ""
+            formatter.string(from: 1234.5) ?? "",
+            Locale.Language(identifier: Locale.preferredLanguages.first ?? "en")
+                .characterDirection == .rightToLeft
         )
     }()
 
@@ -61,11 +65,12 @@ enum ReferenceEnvironment {
         if environment["SNAPSHOT_FORCE"] == "1" { return }
 
         let current = current
-        if current == (iOS, model, number) { return }
+        if current == (iOS, model, number, rightToLeft) { return }
 
         let message = """
-            References are rendered on iOS \(iOS), \(model), numbers as "\(number)"; this is \
-            iOS \(current.iOS), \(current.model), "\(current.number)". Set SNAPSHOT_FORCE=1 to \
+            References are rendered on iOS \(iOS), \(model), numbers as "\(number)", \
+            right-to-left \(rightToLeft); this is iOS \(current.iOS), \(current.model), \
+            "\(current.number)", right-to-left \(current.rightToLeft). Set SNAPSHOT_FORCE=1 to \
             compare anyway, or update ReferenceEnvironment and re-record \
             (docs/snapshot-tests.md).
             """

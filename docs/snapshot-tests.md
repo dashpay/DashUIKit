@@ -44,7 +44,7 @@ the simulator `pick-simulator.sh` picks for it), and compared only on that envir
 Xcode version fixes the SDK, and so the runtime and device types the picker can choose:
 
 - `ReferenceEnvironment` in `SnapshotSupport.swift` names it: the simulator runtime's
-  version and build, the simulator model, and how the locale writes 1234.5 (amounts use `Locale.current`; the
+  version and build, the simulator model, the text direction, and how the locale writes 1234.5 (amounts use `Locale.current`; the
   job runs with `-testLanguage en -testRegion US`).
 - **Anywhere else** every snapshot test is **skipped**, with a message naming both
   environments. Locally on a newer Xcode, `xcodebuild test` reports them as skipped, not
