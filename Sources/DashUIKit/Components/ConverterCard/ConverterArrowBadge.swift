@@ -35,14 +35,14 @@ struct ConverterArrowBadge: View {
                     withAnimation(.spring(response: 0.35, dampingFraction: 0.82)) { rotation += 180 }
                     onSwap()
                 } label: {
-                    badge(iconName: "diagonal-up-down", iconRotation: rotation)
+                    badge(icon: .diagonalUpDown, iconRotation: rotation)
                 }
                 .buttonStyle(.plain)
                 .accessibilityLabel(Text(NSLocalizedString("Swap direction", bundle: .module, comment: "DashUIKit")))
             } else {
                 // Decorative — the card's row order already conveys the direction,
                 // and without this the icon announces its asset name.
-                badge(iconName: "arrow-down", iconRotation: 0)
+                badge(icon: .arrowDown, iconRotation: 0)
                     .accessibilityHidden(true)
             }
         }
@@ -50,7 +50,7 @@ struct ConverterArrowBadge: View {
         .padding(.horizontal, 10)
     }
 
-    private func badge(iconName: String, iconRotation: Double) -> some View {
+    private func badge(icon: DashIcon.Common, iconRotation: Double) -> some View {
         RoundedRectangle(cornerRadius: 10, style: .continuous)
             .fill(Color.dash.secondaryBackground)
             .frame(width: 35, height: 35)
@@ -59,7 +59,7 @@ struct ConverterArrowBadge: View {
                     .stroke(Color.dash.primaryBackground, lineWidth: 5)
             )
             .overlay(
-                Image(dash: .custom(iconName, bundle: .dashUIKit))
+                icon.image
                     .rotationEffect(.degrees(iconRotation))
             )
     }

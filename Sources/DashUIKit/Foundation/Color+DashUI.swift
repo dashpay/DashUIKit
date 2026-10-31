@@ -16,9 +16,6 @@
 //
 
 import SwiftUI
-#if canImport(UIKit)
-import UIKit
-#endif
 
 public extension Color {
     static var dash: DashColors.Type { DashColors.self }
@@ -164,6 +161,7 @@ public enum DashColors {
     // MARK: Switch
 
     public static var switchThumbFill: Color { dashAsset("SwitchThumbFill") }
+    public static var switchThumbShadow: Color { dashAsset("SwitchThumbShadow") }
     public static var switchTrackFillOff: Color { dashAsset("SwitchTrackFillOff") }
     public static var switchTrackFillOffDisabled: Color { dashAsset("SwitchTrackFillOffDisabled") }
     public static var switchTrackFillOn: Color { dashAsset("SwitchTrackFillOn") }
@@ -288,22 +286,8 @@ public enum DashColors {
 
     // MARK: Shadow
 
-    public static var shadow: Color {
-        #if canImport(UIKit)
-        Color(
-            UIColor { traitCollection in
-                switch traitCollection.userInterfaceStyle {
-                case .dark:
-                    return .clear
-                default:
-                    return UIColor(red: 0.72, green: 0.76, blue: 0.8, alpha: 0.1)
-                }
-            }
-        )
-        #else
-        .clear
-        #endif
-    }
+    /// Subtle on light, clear on dark.
+    public static var shadow: Color { dashAsset("Shadow") }
 }
 
 private extension DashColors {
