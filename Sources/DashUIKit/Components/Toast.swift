@@ -92,7 +92,7 @@ public struct Toast: View {
 
                 Text(message)
                     .dashFont(.footnoteMedium)
-                    .foregroundColor(Color.dash.toastText)
+                    .foregroundStyle(Color.dash.toastText)
                     .padding(.vertical, 3)
                     .padding(.leading, 8)
                     .accessibilityLabel(accessibilityLabel)

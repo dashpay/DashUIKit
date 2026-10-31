@@ -54,13 +54,13 @@ struct ConverterArrowBadge: View {
         RoundedRectangle(cornerRadius: 10, style: .continuous)
             .fill(Color.dash.secondaryBackground)
             .frame(width: 35, height: 35)
-            .overlay(
+            .overlay {
                 RoundedRectangle(cornerRadius: 10, style: .continuous)
                     .stroke(Color.dash.primaryBackground, lineWidth: 5)
-            )
-            .overlay(
+            }
+            .overlay {
                 icon.image
                     .rotationEffect(.degrees(iconRotation))
-            )
+            }
     }
 }

@@ -231,12 +231,12 @@ public struct NumericKeyboardView: View {
             Image(systemName: Layout.deleteSymbol)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .font(.system(size: Layout.keyFontSize))
-                .foregroundColor(Color.dash.primaryText)
+                .foregroundStyle(Color.dash.primaryText)
         } else {
             Text(key)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .font(.system(size: Layout.keyFontSize, weight: Layout.keyFontWeight))
-                .foregroundColor(Color.dash.primaryText)
+                .foregroundStyle(Color.dash.primaryText)
         }
     }
 
@@ -258,7 +258,7 @@ public struct NumericKeyboardView: View {
         if let text, !text.isEmpty {
             Text(text)
                 .dashFont(.footnote)
-                .foregroundColor(Color.dash.secondaryText)
+                .foregroundStyle(Color.dash.secondaryText)
                 .multilineTextAlignment(.center)
                 .frame(maxWidth: .infinity)
         } else {

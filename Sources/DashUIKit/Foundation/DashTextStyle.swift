@@ -89,12 +89,12 @@ public extension View {
     return VStack(alignment: .leading, spacing: 24) {
         Text(sample)
             .font(Font.dash.footnote)            // plain font, natural line height
-            .foregroundColor(Color.dash.primaryText)
+            .foregroundStyle(Color.dash.primaryText)
             .background(Color.dash.blueAlpha10)
 
         Text(sample)
             .dashFont(.footnote)                 // font + line height 18, automatic
-            .foregroundColor(Color.dash.primaryText)
+            .foregroundStyle(Color.dash.primaryText)
             .background(Color.dash.blueAlpha10)
     }
     .padding()
