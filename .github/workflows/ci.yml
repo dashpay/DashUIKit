@@ -82,7 +82,9 @@ jobs:
       - uses: ./.github/actions/select-xcode
 
       # swift-snapshot-testing pulls swift-syntax into the graph; keep the clones.
-      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      # Restore and save are separate steps because a recording run fails on purpose.
+      - id: packages
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ${{ runner.temp }}/SourcePackages
           key: snapshot-packages-${{ hashFiles('SnapshotTests/Package.resolved') }}
@@ -90,7 +92,7 @@ jobs:
       # The references are rendered here and only compared here (docs/snapshot-tests.md).
       # REQUIRE turns a runner on another iOS runtime into a failure, not a skip.
       # RECORD=failed rewrites a missing or changed reference in the checkout and still
-      # fails the test; the next step uploads the rewritten set for
+      # fails the test; the upload step below sends the rewritten set to
       # .github/scripts/fetch-snapshots.sh.
       - name: Run snapshot tests
         working-directory: SnapshotTests
@@ -107,6 +109,13 @@ jobs:
             -collect-test-diagnostics never \
             CODE_SIGNING_ALLOWED=NO \
             test
+
+      - name: Save the package clones
+        if: ${{ !cancelled() && steps.packages.outputs.cache-hit != 'true' }}
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ runner.temp }}/SourcePackages
+          key: ${{ steps.packages.outputs.cache-primary-key }}
 
       - name: Upload re-recorded references
         if: ${{ failure() }}

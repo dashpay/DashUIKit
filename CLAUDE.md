@@ -97,7 +97,8 @@ Sources/DashUIKit/
   your own simulator.**
 - To update them after a deliberate visual change: push, let the snapshot job fail, then run
   `.github/scripts/fetch-snapshots.sh` from the repo root, review the images, commit.
-- A new component state that matters visually gets a snapshot test next to its preview.
+- A new component state that matters visually gets a snapshot test in
+  `SnapshotTests/Tests/DashUIKitSnapshotTests/<Component>SnapshotTests.swift`, as well as its preview.
 
 ## Component catalog
 

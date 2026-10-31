@@ -46,12 +46,22 @@ if [ "$status" != completed ]; then
   exit 1
 fi
 
+# Jobs of the run's latest attempt. A passing re-run of a failed attempt keeps the
+# failed attempt's artifact; it must not be installed.
+job=$(gh run view "$run" -R "$repo" --json jobs \
+  --jq '.jobs[] | select(.name == "Snapshot tests (iOS Simulator)") | .conclusion')
+if [ "$job" != failure ]; then
+  echo "The snapshot job of run $run ended with '${job:-no such job}', not 'failure':" >&2
+  echo "there is nothing it recorded to fetch." >&2
+  exit 1
+fi
+
 work=$(mktemp -d)
 trap 'rm -rf "$work"' EXIT
 
 if ! gh run download "$run" -R "$repo" -n snapshots -D "$work/snapshots"; then
-  echo "Run $run has no 'snapshots' artifact: its snapshot job did not fail (nothing to" >&2
-  echo "record), or the artifact expired." >&2
+  echo "Run $run has no 'snapshots' artifact: the job failed before it rendered anything" >&2
+  echo "(see its log), or the artifact expired." >&2
   exit 1
 fi
 
@@ -60,4 +70,4 @@ mkdir -p "$dest"
 cp -R "$work/snapshots/." "$dest/"
 
 echo "References from run $run are in ${dest#"$root"/}:"
-git -C "$root" status --short -- "$dest"
+git -C "$root" status --short --untracked-files=all -- "$dest"

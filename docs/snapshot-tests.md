@@ -21,7 +21,7 @@ manifest that apps resolve. `swift build` and `xcodebuild -scheme DashUIKit` at 
 root do not see them.
 
 Each test calls `assertComponentSnapshots(of:named:background:)`. It renders the view
-402 pt wide (iPhone 17 Pro) at 3×, with 16 pt of padding, on `Color.dash.primaryBackground`
+402 pt wide (iPhone 17 / 17 Pro) at 3×, with 16 pt of padding, on `Color.dash.primaryBackground`
 unless a background is given. A test fails when any pixel differs by more than a colour
 distance (ΔE) of 2. That absorbs anti-aliasing noise; a moved edge or a changed token does
 not pass.
@@ -31,6 +31,9 @@ Covered: `DashButton` (every style and size, enabled and disabled, icons, full w
 `SearchBar`, `TransactionView`. There is no Dynamic Type snapshot: the type tokens are fixed
 sizes (`Font.system(size:)`), so a larger content size renders the same pixels.
 
+Without a host app the images are drawn from the layer tree, so a `UIVisualEffectView` (the
+blur behind `Toast`) is not in them; a change to it does not fail a test.
+
 ## The references come from CI
 
 Text, SF Symbols and SwiftUI layout render differently on each iOS release, so a reference
@@ -39,7 +42,7 @@ by the `Snapshot tests (iOS Simulator)` CI job (the Xcode in `.github/actions/se
 the newest iPhone simulator it runs), and compared only on that environment:
 
 - `ReferenceEnvironment` in `SnapshotSupport.swift` names it: the simulator runtime's
-  version and build, and how the locale writes 1234.5 (amounts use `Locale.current`; the
+  version and build, the simulator model, and how the locale writes 1234.5 (amounts use `Locale.current`; the
   job runs with `-testLanguage en -testRegion US`).
 - **Anywhere else** every snapshot test is **skipped**, with a message naming both
   environments. Locally on a newer Xcode, `xcodebuild test` reports them as skipped, not
@@ -72,8 +75,10 @@ Changed a component on purpose, or added a test? CI records the new images for y
    each image before and after. If it is not, the images still show what CI rendered:
    discard them (`git checkout -- SnapshotTests`) and fix the code.
 
-After `master` changed a component your branch also renders, merge `master`, push, and run
-step 2 again. Delete the references of a removed test by hand.
+The job renders the branch, not its merge with `master`. After `master` changed a component
+your branch also renders, merge `master`, push, and run step 2 again before merging; else
+the snapshot job fails on `master` after the merge, and the fix is a follow-up PR that
+fetches that run's references. Delete the references of a removed test by hand.
 
 Run locally, Xcode also shows the reference, the new image and a difference image as
 attachments of a failing test. CI does not keep its result bundle; the artifact is the way

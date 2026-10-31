@@ -29,19 +29,24 @@ enum ReferenceEnvironment {
     /// The CI simulator runtime: its version and build. A runtime update with the
     /// same version number can still render differently.
     static let iOS = "26.5 (23F77)"
+    /// The CI simulator's model (`SIMULATOR_MODEL_IDENTIFIER`).
+    static let model = "iPhone18,3"
     /// Amounts are formatted with `Locale.current`; this is 1234.5 in the
     /// reference locale's separators.
     static let number = "1,234.5"
 
-    static var current: (iOS: String, number: String) {
+    static var current: (iOS: String, model: String, number: String) {
+        let environment = ProcessInfo.processInfo.environment
+        let version = environment["SIMULATOR_RUNTIME_VERSION"] ?? "?"
+        let build = environment["SIMULATOR_RUNTIME_BUILD_VERSION"] ?? "?"
         let formatter = NumberFormatter()
         formatter.numberStyle = .decimal
         formatter.locale = .current
-        // "Version 26.5 (Build 23F77)" → "26.5 (23F77)"
-        let os = ProcessInfo.processInfo.operatingSystemVersionString
-            .replacingOccurrences(of: "Version ", with: "")
-            .replacingOccurrences(of: "Build ", with: "")
-        return (os, formatter.string(from: 1234.5) ?? "")
+        return (
+            "\(version) (\(build))",
+            environment["SIMULATOR_MODEL_IDENTIFIER"] ?? "?",
+            formatter.string(from: 1234.5) ?? ""
+        )
     }
 
     struct Mismatch: Error, CustomStringConvertible {
@@ -56,12 +61,13 @@ enum ReferenceEnvironment {
         if environment["SNAPSHOT_FORCE"] == "1" { return }
 
         let current = current
-        if current.iOS == iOS, current.number == number { return }
+        if current == (iOS, model, number) { return }
 
         let message = """
-            References are rendered on iOS \(iOS) with numbers as "\(number)"; this is iOS \
-            \(current.iOS) with "\(current.number)". Set SNAPSHOT_FORCE=1 to compare anyway, \
-            or update ReferenceEnvironment and re-record (docs/snapshot-tests.md).
+            References are rendered on iOS \(iOS), \(model), numbers as "\(number)"; this is \
+            iOS \(current.iOS), \(current.model), "\(current.number)". Set SNAPSHOT_FORCE=1 to \
+            compare anyway, or update ReferenceEnvironment and re-record \
+            (docs/snapshot-tests.md).
             """
         if environment["SNAPSHOT_REQUIRE_REFERENCE_ENVIRONMENT"] == "1" {
             throw Mismatch(description: message)
@@ -71,7 +77,7 @@ enum ReferenceEnvironment {
 }
 
 enum SnapshotLayout {
-    /// The iPhone 17 Pro width in points, rendered at its 3× scale.
+    /// The iPhone 17 / 17 Pro width in points, rendered at their 3× scale.
     static let width: CGFloat = 402
     static let scale: CGFloat = 3
     static let padding: CGFloat = 16

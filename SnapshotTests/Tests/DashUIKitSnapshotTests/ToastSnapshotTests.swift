@@ -23,7 +23,9 @@ final class ToastSnapshotTests: XCTestCase {
 
     /// Every style but `.loading`, on the blue surface the preview uses, and one
     /// message longer than the toast is wide. `.loading` draws `LoadingSpinner`,
-    /// whose timer moves the bright spoke while the image is taken.
+    /// whose timer moves the bright spoke while the image is taken. The blur
+    /// behind the toast (`UIVisualEffectView`) is not in the image: rendering
+    /// without a host app draws the layer tree, which leaves visual effects out.
     func testStyles() throws {
         let view = VStack(spacing: 12) {
             Toast(style: .warning, message: "Some coins are not available", onDismiss: {})
