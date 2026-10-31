@@ -67,7 +67,7 @@ public enum DashButtonSize: Sendable {
 }
 
 public enum DashButtonStyle {
-    case filledBlue, filledRed, strokeGray, tintedBlue, tintedGray, plainBlue, plainBlack, plainRed, filledWhiteBlue, tintedWhite, plainWhite
+    case filledBlue, filledRed, strokeGray, tintedBlue, tintedRed, tintedGray, plainBlue, plainBlack, plainRed, filledWhiteBlue, tintedWhite, plainWhite
 
     func backgroundColor(isEnabled: Bool) -> Color {
         switch self {
@@ -79,6 +79,8 @@ public enum DashButtonStyle {
             return isEnabled ? .clear : .dash.buttonStrokeGrayBackgroundDisabled
         case .tintedBlue:
             return isEnabled ? .dash.buttonTintedBlueBackground : .dash.buttonTintedBlueBackgroundDisabled
+        case .tintedRed:
+            return isEnabled ? .dash.buttonTintedRedBackground : .dash.buttonTintedRedBackgroundDisabled
         case .tintedGray:
             return isEnabled ? .dash.buttonTintedGrayBackground : .dash.buttonTintedGrayBackgroundDisabled
         case .plainBlue, .plainBlack, .plainRed, .plainWhite:
@@ -100,6 +102,8 @@ public enum DashButtonStyle {
             return isEnabled ? .dash.buttonStrokeGrayContent : .dash.buttonStrokeGrayContentDisabled
         case .tintedBlue:
             return isEnabled ? .dash.buttonTintedBlueContent : .dash.buttonTintedBlueContentDisabled
+        case .tintedRed:
+            return isEnabled ? .dash.buttonTintedRedContent : .dash.buttonTintedRedContentDisabled
         case .tintedGray:
             return isEnabled ? .dash.buttonTintedGrayContent : .dash.buttonTintedGrayContentDisabled
         case .plainBlue:
@@ -253,6 +257,7 @@ private extension DashButtonStyle {
         case .filledRed: return "Filled Red"
         case .strokeGray: return "Stroke Gray"
         case .tintedBlue: return "Tinted Blue"
+        case .tintedRed: return "Tinted Red"
         case .tintedGray: return "Tinted Gray"
         case .plainBlue: return "Plain Blue"
         case .plainBlack: return "Plain Black"
@@ -356,6 +361,10 @@ private struct DashButtonStylePreview: View {
 
 #Preview("Tinted Blue") {
     DashButtonStylePreview(style: .tintedBlue)
+}
+
+#Preview("Tinted Red") {
+    DashButtonStylePreview(style: .tintedRed)
 }
 
 #Preview("Tinted Gray") {

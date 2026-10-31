@@ -65,7 +65,7 @@ a component already exists before building your own.
 
 | Component | What it is | Doc |
 |---|---|---|
-| `DashButton` | Themed button — 4 sizes × 11 styles, icons, loading, full-width | [Buttons & inputs](docs/buttons-and-inputs.md) |
+| `DashButton` | Themed button — 4 sizes × 12 styles, icons, loading, full-width | [Buttons & inputs](docs/buttons-and-inputs.md) |
 | `DashSwitch` | DS-tinted toggle | [Buttons & inputs](docs/buttons-and-inputs.md) |
 | `SearchBar` | Search field with an animated cancel button | [Buttons & inputs](docs/buttons-and-inputs.md) |
 | `AddressFieldView` | Labeled text field (label / field / help text) with optional QR, clear and error state | [Buttons & inputs](docs/buttons-and-inputs.md) |
