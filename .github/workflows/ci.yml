@@ -90,8 +90,10 @@ jobs:
           path: ${{ runner.temp }}/SourcePackages
           key: snapshot-packages-${{ hashFiles('SnapshotTests/Package.resolved') }}
 
-      # Resolution separate from the tests, so only complete clones are cached; and only
-      # the versions in Package.resolved.
+      # Resolution separate from the tests, so only complete clones are cached. Not
+      # -onlyUsePackageVersionsFromResolvedFile: Xcode versions name the same package
+      # differently (swift-issue-reporting, formerly xctest-dynamic-overlay), so a file
+      # resolved by one counts as out of date for another. The pins in it still apply.
       - name: Resolve packages
         id: resolve
         working-directory: SnapshotTests
@@ -100,8 +102,7 @@ jobs:
         run: |
           xcodebuild -resolvePackageDependencies \
             -scheme DashUIKitSnapshotTests-Package \
-            -clonedSourcePackagesDirPath "$PACKAGES" \
-            -onlyUsePackageVersionsFromResolvedFile
+            -clonedSourcePackagesDirPath "$PACKAGES"
 
       - name: Save the package clones
         if: ${{ steps.packages.outputs.cache-hit != 'true' }}
@@ -127,7 +128,6 @@ jobs:
           xcodebuild -scheme DashUIKitSnapshotTests-Package \
             -destination "platform=iOS Simulator,id=${udid}" \
             -clonedSourcePackagesDirPath "$PACKAGES" \
-            -onlyUsePackageVersionsFromResolvedFile \
             -testLanguage en -testRegion US \
             -collect-test-diagnostics never \
             CODE_SIGNING_ALLOWED=NO \

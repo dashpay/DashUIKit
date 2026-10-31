@@ -9,7 +9,7 @@ such as a token edit that moves another component.
 ```text
 SnapshotTests/                       its own package; the library's Package.swift is untouched
   Package.swift                      path dependency on "..", swift-snapshot-testing (exact pin)
-  Package.resolved                   committed: CI resolves the same versions every time
+  Package.resolved                   committed: the versions CI starts from
   Tests/DashUIKitSnapshotTests/
     SnapshotSupport.swift            assertComponentSnapshots, ReferenceEnvironment
     <Component>SnapshotTests.swift   one file per component, public API only
