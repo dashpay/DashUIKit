@@ -9,20 +9,28 @@ such as a token edit that moves another component.
 ```text
 SnapshotTests/                       its own package; the library's Package.swift is untouched
   Package.swift                      path dependency on "..", swift-snapshot-testing (exact pin)
-  Package.resolved                   committed: the versions CI starts from
+  Package.resolved                   committed, as the CI Xcode writes it: every version CI builds
   Tests/DashUIKitSnapshotTests/
     SnapshotSupport.swift            assertComponentSnapshots, ReferenceEnvironment
     <Component>SnapshotTests.swift   one file per component, public API only
     __Snapshots__/<File>/<test>.<name>-light.png / -dark.png
 ```
 
+`Package.resolved` pins every package in the graph, including swift-syntax and the other
+packages swift-snapshot-testing brings in. Xcode versions write it differently (Xcode 27 calls
+one package `swift-issue-reporting` where Xcode 26.6 still resolves `xctest-dynamic-overlay`),
+so the committed file is the one the CI Xcode writes. The job fails when the file is not what
+it resolves, and prints the file to commit. A local Xcode that rewrites it: discard that
+change (`git checkout -- SnapshotTests/Package.resolved`).
+
 The tests live in a separate package so that the snapshot library never appears in the
 manifest that apps resolve. `swift build` and `xcodebuild -scheme DashUIKit` at the repo
 root do not see them.
 
-Each test calls `assertComponentSnapshots(of:named:background:)`. It renders the view
+Each test calls `assertComponentSnapshots(of:named:background:appearances:)`. It renders the view
 402 pt wide (iPhone 17 / 17 Pro) at 3×, with 16 pt of padding, on `Color.dash.primaryBackground`
-unless a background is given. A test fails when any pixel differs by more than a colour
+unless a background is given, in light and in dark (only light for a view that renders the
+same pixels in both). A test fails when any pixel differs by more than a colour
 distance (ΔE) of 2. That absorbs anti-aliasing noise. A moved edge fails; a colour token
 change fails when it moves a colour by more than ΔE 2, about the smallest difference the eye
 sees.
@@ -40,12 +48,12 @@ blur behind `Toast`) is not in them; a change to it does not fail a test.
 Text, SF Symbols and SwiftUI layout render differently on each iOS release, so a reference
 rendered on one simulator does not match another one. The references are therefore rendered
 by the `Snapshot tests (iOS Simulator)` CI job (the Xcode in `.github/actions/select-xcode`,
-the simulator `pick-simulator.sh` picks for it), and compared only on that environment. The
-Xcode version fixes the SDK, and so the runtime and device types the picker can choose:
+on an iPhone simulator `pick-simulator.sh` picks), and compared only on that environment:
 
 - `ReferenceEnvironment` in `SnapshotSupport.swift` names it: the simulator runtime's
-  version and build, the simulator model, the text direction, and how the locale writes 1234.5 (amounts use `Locale.current`; the
-  job runs with `-testLanguage en -testRegion US`).
+  version and build, the text direction, and how the locale writes 1234.5 (amounts use
+  `Locale.current`; the job runs with `-testLanguage en -testRegion US`). The iPhone model
+  is not part of it: width and scale are fixed, so any model renders the same pixels.
 - **Anywhere else** every snapshot test is **skipped**, with a message naming both
   environments. Locally on a newer Xcode, `xcodebuild test` reports them as skipped, not
   passed.
@@ -53,14 +61,17 @@ Xcode version fixes the SDK, and so the runtime and device types the picker can 
   (`SNAPSHOT_REQUIRE_REFERENCE_ENVIRONMENT=1`), so a runner image update cannot turn the
   suite into skips.
 - `SNAPSHOT_FORCE=1` compares anyway, for example on a local simulator with the same iOS
-  version.
+  version. It never writes a reference: only a run that sets `SNAPSHOT_TESTING_RECORD` does.
+- The job also fails when its last `Executed … tests` line reports no tests or any skipped
+  one, so a broken environment check cannot pass as skips.
 
 ## Recording and updating references
 
 Changed a component on purpose, or added a test? CI records the new images for you:
 
-1. Push the branch, with a PR open (CI runs on pull requests and on `master`). The snapshot job renders the PR head (not its merge with `master`, so
-   the images show the branch's own code). It fails on every missing or changed reference,
+1. Push the branch, with a PR open (CI runs on pull requests and on `master`). The snapshot
+   job renders the PR head (not its merge with `master`, so the images show the branch's own
+   code; the job summary says so). It fails on every missing or changed reference,
    writes the new image in its place and uploads the whole `__Snapshots__` folder as the
    artifact `snapshots`.
 2. When the run has finished, from the repo root, on the same commit:
@@ -70,8 +81,10 @@ Changed a component on purpose, or added a test? CI records the new images for y
    .github/scripts/fetch-snapshots.sh <run-id>   # or a given run
    ```
 
-   It replaces `SnapshotTests/Tests/DashUIKitSnapshotTests/__Snapshots__` with the artifact
-   and lists the changed files.
+   It takes the newest finished, not cancelled run of `HEAD`, refuses when the tree has
+   uncommitted changes (the images show `HEAD`, not your edits), replaces
+   `SnapshotTests/Tests/DashUIKitSnapshotTests/__Snapshots__` with the artifact, and lists the
+   changed files.
 3. Look at the changed images (open them, or compare with `git difftool`). If the change is
    the one you meant, commit and push; the next run passes, and the PR's file view shows
    each image before and after. If it is not, the images still show what CI rendered:
@@ -103,19 +116,20 @@ xcodebuild test -scheme DashUIKitSnapshotTests-Package \
 Environment variables reach the tests with the `TEST_RUNNER_` prefix:
 `TEST_RUNNER_SNAPSHOT_FORCE=1` compares on another environment;
 `TEST_RUNNER_SNAPSHOT_TESTING_RECORD=all` rewrites every reference (off the reference
-environment, together with `TEST_RUNNER_SNAPSHOT_FORCE=1`, or the tests skip first). Images recorded on
-another environment are only good for trying things out; do not commit them.
+environment, together with `TEST_RUNNER_SNAPSHOT_FORCE=1`, or the tests skip first). Without
+a record mode a missing reference fails and is not written. Images recorded on another
+environment are only good for trying things out; do not commit them.
 
 ### Moving CI to a new Xcode
 
 When `select-xcode` (or the runner image) moves to a new iOS runtime or runtime build, the
-job fails with the environment message. Update every value of `ReferenceEnvironment` it
-names (runtime, model, number format), push, and
-fetch the re-recorded set as above.
+job fails with the environment message, and a new Xcode usually fails the resolve step
+first. Commit the `Package.resolved` the log prints, update every value of
+`ReferenceEnvironment` the message names, push, and fetch the re-recorded set as above.
 
 ### Bumping swift-snapshot-testing
 
 The pin is `exact:` in `SnapshotTests/Package.swift`. Pick a release at least two weeks old,
-run `swift package update` in `SnapshotTests/`, commit both files, and check that the job
-still passes (a change in rendering or comparison shows up as a failure; re-record if it is
+and push the manifest change: the resolve step fails and prints the `Package.resolved` to
+commit. Commit it and check that the job passes (a change in rendering or comparison shows up as a failure; re-record if it is
 expected).

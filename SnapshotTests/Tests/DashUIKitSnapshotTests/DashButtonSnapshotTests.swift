@@ -53,12 +53,17 @@ final class DashButtonSnapshotTests: XCTestCase {
         try assertComponentSnapshots(of: grid(.filledWhiteBlue), named: "grid", background: .dash.buttonFilledBlueBackground)
     }
 
+    // These two render the same pixels in light and dark.
     func testTintedWhite() throws {
-        try assertComponentSnapshots(of: grid(.tintedWhite), named: "grid", background: .dash.buttonFilledBlueBackground)
+        try assertComponentSnapshots(
+            of: grid(.tintedWhite), named: "grid", background: .dash.buttonFilledBlueBackground, appearances: [.light]
+        )
     }
 
     func testPlainWhite() throws {
-        try assertComponentSnapshots(of: grid(.plainWhite), named: "grid", background: .dash.buttonFilledBlueBackground)
+        try assertComponentSnapshots(
+            of: grid(.plainWhite), named: "grid", background: .dash.buttonFilledBlueBackground, appearances: [.light]
+        )
     }
 
     func testIconsAndFullWidth() throws {

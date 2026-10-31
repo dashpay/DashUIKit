@@ -6,9 +6,11 @@
 # Review the result with `git diff`, then commit and push.
 #
 # Usage: fetch-snapshots.sh [<run-id>]
-#   Without a run id: the newest CI run of HEAD, which must be pushed, in an open PR
-#   (CI runs on pull requests and on master), and finished.
+#   Without a run id: the newest finished, not cancelled CI run of HEAD, which must be
+#   pushed, in an open PR (CI runs on pull requests and on master).
 #   A run id must be a run of HEAD too.
+# The references show the committed code of HEAD, so the working tree must have no
+# uncommitted changes to tracked files, and none at all in __Snapshots__.
 # Env: REPO (default dashpay/DashUIKit). Needs gh, logged in.
 set -euo pipefail
 
@@ -21,9 +23,12 @@ if [ $# -gt 1 ]; then
   exit 2
 fi
 
-if [ -n "$(git -C "$root" status --porcelain --untracked-files=all -- "$dest")" ]; then
-  echo "${dest#"$root"/} has uncommitted changes; commit or discard them first:" >&2
-  git -C "$root" status --short --untracked-files=all -- "$dest" >&2
+changes=$( (git -C "$root" status --porcelain --untracked-files=no
+  git -C "$root" status --porcelain --untracked-files=all -- "$dest") | sort -u)
+if [ -n "$changes" ]; then
+  echo "Uncommitted changes; the fetched references would show HEAD, not this tree." >&2
+  echo "Commit or discard them first:" >&2
+  echo "$changes" >&2
   exit 1
 fi
 
@@ -39,14 +44,27 @@ if [ $# -eq 1 ]; then
   fi
 else
   # gh errors (not logged in, no network) end the script here, with gh's message.
-  info=$(gh run list -R "$repo" --workflow ci.yml --commit "$sha" \
-    --limit 1 --json databaseId,status --jq '.[] | "\(.databaseId) \(.status)"')
-  if [ -z "$info" ]; then
+  runs=$(gh run list -R "$repo" --workflow ci.yml --commit "$sha" --limit 20 \
+    --json databaseId,status,conclusion \
+    --jq '.[] | "\(.databaseId) \(.status) \(.conclusion // "-" | if . == "" then "-" else . end)"')
+  if [ -z "$runs" ]; then
     echo "No CI run for ${sha:0:7} in $repo. Push it to a branch with an open PR and wait" >&2
     echo "for CI." >&2
     exit 1
   fi
-  read -r run status <<< "$info"
+  # Newest first: skip runs that are still going or were cancelled.
+  run=
+  while read -r id state result; do
+    if [ "$state" = completed ] && [ "$result" != cancelled ]; then
+      run=$id status=$state
+      break
+    fi
+    echo "Skipping run $id ($state${result:+, $result})." >&2
+  done <<< "$runs"
+  if [ -z "$run" ]; then
+    echo "No finished CI run of ${sha:0:7} yet; run this again when one has finished." >&2
+    exit 1
+  fi
 fi
 if [ "$status" != completed ]; then
   echo "CI run $run for ${sha:0:7} is $status; run this again when it has finished:" >&2
@@ -74,14 +92,15 @@ if [ -z "$created" ] || [[ "$created" < "$started" ]]; then
   exit 1
 fi
 
-work=$(mktemp -d)
+# Downloaded next to the folder, then swapped in, so a failed download leaves the
+# references as they were.
+work=$(mktemp -d "$(dirname "$dest")/.fetch-snapshots.XXXXXX")
 trap 'rm -rf "$work"' EXIT
 
 gh run download "$run" -R "$repo" -n snapshots -D "$work/snapshots"
 
 rm -rf "$dest"
-mkdir -p "$dest"
-cp -R "$work/snapshots/." "$dest/"
+mv "$work/snapshots" "$dest"
 
 echo "References from run $run are in ${dest#"$root"/}:"
 git -C "$root" status --short --untracked-files=all -- "$dest"

@@ -82,20 +82,32 @@ jobs:
 
       - uses: ./.github/actions/select-xcode
 
+      - name: Note what is rendered
+        env:
+          BASE_REF: ${{ github.base_ref }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          if [ -n "$BASE_REF" ]; then
+            echo "Rendered the PR head \`${HEAD_SHA:0:10}\`, not its merge with \`${BASE_REF}\`: after \`${BASE_REF}\` changes a covered component, merge it in and re-record before merging (docs/snapshot-tests.md)." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      # Xcode versions resolve and name packages differently (swift-issue-reporting,
+      # formerly xctest-dynamic-overlay), so the clones are kept per Xcode.
+      - id: xcode
+        run: echo "version=$(xcodebuild -version | tr '\n' ' ' | tr -c 'A-Za-z0-9.' '-')" >> "$GITHUB_OUTPUT"
+
       # swift-snapshot-testing pulls swift-syntax into the graph; keep the clones.
       # Restore and save are separate steps because a recording run fails on purpose.
       - id: packages
         uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ${{ runner.temp }}/SourcePackages
-          key: snapshot-packages-${{ hashFiles('SnapshotTests/Package.resolved') }}
+          key: snapshot-packages-${{ runner.os }}-${{ steps.xcode.outputs.version }}-${{ hashFiles('SnapshotTests/Package.resolved') }}
 
-      # Resolution separate from the tests, so only complete clones are cached. Not
-      # -onlyUsePackageVersionsFromResolvedFile: Xcode versions name the same package
-      # differently (swift-issue-reporting, formerly xctest-dynamic-overlay), so a file
-      # resolved by one counts as out of date for another. The pins in it still apply.
+      # Package.resolved is the one this Xcode writes: any version it would change fails
+      # here, with the file to commit in the log. Another Xcode (a local Xcode 27, say)
+      # rewrites it; don't commit that.
       - name: Resolve packages
-        id: resolve
         working-directory: SnapshotTests
         env:
           PACKAGES: ${{ runner.temp }}/SourcePackages
@@ -103,6 +115,11 @@ jobs:
           xcodebuild -resolvePackageDependencies \
             -scheme DashUIKitSnapshotTests-Package \
             -clonedSourcePackagesDirPath "$PACKAGES"
+          if ! git diff --quiet -- Package.resolved; then
+            echo "::error file=SnapshotTests/Package.resolved::Package.resolved is not what $(xcodebuild -version | head -1) resolves. Commit this file:"
+            cat Package.resolved
+            exit 1
+          fi
 
       - name: Save the package clones
         if: ${{ steps.packages.outputs.cache-hit != 'true' }}
@@ -115,23 +132,33 @@ jobs:
       # REQUIRE turns a runner on another iOS runtime into a failure, not a skip.
       # RECORD=failed rewrites a missing or changed reference in the checkout and still
       # fails the test; the upload step below sends the rewritten set to
-      # .github/scripts/fetch-snapshots.sh.
+      # .github/scripts/fetch-snapshots.sh. xcodebuild passes a run where every test was
+      # skipped, so the summary line is checked too.
       - name: Run snapshot tests
         id: test
         working-directory: SnapshotTests
         env:
+          LOG: ${{ runner.temp }}/snapshot-tests.log
           PACKAGES: ${{ runner.temp }}/SourcePackages
           TEST_RUNNER_SNAPSHOT_REQUIRE_REFERENCE_ENVIRONMENT: "1"
           TEST_RUNNER_SNAPSHOT_TESTING_RECORD: failed
         run: |
+          set -o pipefail
           udid=$(../.github/scripts/pick-simulator.sh)
           xcodebuild -scheme DashUIKitSnapshotTests-Package \
             -destination "platform=iOS Simulator,id=${udid}" \
             -clonedSourcePackagesDirPath "$PACKAGES" \
+            -disableAutomaticPackageResolution \
             -testLanguage en -testRegion US \
             -collect-test-diagnostics never \
             CODE_SIGNING_ALLOWED=NO \
-            test
+            test 2>&1 | tee "$LOG"
+          summary=$(grep -E "Executed [0-9]+ tests?," "$LOG" | tail -1)
+          case "$summary" in
+            *"Executed 0 tests"* | *skipped* | "")
+              echo "::error::Snapshot tests did not all run: ${summary:-no summary line}"
+              exit 1 ;;
+          esac
 
       # Only when a reference was written: a run that failed before rendering (build
       # error, environment mismatch) has nothing to fetch.

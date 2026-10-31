@@ -29,15 +29,15 @@ enum ReferenceEnvironment {
     /// The CI simulator runtime: its version and build. A runtime update with the
     /// same version number can still render differently.
     static let iOS = "26.5 (23F77)"
-    /// The CI simulator's model (`SIMULATOR_MODEL_IDENTIFIER`).
-    static let model = "iPhone18,3"
     /// Amounts are formatted with `Locale.current`; this is 1234.5 in the
     /// reference locale's separators.
     static let number = "1,234.5"
     /// Leading and trailing swap in a right-to-left language.
     static let rightToLeft = false
 
-    static let current: (iOS: String, model: String, number: String, rightToLeft: Bool) = {
+    /// The device model is not part of it: the width and the scale are fixed, so any
+    /// iPhone renders the same pixels.
+    static let current: (iOS: String, number: String, rightToLeft: Bool) = {
         let environment = ProcessInfo.processInfo.environment
         let version = environment["SIMULATOR_RUNTIME_VERSION"] ?? "?"
         let build = environment["SIMULATOR_RUNTIME_BUILD_VERSION"] ?? "?"
@@ -46,7 +46,6 @@ enum ReferenceEnvironment {
         formatter.locale = .current
         return (
             "\(version) (\(build))",
-            environment["SIMULATOR_MODEL_IDENTIFIER"] ?? "?",
             formatter.string(from: 1234.5) ?? "",
             Locale.Language(identifier: Locale.preferredLanguages.first ?? "en")
                 .characterDirection == .rightToLeft
@@ -65,12 +64,11 @@ enum ReferenceEnvironment {
         if environment["SNAPSHOT_FORCE"] == "1" { return }
 
         let current = current
-        if current == (iOS, model, number, rightToLeft) { return }
+        if current == (iOS, number, rightToLeft) { return }
 
         let message = """
-            References are rendered on iOS \(iOS), \(model), numbers as "\(number)", \
-            right-to-left \(rightToLeft); this is iOS \(current.iOS), \(current.model), \
-            "\(current.number)", right-to-left \(current.rightToLeft). Set SNAPSHOT_FORCE=1 to \
+            References are rendered on iOS \(iOS), numbers as "\(number)", right-to-left \
+            \(rightToLeft); this is iOS \(current.iOS), "\(current.number)", right-to-left \(current.rightToLeft). Set SNAPSHOT_FORCE=1 to \
             compare anyway, or update ReferenceEnvironment and re-record \
             (docs/snapshot-tests.md).
             """
@@ -88,8 +86,14 @@ enum SnapshotLayout {
     static let padding: CGFloat = 16
 }
 
-/// Asserts `view` against its light and its dark reference, rendered at
-/// `SnapshotLayout.width` on `background`, with `SnapshotLayout.padding` around it.
+/// Asserts `view` against its reference in each of `appearances` (light and
+/// dark by default), rendered at `SnapshotLayout.width` on `background`, with
+/// `SnapshotLayout.padding` around it. Pass only `.light` for a view that looks the
+/// same in both, so no reference duplicates another.
+///
+/// Only a run that sets `SNAPSHOT_TESTING_RECORD` writes references; otherwise a
+/// missing one fails without being recorded, so a local `SNAPSHOT_FORCE=1` run
+/// cannot leave images from another simulator in the tree.
 ///
 /// `precision: 1` checks every pixel; `perceptualPrecision: 0.98` lets a pixel
 /// differ by a colour distance (ΔE) of at most 2, which absorbs anti-aliasing noise
@@ -99,6 +103,7 @@ func assertComponentSnapshots(
     of view: some View,
     named name: String,
     background: Color = Color.dash.primaryBackground,
+    appearances: [UIUserInterfaceStyle] = [.light, .dark],
     fileID: StaticString = #fileID,
     filePath: StaticString = #filePath,
     testName: String = #function,
@@ -107,7 +112,10 @@ func assertComponentSnapshots(
 ) throws {
     try ReferenceEnvironment.check()
 
-    for style in [UIUserInterfaceStyle.light, .dark] {
+    let record: SnapshotTestingConfiguration.Record? =
+        ProcessInfo.processInfo.environment["SNAPSHOT_TESTING_RECORD"] == nil ? .never : nil
+
+    for style in appearances {
         let traits = UITraitCollection { traits in
             traits.userInterfaceStyle = style
             traits.displayScale = SnapshotLayout.scale
@@ -125,6 +133,7 @@ func assertComponentSnapshots(
             of: framed,
             as: .image(precision: 1, perceptualPrecision: 0.98, layout: .sizeThatFits, traits: traits),
             named: "\(name)-\(style == .dark ? "dark" : "light")",
+            record: record,
             fileID: fileID,
             file: filePath,
             testName: testName,
