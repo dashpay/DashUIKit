@@ -117,10 +117,10 @@ public struct SearchBar: View {
         ) {
             EmptyView()
         }
-        .focused($isFocused)
         .dashFont(.subhead)
         .foregroundStyle(Color.dash.primaryText)
         .tint(Color.dash.primaryText)
+        .focused($isFocused)
     }
 }
 
@@ -132,6 +132,14 @@ public struct SearchBar: View {
     @Previewable @State var text = ""
     SearchBar(text: $text)
         .padding()
+}
+
+#Preview("Empty, dark") {
+    @Previewable @State var text = ""
+    SearchBar(text: $text)
+        .padding()
+        .background(Color.dash.primaryBackground)
+        .preferredColorScheme(.dark)
 }
 
 #Preview("Typed") {
