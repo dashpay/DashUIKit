@@ -42,9 +42,10 @@ public struct SwitchView: View {
         .animation(.easeInOut(duration: Constants.animationDuration), value: isOn)
         .contentShape(Rectangle())
         .onTapGesture { isOn.toggle() }
-        .accessibilityAddTraits(.isToggle)
-        .accessibilityValue(Text(isOn ? Constants.onValue : Constants.offValue))
-        .accessibilityAction { isOn.toggle() }
+        .accessibilityRepresentation {
+            Toggle(isOn: $isOn) { EmptyView() }
+                .labelsHidden()
+        }
     }
 
     private var trackFill: Color {
