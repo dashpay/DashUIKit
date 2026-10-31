@@ -12,8 +12,8 @@ and callbacks; they render and report intent. They require `import DashUIKit` an
 - **[Foundation](foundation.md)** — design tokens: colors (`Color.dash.*`), typography
   (`Font.dash.*`, `.dashFont`, `DashTextStyle`), icons (`DashIconSource`, `Image(dash:)`),
   bundle access.
-- **[Buttons & inputs](buttons-and-inputs.md)** — `DashButton`, `DashSwitch`, `SearchBar`,
-  `AddressFieldView`, `Criteria`, `SimpleSelect`, `NumericKeyboardView`.
+- **[Buttons & inputs](buttons-and-inputs.md)** — `DashButton`, `DashSwitch`, `SwitchView`,
+  `SearchBar`, `AddressFieldView`, `Criteria`, `SimpleSelect`, `NumericKeyboardView`.
 - **[Amount & currency](amount-and-currency.md)** — `EnterAmountView`, `SwapAmountView`,
   `ReceiveEstimateView`, `DashAmount`, `DashBalanceView`, `DashPickerView`,
   `CurrencyOption`.
@@ -74,6 +74,7 @@ and callbacks; they render and report intent. They require `import DashUIKit` an
 | `SimpleSelect` | [Buttons & inputs](buttons-and-inputs.md#simpleselect) |
 | `SuccessIllustration` | [Feedback](feedback.md#successillustration--errorillustration) |
 | `SwapAmountView` | [Amount & currency](amount-and-currency.md#swapamountview) |
+| `SwitchView` | [Buttons & inputs](buttons-and-inputs.md#switchview) |
 | `SystemMessageView` | [Feedback](feedback.md#systemmessageview) |
 | `Toast` (`ToastStyle`) | [Feedback](feedback.md#toast) |
 | `TopIntroView` | [Navigation & containers](navigation-and-containers.md#topintroview) |
