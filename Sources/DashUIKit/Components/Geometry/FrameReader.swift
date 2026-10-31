@@ -78,7 +78,7 @@ struct FrameReader_Previews: PreviewProvider {
                         Color.green
                             .frame(maxWidth: .infinity)
                             .frame(height: 160)
-                            .cornerRadius(10)
+                            .clipShape(.rect(cornerRadius: 10))
                             .overlay(Text("\(index)"))
                             // Track only the first tile's position within the named space.
                             .readingFrame(coordinateSpace: .named("demo")) { frame in
