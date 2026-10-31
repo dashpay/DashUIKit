@@ -123,9 +123,46 @@ Sheet chrome to put **inside** a SwiftUI `.sheet { }`: a grabber, a `NavigationB
 ```
 
 - **`fillsHeight: true`** (default) — content fills the sheet; pair with an explicit detent
-  (`.large` / `.medium` / `.height`). Wraps content in a `NavigationView`.
+  (`.large` / `.medium` / `.height`). The content stops above the home indicator and the
+  `background` runs under it; a text field near the bottom rises with the keyboard.
 - **`fillsHeight: false`** — natural height; pair with `.selfSizingSheet(…)` so the sheet
   snaps to its content.
+
+The content sits directly in the sheet: `BottomSheet` provides no navigation container, so a
+`NavigationLink` in the content does not push, and a UIKit view controller wrapped in the
+content has no `navigationController`. A sheet that moves between screens keeps the route in
+the host's state and drives the header's back button. Keep the list in the hierarchy under the
+detail if going back should return to the same scroll position:
+
+```swift
+@State private var opened: Item?
+
+BottomSheet(
+    showBackButton: .constant(opened != nil),
+    onBackButtonPressed: { opened = nil }
+) {
+    ZStack {
+        ItemList { opened = $0 }
+            .allowsHitTesting(opened == nil)
+            .accessibilityHidden(opened != nil)
+
+        if let item = opened {
+            ItemDetail(item: item)
+                // Fills the sheet and is opaque, so it covers the list. Use the
+                // colour passed as the sheet's `background` (here the default).
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .background(Color.dash.primaryBackground)
+                // VoiceOver's escape gesture goes back, as a pop would.
+                .accessibilityAction(.escape) { opened = nil }
+        }
+    }
+}
+```
+
+A navigation push also announced the new screen to VoiceOver and returned focus to the row on
+back. The snippet does neither; a host that wants them posts
+`AccessibilityNotification.ScreenChanged().post()` after opening and moves focus back with
+`@AccessibilityFocusState`.
 
 `isDismissalEnabled` says whether the sheet may dismiss **itself**: it blocks the
 interactive swipe and the close button's default `dismiss()`. The binding is dynamic, so a
