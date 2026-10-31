@@ -117,7 +117,7 @@ jobs:
             -scheme DashUIKitSnapshotTests-Package \
             -clonedSourcePackagesDirPath "$PACKAGES"
           if ! git diff --quiet -- Package.resolved; then
-            echo "::error file=SnapshotTests/Package.resolved::Package.resolved is not what $(xcodebuild -version | head -1) resolves. Commit this file:"
+            echo "::error file=SnapshotTests/Package.resolved::Package.resolved is not what $(xcodebuild -version | sed -n 1p) resolves. Commit this file:"
             cat Package.resolved
             exit 1
           fi
