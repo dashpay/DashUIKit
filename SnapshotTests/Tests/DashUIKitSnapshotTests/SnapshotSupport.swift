@@ -86,14 +86,12 @@ enum SnapshotLayout {
     static let padding: CGFloat = 16
 }
 
-/// Asserts `view` against its reference in each of `appearances` (light and
-/// dark by default), rendered at `SnapshotLayout.width` on `background`, with
-/// `SnapshotLayout.padding` around it. Pass only `.light` for a view that looks the
-/// same in both, so no reference duplicates another.
+/// Asserts `view` against its light and its dark reference, rendered at
+/// `SnapshotLayout.width` on `background`, with `SnapshotLayout.padding` around it.
 ///
-/// Only a run that sets `SNAPSHOT_TESTING_RECORD` writes references; otherwise a
-/// missing one fails without being recorded, so a local `SNAPSHOT_FORCE=1` run
-/// cannot leave images from another simulator in the tree.
+/// Only a run that sets `SNAPSHOT_TESTING_RECORD` (or `withSnapshotTesting(record:)`)
+/// writes references; otherwise a missing one fails without being recorded, so a local
+/// `SNAPSHOT_FORCE=1` run cannot leave images from another simulator in the tree.
 ///
 /// `precision: 1` checks every pixel; `perceptualPrecision: 0.98` lets a pixel
 /// differ by a colour distance (ΔE) of at most 2, which absorbs anti-aliasing noise
@@ -103,7 +101,6 @@ func assertComponentSnapshots(
     of view: some View,
     named name: String,
     background: Color = Color.dash.primaryBackground,
-    appearances: [UIUserInterfaceStyle] = [.light, .dark],
     fileID: StaticString = #fileID,
     filePath: StaticString = #filePath,
     testName: String = #function,
@@ -112,10 +109,11 @@ func assertComponentSnapshots(
 ) throws {
     try ReferenceEnvironment.check()
 
-    let record: SnapshotTestingConfiguration.Record? =
-        ProcessInfo.processInfo.environment["SNAPSHOT_TESTING_RECORD"] == nil ? .never : nil
+    let recordingAsked = ProcessInfo.processInfo.environment["SNAPSHOT_TESTING_RECORD"] != nil
+        || SnapshotTestingConfiguration.current?.record != nil
+    let record: SnapshotTestingConfiguration.Record? = recordingAsked ? nil : .never
 
-    for style in appearances {
+    for style in [UIUserInterfaceStyle.light, .dark] {
         let traits = UITraitCollection { traits in
             traits.userInterfaceStyle = style
             traits.displayScale = SnapshotLayout.scale

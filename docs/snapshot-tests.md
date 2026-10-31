@@ -27,10 +27,9 @@ The tests live in a separate package so that the snapshot library never appears 
 manifest that apps resolve. `swift build` and `xcodebuild -scheme DashUIKit` at the repo
 root do not see them.
 
-Each test calls `assertComponentSnapshots(of:named:background:appearances:)`. It renders the view
+Each test calls `assertComponentSnapshots(of:named:background:)`. It renders the view
 402 pt wide (iPhone 17 / 17 Pro) at 3×, with 16 pt of padding, on `Color.dash.primaryBackground`
-unless a background is given, in light and in dark (only light for a view that renders the
-same pixels in both). A test fails when any pixel differs by more than a colour
+unless a background is given, in light and in dark. A test fails when any pixel differs by more than a colour
 distance (ΔE) of 2. That absorbs anti-aliasing noise. A moved edge fails; a colour token
 change fails when it moves a colour by more than ΔE 2, about the smallest difference the eye
 sees.
@@ -48,12 +47,14 @@ blur behind `Toast`) is not in them; a change to it does not fail a test.
 Text, SF Symbols and SwiftUI layout render differently on each iOS release, so a reference
 rendered on one simulator does not match another one. The references are therefore rendered
 by the `Snapshot tests (iOS Simulator)` CI job (the Xcode in `.github/actions/select-xcode`,
-on an iPhone simulator `pick-simulator.sh` picks), and compared only on that environment:
+on the `iPhone 17` simulator of the newest runtime it can run, so code that reads the screen
+size renders the same every time), and compared only on that environment:
 
 - `ReferenceEnvironment` in `SnapshotSupport.swift` names it: the simulator runtime's
   version and build, the text direction, and how the locale writes 1234.5 (amounts use
-  `Locale.current`; the job runs with `-testLanguage en -testRegion US`). The iPhone model
-  is not part of it: width and scale are fixed, so any model renders the same pixels.
+  `Locale.current`; the job runs with `-testLanguage en -testRegion US`). The device model
+  is not part of it: width and scale are fixed, so the covered components render the same
+  pixels on another iPhone of the same runtime (an iPhone 17 Pro on iOS 26.5 matches).
 - **Anywhere else** every snapshot test is **skipped**, with a message naming both
   environments. Locally on a newer Xcode, `xcodebuild test` reports them as skipped, not
   passed.
@@ -61,7 +62,8 @@ on an iPhone simulator `pick-simulator.sh` picks), and compared only on that env
   (`SNAPSHOT_REQUIRE_REFERENCE_ENVIRONMENT=1`), so a runner image update cannot turn the
   suite into skips.
 - `SNAPSHOT_FORCE=1` compares anyway, for example on a local simulator with the same iOS
-  version. It never writes a reference: only a run that sets `SNAPSHOT_TESTING_RECORD` does.
+  version. It never writes a reference: only a run that sets `SNAPSHOT_TESTING_RECORD` (or
+  wraps the test in `withSnapshotTesting(record:)`) does.
 - The job also fails when its last `Executed … tests` line reports no tests or any skipped
   one, so a broken environment check cannot pass as skips.
 
@@ -81,8 +83,9 @@ Changed a component on purpose, or added a test? CI records the new images for y
    .github/scripts/fetch-snapshots.sh <run-id>   # or a given run
    ```
 
-   It takes the newest finished, not cancelled run of `HEAD`, refuses when the tree has
-   uncommitted changes (the images show `HEAD`, not your edits), replaces
+   It takes the newest finished, not cancelled run of `HEAD`, refuses when tracked files
+   have uncommitted changes (the images show `HEAD`, not your edits; a rewritten
+   `SnapshotTests/Package.resolved` is ignored), replaces
    `SnapshotTests/Tests/DashUIKitSnapshotTests/__Snapshots__` with the artifact, and lists the
    changed files.
 3. Look at the changed images (open them, or compare with `git difftool`). If the change is

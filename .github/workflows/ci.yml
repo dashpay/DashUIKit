@@ -144,7 +144,8 @@ jobs:
           TEST_RUNNER_SNAPSHOT_TESTING_RECORD: failed
         run: |
           set -o pipefail
-          udid=$(../.github/scripts/pick-simulator.sh)
+          # One device, so code that reads the screen size renders the same every time.
+          udid=$(../.github/scripts/pick-simulator.sh "iPhone 17")
           xcodebuild -scheme DashUIKitSnapshotTests-Package \
             -destination "platform=iOS Simulator,id=${udid}" \
             -clonedSourcePackagesDirPath "$PACKAGES" \
@@ -153,7 +154,7 @@ jobs:
             -collect-test-diagnostics never \
             CODE_SIGNING_ALLOWED=NO \
             test 2>&1 | tee "$LOG"
-          summary=$(grep -E "Executed [0-9]+ tests?," "$LOG" | tail -1)
+          summary=$(grep -E "Executed [0-9]+ tests?," "$LOG" | tail -1 || true)
           case "$summary" in
             *"Executed 0 tests"* | *skipped* | "")
               echo "::error::Snapshot tests did not all run: ${summary:-no summary line}"
