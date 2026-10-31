@@ -25,7 +25,7 @@ and callbacks; they render and report intent. They require `import DashUIKit` an
 - **[Feedback](feedback.md)** — `Toast`, `SystemMessageView`,
   `LoadingIllustration` / `LoadingSpinner`, `SuccessIllustration`, `ErrorIllustration`,
   `XmarkIcon`, `CheckmarkIcon`, `ChevronIcon`, `InfoRoundIcon`.
-- **[Utilities](utilities.md)** — geometry readers (`readingFrame`, `readingLocation`),
+- **[Utilities](utilities.md)** — geometry reader (`readingFrame`),
   `ScrollViewWithOnScrollChanged`, `scaleToFitWidth`.
 - **[Snapshot tests](snapshot-tests.md)** — light / dark reference images of the
   components, and how to record them.
@@ -66,7 +66,7 @@ and callbacks; they render and report intent. They require `import DashUIKit` an
 | `NavigationBarCircleMenu` | [Navigation & containers](navigation-and-containers.md#custom-circle-actions) |
 | `NumericKeyboardView` | [Buttons & inputs](buttons-and-inputs.md#numerickeyboardview) |
 | `RadioButtonRow` | [Lists & rows](lists-and-rows.md#radiobuttonrow) |
-| `readingFrame` / `readingLocation` | [Utilities](utilities.md#frame--location-readers) |
+| `readingFrame` | [Utilities](utilities.md#frame-reader) |
 | `ReceiveEstimateView` | [Amount & currency](amount-and-currency.md#receiveestimateview) |
 | `ScrollViewWithOnScrollChanged` | [Utilities](utilities.md#scrollviewwithonscrollchanged) |
 | `scaleToFitWidth` | [Utilities](utilities.md#scaletofitwidth) |
