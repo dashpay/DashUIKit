@@ -7,6 +7,14 @@
 
 import SwiftUI
 
+/// The design system's switch: a blue track with a white thumb, drawn by hand
+/// rather than tinting the system `Toggle`.
+///
+/// To assistive technologies it is a native `Toggle` with a hidden label: the
+/// same traits, the same state value, which VoiceOver speaks in the user's
+/// language, the same disabled state, and activation flips `isOn`. Give it a
+/// name with `.accessibilityLabel(_:)`, or let a row that combines its children
+/// supply one.
 public struct SwitchView: View {
 
     private struct Constants {
@@ -18,8 +26,6 @@ public struct SwitchView: View {
         static let switchTrackPadding: CGFloat = 2
         static let switchTrackRadius: CGFloat = 1000
         static let animationDuration: Double = 0.2
-        static let onValue = NSLocalizedString("On", bundle: .module, comment: "DashUIKit")
-        static let offValue = NSLocalizedString("Off", bundle: .module, comment: "DashUIKit")
     }
 
     @Environment(\.isEnabled) private var isEnabled
@@ -42,9 +48,15 @@ public struct SwitchView: View {
         .animation(.easeInOut(duration: Constants.animationDuration), value: isOn)
         .contentShape(Rectangle())
         .onTapGesture { isOn.toggle() }
-        .accessibilityAddTraits(.isToggle)
-        .accessibilityValue(Text(isOn ? Constants.onValue : Constants.offValue))
-        .accessibilityAction { isOn.toggle() }
+        // The system control's semantics, not hand-made ones: VoiceOver
+        // localizes a toggle's state only when it comes from a real `Toggle`.
+        // The style is pinned so the role stays a switch on macOS, where the
+        // default is a checkbox, and under a host's `toggleStyle`.
+        .accessibilityRepresentation {
+            Toggle(isOn: $isOn) { EmptyView() }
+                .labelsHidden()
+                .toggleStyle(.switch)
+        }
     }
 
     private var trackFill: Color {

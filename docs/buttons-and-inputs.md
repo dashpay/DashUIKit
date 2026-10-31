@@ -59,6 +59,31 @@ DashSwitch(isOn: $isOn)
 
 ---
 
+## SwitchView
+
+File `Components/Switch/SwitchView.swift`
+
+The design system's switch: the DS track and thumb drawn in SwiftUI, on iOS and macOS.
+`MenuItem`'s `.toggle` accessory uses it. It takes its enabled state from the environment,
+so `.disabled(true)` dims it and stops the tap. Use it where the DS switch is drawn;
+`DashSwitch` is the system switch with the DS tint, UIKit only.
+
+```swift
+@State private var isOn = false
+SwitchView(isOn: $isOn)
+    .accessibilityLabel("Advanced mode")   // optional, see below
+```
+
+To assistive technologies and UI tests it is a native switch-style `Toggle` with a hidden
+label: the same traits, the same state value, which VoiceOver speaks in the user's
+language, dimmed when disabled, and a double-tap flips `isOn`. Its own label is empty:
+name it with `.accessibilityLabel(_:)`, or put it in a row that combines its children
+(`.accessibilityElement(children: .combine)`), which then reads the row's text as the
+label and the switch's state as the value. On iOS, UI tests read the state as the value
+`"1"` / `"0"`, as for any `Toggle`.
+
+---
+
 ## SearchBar
 
 File `Components/SearchBar.swift` · **UIKit only**
