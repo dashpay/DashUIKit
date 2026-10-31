@@ -46,7 +46,8 @@ ScrollViewWithOnScrollChanged(.vertical, showsIndicators: false) {
   feed it.
 - The last value is sent again when the content appears again with its state kept (switching
   back to its tab, for example).
-- The content starts one default stack spacing below the top.
+- The content starts one default stack spacing from the start edge (below the top in a
+  vertical view, after the leading edge in a horizontal one).
 
 ---
 

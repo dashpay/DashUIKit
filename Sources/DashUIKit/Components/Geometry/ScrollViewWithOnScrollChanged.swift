@@ -52,9 +52,9 @@ public struct ScrollViewWithOnScrollChanged<Content: View>: View {
 
     public var body: some View {
         ScrollView(axes, showsIndicators: showsIndicators) {
-            // Keeps the content one default stack spacing below the top, where
-            // hosts lay out against it. Deleting it moves their content up by
-            // that spacing.
+            // Keeps the content one default stack spacing from the start edge,
+            // where hosts lay out against it. Deleting it moves their content
+            // towards the start by that spacing.
             Color.clear.frame(width: 0, height: 0)
             content
         }
@@ -83,10 +83,11 @@ public struct ScrollViewWithOnScrollChanged<Content: View>: View {
 /// `contentOffset.x` equals the trailing inset, the leading inset does not move it, and the
 /// offset grows as the content scrolls towards its end.
 func scrollContentOrigin(of geometry: ScrollGeometry, layoutDirection: LayoutDirection) -> CGPoint {
+    // Written as subtractions from zero, so the rest position is +0, never -0.
     let x = layoutDirection == .rightToLeft
-        ? -(geometry.contentOffset.x - geometry.contentInsets.trailing)
-        : -(geometry.contentOffset.x + geometry.contentInsets.leading)
-    return CGPoint(x: x, y: -(geometry.contentOffset.y + geometry.contentInsets.top))
+        ? geometry.contentInsets.trailing - geometry.contentOffset.x
+        : 0 - geometry.contentOffset.x - geometry.contentInsets.leading
+    return CGPoint(x: x, y: 0 - geometry.contentOffset.y - geometry.contentInsets.top)
 }
 
 // MARK: - Preview
