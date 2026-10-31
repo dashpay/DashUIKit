@@ -6,7 +6,8 @@
 # Review the result with `git diff`, then commit and push.
 #
 # Usage: fetch-snapshots.sh [<run-id>]
-#   Without a run id: the newest CI run of HEAD, which must be pushed and finished.
+#   Without a run id: the newest CI run of HEAD, which must be pushed, in an open PR
+#   (CI runs on pull requests and on master), and finished.
 #   A run id must be a run of HEAD too.
 # Env: REPO (default dashpay/DashUIKit). Needs gh, logged in.
 set -euo pipefail
@@ -18,6 +19,12 @@ dest="$root/SnapshotTests/Tests/DashUIKitSnapshotTests/__Snapshots__"
 if [ $# -gt 1 ]; then
   echo "usage: fetch-snapshots.sh [<run-id>]" >&2
   exit 2
+fi
+
+if [ -n "$(git -C "$root" status --porcelain --untracked-files=all -- "$dest")" ]; then
+  echo "${dest#"$root"/} has uncommitted changes; commit or discard them first:" >&2
+  git -C "$root" status --short --untracked-files=all -- "$dest" >&2
+  exit 1
 fi
 
 sha=$(git rev-parse HEAD)
@@ -35,7 +42,8 @@ else
   info=$(gh run list -R "$repo" --workflow ci.yml --commit "$sha" \
     --limit 1 --json databaseId,status --jq '.[] | "\(.databaseId) \(.status)"')
   if [ -z "$info" ]; then
-    echo "No CI run for ${sha:0:7} in $repo. Push the branch and wait for CI." >&2
+    echo "No CI run for ${sha:0:7} in $repo. Push it to a branch with an open PR and wait" >&2
+    echo "for CI." >&2
     exit 1
   fi
   read -r run status <<< "$info"
@@ -60,8 +68,8 @@ work=$(mktemp -d)
 trap 'rm -rf "$work"' EXIT
 
 if ! gh run download "$run" -R "$repo" -n snapshots -D "$work/snapshots"; then
-  echo "Run $run has no 'snapshots' artifact: the job failed before it rendered anything" >&2
-  echo "(see its log), or the artifact expired." >&2
+  echo "Run $run has no 'snapshots' artifact: the job re-recorded nothing (it failed before" >&2
+  echo "rendering; see its log), or the artifact expired." >&2
   exit 1
 fi
 

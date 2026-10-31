@@ -89,12 +89,33 @@ jobs:
           path: ${{ runner.temp }}/SourcePackages
           key: snapshot-packages-${{ hashFiles('SnapshotTests/Package.resolved') }}
 
+      # Resolution separate from the tests, so only complete clones are cached; and only
+      # the versions in Package.resolved.
+      - name: Resolve packages
+        id: resolve
+        working-directory: SnapshotTests
+        env:
+          PACKAGES: ${{ runner.temp }}/SourcePackages
+        run: |
+          xcodebuild -resolvePackageDependencies \
+            -scheme DashUIKitSnapshotTests-Package \
+            -clonedSourcePackagesDirPath "$PACKAGES" \
+            -onlyUsePackageVersionsFromResolvedFile
+
+      - name: Save the package clones
+        if: ${{ steps.packages.outputs.cache-hit != 'true' }}
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ runner.temp }}/SourcePackages
+          key: ${{ steps.packages.outputs.cache-primary-key }}
+
       # The references are rendered here and only compared here (docs/snapshot-tests.md).
       # REQUIRE turns a runner on another iOS runtime into a failure, not a skip.
       # RECORD=failed rewrites a missing or changed reference in the checkout and still
       # fails the test; the upload step below sends the rewritten set to
       # .github/scripts/fetch-snapshots.sh.
       - name: Run snapshot tests
+        id: test
         working-directory: SnapshotTests
         env:
           PACKAGES: ${{ runner.temp }}/SourcePackages
@@ -105,25 +126,31 @@ jobs:
           xcodebuild -scheme DashUIKitSnapshotTests-Package \
             -destination "platform=iOS Simulator,id=${udid}" \
             -clonedSourcePackagesDirPath "$PACKAGES" \
+            -onlyUsePackageVersionsFromResolvedFile \
             -testLanguage en -testRegion US \
             -collect-test-diagnostics never \
             CODE_SIGNING_ALLOWED=NO \
             test
 
-      - name: Save the package clones
-        if: ${{ !cancelled() && steps.packages.outputs.cache-hit != 'true' }}
-        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-        with:
-          path: ${{ runner.temp }}/SourcePackages
-          key: ${{ steps.packages.outputs.cache-primary-key }}
+      # Only when a reference was written: a run that failed before rendering (build
+      # error, environment mismatch) has nothing to fetch.
+      - name: Check for re-recorded references
+        id: recorded
+        if: ${{ failure() && steps.test.outcome == 'failure' }}
+        run: |
+          if [ -n "$(git status --porcelain --untracked-files=all -- SnapshotTests/Tests/DashUIKitSnapshotTests/__Snapshots__)" ]; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "::notice::No reference was re-recorded; see the test log for the failure."
+          fi
 
       - name: Upload re-recorded references
-        if: ${{ failure() }}
+        if: ${{ failure() && steps.recorded.outputs.changed == 'true' }}
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: snapshots
           path: SnapshotTests/Tests/DashUIKitSnapshotTests/__Snapshots__
-          if-no-files-found: ignore
+          if-no-files-found: error
           # A re-run of the job replaces the set of the earlier attempt.
           overwrite: true
           retention-days: 14

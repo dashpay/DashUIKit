@@ -57,7 +57,7 @@ the newest iPhone simulator it runs), and compared only on that environment:
 
 Changed a component on purpose, or added a test? CI records the new images for you:
 
-1. Push the branch. The snapshot job renders the PR head (not its merge with `master`, so
+1. Push the branch, with a PR open (CI runs on pull requests and on `master`). The snapshot job renders the PR head (not its merge with `master`, so
    the images show the branch's own code). It fails on every missing or changed reference,
    writes the new image in its place and uploads the whole `__Snapshots__` folder as the
    artifact `snapshots`.
@@ -73,7 +73,12 @@ Changed a component on purpose, or added a test? CI records the new images for y
 3. Look at the changed images (open them, or compare with `git difftool`). If the change is
    the one you meant, commit and push; the next run passes, and the PR's file view shows
    each image before and after. If it is not, the images still show what CI rendered:
-   discard them (`git checkout -- SnapshotTests`) and fix the code.
+   discard them and fix the code:
+
+   ```sh
+   git checkout -- SnapshotTests/Tests/DashUIKitSnapshotTests/__Snapshots__
+   git clean -fd -- SnapshotTests/Tests/DashUIKitSnapshotTests/__Snapshots__
+   ```
 
 The job renders the branch, not its merge with `master`. After `master` changed a component
 your branch also renders, merge `master`, push, and run step 2 again before merging; else
@@ -101,7 +106,8 @@ another environment are only good for trying things out; do not commit them.
 ### Moving CI to a new Xcode
 
 When `select-xcode` (or the runner image) moves to a new iOS runtime or runtime build, the
-job fails with the environment message. Update `ReferenceEnvironment.iOS` to what it names, push, and
+job fails with the environment message. Update every value of `ReferenceEnvironment` it
+names (runtime, model, number format), push, and
 fetch the re-recorded set as above.
 
 ### Bumping swift-snapshot-testing
