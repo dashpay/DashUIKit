@@ -200,7 +200,7 @@ sentence. Stack several to describe what a feature unlocks.
 SheetFeature(
     title: "Identity",
     description: "Register a username and be paid by name instead of an address.",
-    icon: .custom("feature-identity", bundle: .dashUIKit),
+    icon: DashIcon.Features.identity.source,
     iconColor: Color.dash.purple)                            // omit to keep the asset's own colours
 
 SheetFeature(title: "Custom", description: "…") {            // or any view in the slot
@@ -229,4 +229,4 @@ VStack(spacing: 0) { /* rows */ }
     .modifier(MenuViewModifier(shadowRadius: 10, innerPadding: 6))
 ```
 
-The shadow uses `Color.dash.shadow`, which is adaptive (subtle on light, `.clear` on dark).
+The shadow uses `Color.dash.shadow`, the `Shadow` colorset (subtle on light, clear on dark).
