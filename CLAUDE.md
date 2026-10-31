@@ -87,6 +87,18 @@ Sources/DashUIKit/
 - This is a plain SwiftPM library — `swift build` compiles it; there is no app target.
 - Develop visually with Xcode SwiftUI **#Previews** (open a file, use the canvas).
 
+## Snapshot tests
+
+- Light and dark reference images of the main components live in the separate package
+  `SnapshotTests/` (swift-snapshot-testing stays out of the library's manifest). See
+  [`docs/snapshot-tests.md`](docs/snapshot-tests.md).
+- The references are rendered by the `Snapshot tests (iOS Simulator)` CI job and compared only
+  on its iOS version; elsewhere the tests are skipped. **Don't commit references recorded on
+  your own simulator.**
+- To update them after a deliberate visual change: push, let the snapshot job fail, then run
+  `.github/scripts/fetch-snapshots.sh` from the repo root, review the images, commit.
+- A new component state that matters visually gets a snapshot test next to its preview.
+
 ## Component catalog
 
 Full per-component reference (API, props, behavior, usage) lives in **`docs/`**. Start at
