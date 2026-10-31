@@ -6,11 +6,11 @@
 # Review the result with `git diff`, then commit and push.
 #
 # Usage: fetch-snapshots.sh [<run-id>]
-#   Without a run id: the newest finished, not cancelled CI run of HEAD, which must be
-#   pushed, in an open PR (CI runs on pull requests and on master).
+#   Without a run id: the newest finished CI run of HEAD whose snapshot job ran, which
+#   must be pushed, in an open PR (CI runs on pull requests and on master).
 #   A run id must be a run of HEAD too.
-# The references show the committed code of HEAD, so the working tree must have no
-# uncommitted changes to tracked files, and none at all in __Snapshots__.
+# The references show the committed code of HEAD, so the tree must have no uncommitted
+# changes to tracked files and no new files under Sources/ or SnapshotTests/.
 # Env: REPO (default dashpay/DashUIKit). Needs gh, logged in.
 set -euo pipefail
 
@@ -27,7 +27,7 @@ fi
 # what CI rendered.
 changes=$( (git -C "$root" status --porcelain --untracked-files=no -- . \
     ':!SnapshotTests/Package.resolved'
-  git -C "$root" status --porcelain --untracked-files=all -- SnapshotTests/Tests) | sort -u)
+  git -C "$root" status --porcelain --untracked-files=all -- Sources SnapshotTests) | sort -u)
 if [ -n "$changes" ]; then
   echo "Uncommitted changes; the fetched references would show HEAD, not this tree." >&2
   echo "Commit or discard them first:" >&2
@@ -55,17 +55,32 @@ else
     echo "for CI." >&2
     exit 1
   fi
-  # Newest first: skip runs that are still going or were cancelled.
-  run=
+  # Newest first: the first finished run whose snapshot job finished too. Runs still
+  # going, cancelled, or ended before that job are skipped.
+  run='' pending=''
   while read -r id state result; do
-    if [ "$state" = completed ] && [ "$result" != cancelled ]; then
-      run=$id status=$state
-      break
+    if [ "$state" != completed ]; then
+      pending=$id
+      echo "Skipping run $id ($state)." >&2
+      continue
     fi
-    echo "Skipping run $id ($state${result:+, $result})." >&2
+    candidate=$(gh run view "$id" -R "$repo" --json jobs \
+      --jq '.jobs[] | select(.name == "Snapshot tests (iOS Simulator)")
+        | "\(.conclusion // "" | if . == "" then "unfinished" else . end)|\(.startedAt)"')
+    case "${candidate%%|*}" in
+      failure | success)
+        run=$id status=$state job=$candidate
+        break ;;
+    esac
+    echo "Skipping run $id ($result; snapshot job: ${candidate%%|*})." >&2
   done <<< "$runs"
   if [ -z "$run" ]; then
-    echo "No finished CI run of ${sha:0:7} yet; run this again when one has finished." >&2
+    if [ -n "$pending" ]; then
+      echo "Run $pending of ${sha:0:7} is still going; run this again when it has finished." >&2
+    else
+      echo "No run of ${sha:0:7} got through its snapshot job (cancelled or failed earlier)." >&2
+      echo "Re-run it: gh run rerun <run-id> -R $repo" >&2
+    fi
     exit 1
   fi
 fi
@@ -77,9 +92,14 @@ fi
 
 # Jobs of the run's latest attempt. A passing re-run of a failed attempt keeps the
 # failed attempt's artifact; it must not be installed.
-job=$(gh run view "$run" -R "$repo" --json jobs \
-  --jq '.jobs[] | select(.name == "Snapshot tests (iOS Simulator)")
-    | "\(.conclusion // "" | if . == "" then "unfinished" else . end)|\(.startedAt)"')
+snapshot_job() {
+  gh run view "$1" -R "$repo" --json jobs \
+    --jq '.jobs[] | select(.name == "Snapshot tests (iOS Simulator)")
+      | "\(.conclusion // "" | if . == "" then "unfinished" else . end)|\(.startedAt)"'
+}
+if [ -z "${job+x}" ]; then
+  job=$(snapshot_job "$run")
+fi
 IFS='|' read -r conclusion started <<< "$job"
 if [ "${conclusion:-}" != failure ]; then
   echo "The snapshot job of run $run ended with '${conclusion:-no such job}', not 'failure':" >&2

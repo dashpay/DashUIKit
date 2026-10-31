@@ -104,8 +104,9 @@ jobs:
           path: ${{ runner.temp }}/SourcePackages
           key: snapshot-packages-${{ runner.os }}-${{ steps.xcode.outputs.version }}-${{ hashFiles('SnapshotTests/Package.resolved') }}
 
-      # Package.resolved is the one this Xcode writes: any version it would change fails
-      # here, with the file to commit in the log. Another Xcode (a local Xcode 27, say)
+      # Package.resolved is the one this Xcode writes: a version it would change, or any
+      # edit to SnapshotTests/Package.swift (the file carries a hash of the manifest),
+      # fails here, with the file to commit in the log. Another Xcode (a local Xcode 27, say)
       # rewrites it; don't commit that.
       - name: Resolve packages
         working-directory: SnapshotTests

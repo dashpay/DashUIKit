@@ -72,7 +72,7 @@ enum ReferenceEnvironment {
         let message = """
             References are rendered on iOS \(iOS), numbers as "\(number)", right-to-left \
             \(rightToLeft), iPhone \(iPhone); this is iOS \(current.iOS), "\(current.number)", \
-            iPhone \(current.iPhone), right-to-left \(current.rightToLeft). Set SNAPSHOT_FORCE=1 to \
+            right-to-left \(current.rightToLeft), iPhone \(current.iPhone). Set SNAPSHOT_FORCE=1 to \
             compare anyway, or update ReferenceEnvironment and re-record \
             (docs/snapshot-tests.md).
             """

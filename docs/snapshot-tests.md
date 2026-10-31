@@ -20,7 +20,9 @@ SnapshotTests/                       its own package; the library's Package.swif
 packages swift-snapshot-testing brings in. Xcode versions write it differently (Xcode 27 calls
 one package `swift-issue-reporting` where Xcode 26.6 still resolves `xctest-dynamic-overlay`),
 so the committed file is the one the CI Xcode writes. The job fails when the file is not what
-it resolves, and prints the file to commit. A local Xcode that rewrites it: discard that
+it resolves, and prints the file to commit. Any edit to `SnapshotTests/Package.swift` (a
+version, the platform floor, even a comment) changes a hash in the file, so it needs the
+same step: push, copy the printed file, commit. A local Xcode that rewrites it: discard that
 change (`git checkout -- SnapshotTests/Package.resolved`).
 
 The tests live in a separate package so that the snapshot library never appears in the
@@ -53,8 +55,11 @@ size renders the same every time), and compared only on that environment:
 - `ReferenceEnvironment` in `SnapshotSupport.swift` names it: the simulator runtime's
   version and build, the text direction, and how the locale writes 1234.5 (amounts use
   `Locale.current`; the job runs with `-testLanguage en -testRegion US`). The device model
-  is not part of it: width and scale are fixed, so the covered components render the same
-  pixels on another iPhone of the same runtime (an iPhone 17 Pro on iOS 26.5 matches).
+  is not part of it, only that it is an iPhone: width and scale are fixed, so the covered
+  components render the same pixels on another iPhone of the same runtime (an iPhone 17 Pro
+  on iOS 26.5 matches). A test of a component that reads the screen size (the
+  `BottomSheet` height cap, at 95 % of the screen) needs content below that cap, or a
+  local run on a larger iPhone fails.
 - **Anywhere else** every snapshot test is **skipped**, with a message naming both
   environments. Locally on a newer Xcode, `xcodebuild test` reports them as skipped, not
   passed.
