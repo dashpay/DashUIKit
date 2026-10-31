@@ -50,9 +50,12 @@ public struct SwitchView: View {
         .onTapGesture { isOn.toggle() }
         // The system control's semantics, not hand-made ones: VoiceOver
         // localizes a toggle's state only when it comes from a real `Toggle`.
+        // The style is pinned so the role stays a switch on macOS, where the
+        // default is a checkbox, and under a host's `toggleStyle`.
         .accessibilityRepresentation {
             Toggle(isOn: $isOn) { EmptyView() }
                 .labelsHidden()
+                .toggleStyle(.switch)
         }
     }
 
