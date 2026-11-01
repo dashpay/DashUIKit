@@ -223,7 +223,8 @@ public extension BottomSheet {
             content: content)
     }
 
-    /// `selfSizing(...)` whose height changes after the first measurement are animated — see
+    /// `selfSizing(...)` that can animate its height changes after the first measurement; the
+    /// rules, and when a change is not animated, are on
     /// `selfSizingSheet(fallback:maxHeightFraction:background:cornerRadius:animation:)`.
     static func selfSizing(
         title: String = "",
@@ -338,8 +339,8 @@ public extension View {
     ///   when there is none) without `animation`, and so does a change that leaves the capped
     ///   detent where it is (both heights above the `maxHeightFraction` cap). A provisional
     ///   measurement during presentation followed by the settled one counts as a change, so
-    ///   that second step can animate. `nil` applies every change without animation, as the
-    ///   overload without `animation` does.
+    ///   that second step can animate. With `nil` the sheet adds no animation and leaves the
+    ///   layout alone, as the overload without `animation` does.
     @ViewBuilder
     func selfSizingSheet(
         fallback: CGFloat = 0,
@@ -382,11 +383,6 @@ private struct SelfSizingSheetModifier: ViewModifier {
     @State private var measured: CGFloat = 0
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
-    /// The requested animation, unless the user asked for reduced motion.
-    private var heightAnimation: Animation? {
-        reduceMotion ? nil : animation
-    }
-
     func body(content: Content) -> some View {
         // Measure the wrapped content directly — reliable on first layout (`onAppear`) and on
         // changes, without depending on a published preference.
@@ -398,14 +394,7 @@ private struct SelfSizingSheetModifier: ViewModifier {
                         .onChange(of: proxy.size.height) { _, newHeight in update(newHeight) }
                 }
             )
-            // While an animated detent catches up with content that already changed, the sheet
-            // and its content differ in height. Take exactly the height the sheet offers and keep
-            // the content at its top edge, so the header stays put whether the content grew or
-            // shrank. Without `animation` the layout is left as it was.
-            .frame(
-                minHeight: heightAnimation == nil ? nil : 0,
-                maxHeight: heightAnimation == nil ? nil : .infinity,
-                alignment: .top)
+            .modifier(TopAligned(isActive: animation != nil))
             .presentationDetents(detents)
             .presentationDragIndicator(.hidden)
     }
@@ -420,13 +409,14 @@ private struct SelfSizingSheetModifier: ViewModifier {
 
     private func update(_ newHeight: CGFloat) {
         guard newHeight > 0, newHeight != measured else { return }
-        let changeAnimation = SelfSizingSheetHeight.animation(
-            for: heightAnimation,
+        let heightAnimation = SelfSizingSheetHeight.animation(
+            for: animation,
+            reduceMotion: reduceMotion,
             from: measured,
             to: newHeight,
             maxHeight: maxSheetHeight)
-        if let changeAnimation {
-            withAnimation(changeAnimation) { measured = newHeight }
+        if let heightAnimation {
+            withAnimation(heightAnimation) { measured = newHeight }
         } else {
             measured = newHeight
         }
@@ -446,6 +436,22 @@ private struct SelfSizingSheetModifier: ViewModifier {
     }
 }
 
+/// Content of a sheet with an animated detent: while the detent catches up with content that
+/// already changed, the two differ in height. Active, it takes exactly the height the sheet
+/// offers (a zero minimum, or it would grow to taller content and be centred) and keeps the
+/// content at its top edge, so the header stays put whether the content grew or shrank.
+/// Inactive, the layout is left as it is.
+private struct TopAligned: ViewModifier {
+    let isActive: Bool
+
+    func body(content: Content) -> some View {
+        content.frame(
+            minHeight: isActive ? 0 : nil,
+            maxHeight: isActive ? .infinity : nil,
+            alignment: .top)
+    }
+}
+
 /// The height decisions of `selfSizingSheet`, kept apart from the view so they can be tested.
 enum SelfSizingSheetHeight {
     /// The detent height: the measurement once there is one, `fallback` before it, capped at
@@ -456,16 +462,17 @@ enum SelfSizingSheetHeight {
 
     /// The animation to apply a new measurement in, or `nil` to apply it as is. `measured` is
     /// the current measurement (zero before the first), `newMeasured` the one arriving; both
-    /// are compared capped at the current `maxHeight`. `nil` without a requested
-    /// animation, for the first measurement (it replaces the fallback as is), and when the
-    /// detent does not move.
+    /// are compared capped at the current `maxHeight`. `nil` without a requested animation,
+    /// with Reduce Motion on, for the first measurement (it replaces the fallback as is), and
+    /// when the detent does not move.
     static func animation(
         for requested: Animation?,
+        reduceMotion: Bool,
         from measured: CGFloat,
         to newMeasured: CGFloat,
         maxHeight: CGFloat
     ) -> Animation? {
-        guard let requested, measured > 0 else { return nil }
+        guard let requested, !reduceMotion, measured > 0 else { return nil }
         return min(measured, maxHeight) != min(newMeasured, maxHeight) ? requested : nil
     }
 }

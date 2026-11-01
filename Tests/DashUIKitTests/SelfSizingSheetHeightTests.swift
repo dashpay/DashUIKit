@@ -48,9 +48,11 @@ final class SelfSizingSheetHeightTests: XCTestCase {
         _ requested: Animation?,
         from old: CGFloat,
         to new: CGFloat,
-        cap: CGFloat = 800
+        cap: CGFloat = 800,
+        reduceMotion: Bool = false
     ) -> Animation? {
-        SelfSizingSheetHeight.animation(for: requested, from: old, to: new, maxHeight: cap)
+        SelfSizingSheetHeight.animation(
+            for: requested, reduceMotion: reduceMotion, from: old, to: new, maxHeight: cap)
     }
 
     func testDefaultPathTakesNoAnimation() {
@@ -64,6 +66,10 @@ final class SelfSizingSheetHeightTests: XCTestCase {
     func testLaterChangeTakesTheRequestedAnimation() {
         XCTAssertEqual(animation(.easeInOut, from: 200, to: 400), .easeInOut)
         XCTAssertEqual(animation(.easeInOut, from: 400, to: 200), .easeInOut)
+    }
+
+    func testReduceMotionTakesNoAnimation() {
+        XCTAssertNil(animation(.easeInOut, from: 200, to: 400, reduceMotion: true))
     }
 
     func testChangeAboveTheCapIsNotAnimated() {
