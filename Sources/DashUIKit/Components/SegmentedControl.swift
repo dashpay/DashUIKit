@@ -80,6 +80,8 @@ public struct SegmentedControl<T: Hashable>: View {
     /// unselected treatment the label gets.
     private let icon: ((_ option: T, _ isSelected: Bool) -> DashIconSource)?
 
+    @Environment(\.isEnabled) private var isEnabled
+
     /// - Parameters:
     ///   - options: The segments, in reading order. Expected to be distinct.
     ///   - selection: The selected option. A value that is not one of
@@ -131,18 +133,31 @@ public struct SegmentedControl<T: Hashable>: View {
             }
         }
         .animation(Layout.animation, value: selectedIndex)
-        // The drawing takes no touches; a row of Buttons over the whole track,
-        // inset included, does. Each is one segment's share of the track and
-        // its VoiceOver element.
+        // The drawing takes no touches. A Button over each drawn segment does,
+        // from the same bounds as the pill, widened to the track's full height
+        // and, at either end, to its edge, so the inset takes taps too. Each
+        // Button is its segment's VoiceOver element.
         .accessibilityHidden(true)
         .allowsHitTesting(false)
-        .overlay {
-            HStack(spacing: 0) {
-                ForEach(options.indices, id: \.self) { index in
-                    segmentButton(options[index], isSelected: index == selectedIndex)
+        .overlayPreferenceValue(SegmentedControlBoundsKey.self) { bounds in
+            GeometryReader { geometry in
+                let cells = options.indices.compactMap { index in
+                    bounds[index].map { (index, geometry[$0]) }
                 }
+                let left = cells.map(\.1.minX).min()
+                let right = cells.map(\.1.maxX).max()
+                ZStack(alignment: .topLeading) {
+                    Color.clear
+                    ForEach(cells, id: \.0) { index, cell in
+                        let minX = cell.minX == left ? 0 : cell.minX
+                        let maxX = cell.maxX == right ? geometry.size.width : cell.maxX
+                        segmentButton(options[index], isSelected: index == selectedIndex)
+                            .frame(width: maxX - minX, height: geometry.size.height)
+                            .offset(x: minX)
+                    }
+                }
+                .environment(\.layoutDirection, .leftToRight)
             }
-            .accessibilityElement(children: .contain)
         }
         // The icon variant is two lines tall, so it sizes to its content —
         // `height` is the single-line text measurement. Either way the control
@@ -151,6 +166,9 @@ public struct SegmentedControl<T: Hashable>: View {
         .fixedSize(horizontal: false, vertical: true)
         .background(Color.dash.segmentControlBackgroundGroup)
         .clipShape(.rect(cornerRadius: Layout.containerCornerRadius))
+        // One container, so a label the host gives the control names the
+        // group rather than replacing each segment's own.
+        .accessibilityElement(children: .contain)
     }
 
     private func segmentCell(_ option: T, isSelected: Bool) -> some View {
@@ -158,8 +176,8 @@ public struct SegmentedControl<T: Hashable>: View {
             .foregroundStyle(isSelected
                 ? Color.dash.segmentControlContSelected
                 : Color.dash.segmentControlContNotSelected)
-            // A zero minimum gives every segment the same share whatever its
-            // label, so the cells line up with the equal tap targets.
+            // A zero minimum gives every segment the same share of a given
+            // width whatever its label.
             .frame(minWidth: 0, maxWidth: .infinity)
             .padding(.vertical, icon == nil
                 ? Layout.segmentVerticalPadding
@@ -176,8 +194,9 @@ public struct SegmentedControl<T: Hashable>: View {
         }
         .buttonStyle(.plain)
         .accessibilityLabel(Text(label(option)))
-        // The selected segment has nothing left to do on a double tap.
-        .accessibilityHint(isSelected
+        // The selected segment, or a disabled one, has nothing to do on a
+        // double tap.
+        .accessibilityHint(isSelected || !isEnabled
             ? Text(verbatim: "")
             : Text(NSLocalizedString("Double tap to select", bundle: .module, comment: "DashUIKit")))
         .accessibilityAddTraits(isSelected ? .isSelected : [])
