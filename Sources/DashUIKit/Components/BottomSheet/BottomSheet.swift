@@ -391,16 +391,19 @@ private struct SelfSizingSheetModifier: ViewModifier {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     func body(content: Content) -> some View {
+        let maxHeight = maxSheetHeight
         let current = SelfSizingSheetHeight.resolved(
-            measured: measured, fallback: fallback, maxHeight: maxSheetHeight)
+            measured: measured, fallback: fallback, maxHeight: maxHeight)
         // Measure the wrapped content directly — reliable on first layout (`onAppear`) and on
         // changes, without depending on a published preference.
         content
             .background(
                 GeometryReader { proxy in
                     Color.clear
-                        .onAppear { update(proxy.size.height) }
-                        .onChange(of: proxy.size.height) { _, newHeight in update(newHeight) }
+                        .onAppear { update(proxy.size.height, maxHeight: maxHeight) }
+                        .onChange(of: proxy.size.height) { _, newHeight in
+                            update(newHeight, maxHeight: maxHeight)
+                        }
                 }
             )
             .modifier(TopAligned(isActive: animation != nil))
@@ -412,13 +415,13 @@ private struct SelfSizingSheetModifier: ViewModifier {
             .presentationDragIndicator(.hidden)
     }
 
-    private func update(_ newHeight: CGFloat) {
+    /// `maxHeight` is the cap the current detent was given.
+    private func update(_ newHeight: CGFloat, maxHeight: CGFloat) {
         guard newHeight > 0, newHeight != measured else { return }
         guard animation != nil else {
             measured = newHeight
             return
         }
-        let maxHeight = maxSheetHeight
         let heightAnimation = SelfSizingSheetHeight.animation(
             for: animation,
             reduceMotion: reduceMotion,
@@ -426,8 +429,8 @@ private struct SelfSizingSheetModifier: ViewModifier {
             to: newHeight,
             maxHeight: maxHeight)
         if let heightAnimation {
-            let leaving = SelfSizingSheetHeight.resolved(
-                measured: measured, fallback: fallback, maxHeight: maxHeight)
+            // Only a change after the first measurement is animated, so this is never the fallback.
+            let leaving = min(measured, maxHeight)
             let needsDrop = outgoing.isEmpty
             withAnimation(heightAnimation) {
                 outgoing.insert(leaving)
