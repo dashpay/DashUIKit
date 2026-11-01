@@ -207,9 +207,15 @@ public struct SegmentedControl<T: Hashable>: View {
                     }
                 }
                 .onEnded { value in
-                    // A tap whose finger slipped vertically still selects
-                    // where it landed; a vertical swipe does not.
-                    if let drag = tracking.drag, !drag.isHorizontal, drag.farthest < Layout.tapSlop {
+                    // A tap whose finger slipped vertically, and lifted on the
+                    // control, still selects where it landed; a vertical
+                    // swipe, or a slide off the control, does not.
+                    let farthest = max(tracking.drag?.farthest ?? 0,
+                                       hypot(value.translation.width, value.translation.height))
+                    let track = options.indices.compactMap { tracking.frames[$0] }
+                        .reduce(CGRect.null) { $0.union($1) }
+                    if tracking.drag?.isHorizontal == false, farthest < Layout.tapSlop,
+                       track.contains(value.location) {
                         updateSelection(at: value.startLocation.x)
                     }
                     tracking.drag = nil
