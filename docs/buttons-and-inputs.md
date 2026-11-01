@@ -272,7 +272,7 @@ SegmentedControl(
     icon: { option, isSelected in option.icon(isSelected: isSelected).source })
 ```
 
-- `init(options: [T], selection: Binding<T>, label: @escaping (T) -> String, icon: ((T, Bool) -> DashIconSource)? = nil)`
+- `SegmentedControl<T: Hashable>`: `init(options: [T], selection: Binding<T>, label: @escaping (T) -> String, icon: ((T, Bool) -> DashIconSource)? = nil)`
 - `init(options: [String], selection: Binding<String>)` — the options are their own labels.
 
 `icon` gets the option and whether it is selected, so a segment can switch between two
@@ -286,8 +286,11 @@ in `segmentControlContSelected` / `segmentControlContNotSelected`. Track
 trait on the chosen one.
 
 The first option equal to `selection` is the selected segment; a selection that matches no
-option selects none and draws no pill. Options are expected to be distinct. In a right-to-left
-layout the row mirrors and the pill follows it.
+option selects none and draws no pill. Options are expected to be distinct; of a repeated
+option only the first copy is ever selected. In a right-to-left layout the row mirrors and the
+pill follows it. Labels stay on one line and truncate when a segment is too narrow.
+`.disabled(true)` stops taps and VoiceOver activation; the control has no disabled look of
+its own.
 
 ---
 

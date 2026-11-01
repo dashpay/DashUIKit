@@ -142,6 +142,7 @@ public struct SegmentedControl<T: Hashable>: View {
                     segmentButton(options[index], isSelected: index == selectedIndex)
                 }
             }
+            .accessibilityElement(children: .contain)
         }
         // The icon variant is two lines tall, so it sizes to its content —
         // `height` is the single-line text measurement. Either way the control
@@ -157,7 +158,9 @@ public struct SegmentedControl<T: Hashable>: View {
             .foregroundStyle(isSelected
                 ? Color.dash.segmentControlContSelected
                 : Color.dash.segmentControlContNotSelected)
-            .frame(maxWidth: .infinity)
+            // A zero minimum gives every segment the same share whatever its
+            // label, so the cells line up with the equal tap targets.
+            .frame(minWidth: 0, maxWidth: .infinity)
             .padding(.vertical, icon == nil
                 ? Layout.segmentVerticalPadding
                 : Layout.iconSegmentVerticalPadding)
@@ -253,9 +256,16 @@ private struct SegmentedControlPreview: View {
 }
 
 #Preview("Right to left") {
-    // The pill and drag-to-select follow the mirrored row: "Day" is on the right.
+    // The pill and the tap targets follow the mirrored row: "Day" is on the right.
     SegmentedControlPreview()
         .environment(\.layoutDirection, .rightToLeft)
+}
+
+#Preview("Narrow") {
+    // Labels that do not fit truncate on one line.
+    SegmentedControl(options: ["Active", "Disconnected", "Expired"], selection: .constant("Active"))
+        .frame(width: 240)
+        .padding()
 }
 
 #Preview("No matching selection") {

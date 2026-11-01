@@ -74,6 +74,14 @@ final class SegmentedControlSnapshotTests: XCTestCase {
         try assertComponentSnapshots(of: view, named: "right-to-left")
     }
 
+    /// Labels that do not fit truncate on one line.
+    func testNarrow() throws {
+        let view = SegmentedControl(options: ["Active", "Disconnected", "Expired"], selection: .constant("Disconnected"))
+            .frame(width: 240)
+            .frame(maxWidth: .infinity, alignment: .leading)
+        try assertComponentSnapshots(of: view, named: "narrow")
+    }
+
     /// A selection that is none of the options draws no pill.
     func testNoMatchingSelection() throws {
         let view = SegmentedControl(options: Self.days, selection: .constant("Year"))
