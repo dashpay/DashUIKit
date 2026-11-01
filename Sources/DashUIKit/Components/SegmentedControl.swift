@@ -52,7 +52,7 @@ enum SegmentedControlSelection {
     /// index does. A touch past either end belongs to the segment at that end.
     static func segmentIndex(at x: CGFloat, width: CGFloat, count: Int, rightToLeft: Bool) -> Int? {
         guard count > 0, width > 0 else { return nil }
-        let column = max(0, min(count - 1, Int((x / width * CGFloat(count)).rounded(.down))))
+        let column = Int(min(max((x / width * CGFloat(count)).rounded(.down), 0), CGFloat(count - 1)))
         return rightToLeft ? count - 1 - column : column
     }
 }
@@ -82,7 +82,6 @@ public struct SegmentedControl<T: Hashable>: View {
     private let icon: ((_ option: T, _ isSelected: Bool) -> DashIconSource)?
 
     @Environment(\.layoutDirection) private var layoutDirection
-    @Environment(\.isEnabled) private var isEnabled
     /// The width the segments share, for drag-to-select.
     @State private var rowWidth: CGFloat = 0
 
@@ -175,8 +174,6 @@ public struct SegmentedControl<T: Hashable>: View {
             ? Text(verbatim: "")
             : Text(NSLocalizedString("Double tap to select", bundle: .module, comment: "DashUIKit")))
         .accessibilityAddTraits(isSelected ? [.isButton, .isSelected] : .isButton)
-        // Activation does not depend on a synthesized touch reaching the drag.
-        .accessibilityAction { select(option) }
     }
 
     @ViewBuilder
@@ -213,8 +210,7 @@ public struct SegmentedControl<T: Hashable>: View {
     /// The host sees the change inside the control's animation, so content it
     /// switches on the selection moves with the pill.
     private func select(_ option: T) {
-        // The accessibility action bypasses the disabled Button.
-        guard isEnabled, option != selection else { return }
+        guard option != selection else { return }
         withAnimation(Layout.animation) {
             selection = option
         }
