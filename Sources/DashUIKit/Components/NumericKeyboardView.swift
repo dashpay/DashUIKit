@@ -306,6 +306,7 @@ private struct NumericKeyboardPreview: View {
     private let actionEnabled: Bool
     private let inProgress: Bool
     private let helperText: String?
+    private let locale: Locale
 
     @State private var value: String
 
@@ -314,9 +315,11 @@ private struct NumericKeyboardPreview: View {
         showDecimalSeparator: Bool = true,
         actionEnabled: Bool = true,
         inProgress: Bool = false,
-        helperText: String? = "Help text"
+        helperText: String? = "Help text",
+        locale: Locale = Locale(identifier: "uk_UA")
     ) {
         _value = State(initialValue: initialValue)
+        self.locale = locale
         self.showDecimalSeparator = showDecimalSeparator
         self.actionEnabled = actionEnabled
         self.inProgress = inProgress
@@ -333,7 +336,7 @@ private struct NumericKeyboardPreview: View {
             NumericKeyboardView(
                 value: $value,
                 showDecimalSeparator: showDecimalSeparator,
-                locale: Locale(identifier: "uk_UA"),
+                locale: locale,
                 actionButtonText: "Continue",
                 actionEnabled: actionEnabled,
                 inProgress: inProgress,
@@ -352,6 +355,10 @@ private struct NumericKeyboardPreview: View {
 #Preview("Help text, decimal, dark") {
     NumericKeyboardPreview()
         .preferredColorScheme(.dark)
+}
+
+#Preview("Full stop decimal (en_US)") {
+    NumericKeyboardPreview(locale: Locale(identifier: "en_US"))
 }
 
 #Preview("No help text, no decimal") {
