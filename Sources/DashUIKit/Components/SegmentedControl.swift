@@ -82,6 +82,7 @@ public struct SegmentedControl<T: Hashable>: View {
     private let icon: ((_ option: T, _ isSelected: Bool) -> DashIconSource)?
 
     @Environment(\.layoutDirection) private var layoutDirection
+    @Environment(\.isEnabled) private var isEnabled
     /// The width the segments share, for drag-to-select.
     @State private var rowWidth: CGFloat = 0
 
@@ -112,7 +113,7 @@ public struct SegmentedControl<T: Hashable>: View {
                 segment(options[index], isSelected: index == selectedIndex)
             }
         }
-        .readingFrame(coordinateSpace: .local) { rowWidth = $0.width }
+        .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { rowWidth = $0 }
         // A background is offered the row's size, so the pill is as tall as
         // the segments in both variants and is placed in the same layout pass.
         // `.leading` and the leading padding mirror with the row in a
@@ -212,7 +213,8 @@ public struct SegmentedControl<T: Hashable>: View {
     /// The host sees the change inside the control's animation, so content it
     /// switches on the selection moves with the pill.
     private func select(_ option: T) {
-        guard option != selection else { return }
+        // The accessibility action bypasses the disabled Button.
+        guard isEnabled, option != selection else { return }
         withAnimation(Layout.animation) {
             selection = option
         }
