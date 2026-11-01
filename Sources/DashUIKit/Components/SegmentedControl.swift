@@ -27,7 +27,7 @@ private enum SegmentedControlLayout {
     static let shadowY: CGFloat = 5
     static let animation = Animation.spring(response: 0.3, dampingFraction: 0.7)
     /// How far a finger travels before the track takes it as a drag; a
-    /// shorter touch is a tap on the segment's Button.
+    /// shorter touch is a tap.
     static let dragMinimumDistance: CGFloat = 8
 
     // Icon variant (artwork stacked over the label). It sizes to its content
@@ -69,13 +69,13 @@ enum SegmentedControlSelection {
     }
 }
 
-extension View {
-    /// Reports this view's frame in the control's coordinate space as it
-    /// lays out and whenever it moves.
-    func segmentedControlFrame(_ report: @escaping (CGRect) -> Void) -> some View {
-        onGeometryChange(for: CGRect.self) {
-            $0.frame(in: .named(SegmentedControlSelection.space))
-        } action: { report($0) }
+/// Each segment's bounds, by index, for drawing the pill in the same layout
+/// pass as the segments.
+private struct SegmentedControlBoundsKey: PreferenceKey {
+    static var defaultValue: [Int: Anchor<CGRect>] { [:] }
+
+    static func reduce(value: inout [Int: Anchor<CGRect>], nextValue: () -> [Int: Anchor<CGRect>]) {
+        value.merge(nextValue()) { $1 }
     }
 }
 
@@ -104,7 +104,7 @@ public struct SegmentedControl<T: Hashable>: View {
     private let icon: ((_ option: T, _ isSelected: Bool) -> DashIconSource)?
 
     /// Each segment's frame in `SegmentedControlSelection.space`, by index:
-    /// where the pill is drawn and what a drag is hit-tested against.
+    /// what a drag or a tap on the inset is hit-tested against.
     @State private var segmentFrames: [Int: CGRect] = [:]
 
     /// - Parameters:
@@ -132,35 +132,51 @@ public struct SegmentedControl<T: Hashable>: View {
         HStack(spacing: 0) {
             ForEach(options.indices, id: \.self) { index in
                 segment(options[index], isSelected: index == selectedIndex)
-                    .segmentedControlFrame { segmentFrames[index] = $0 }
+                    .anchorPreference(key: SegmentedControlBoundsKey.self, value: .bounds) { [index: $0] }
+                    .readingFrame(coordinateSpace: .named(SegmentedControlSelection.space)) {
+                        segmentFrames[index] = $0
+                    }
             }
         }
         .padding(Layout.containerPadding)
-        // The pill sits on the measured frame of the selected segment. The
-        // frames are left-to-right screen coordinates in either direction, so
-        // the pill layer is laid out left to right too. With no selected
-        // segment there is no pill, so one that appears does so in place.
-        .background {
-            ZStack(alignment: .topLeading) {
-                Color.clear
-                if let selectedIndex, let frame = segmentFrames[selectedIndex] {
-                    RoundedRectangle(cornerRadius: Layout.segmentCornerRadius)
-                        .fill(Color.dash.segmentControlBackground)
-                        .shadow(color: Color.dash.shadow, radius: Layout.shadowRadius, x: 0, y: Layout.shadowY)
-                        .frame(width: frame.width, height: frame.height)
-                        .offset(x: frame.minX, y: frame.minY)
+        // The pill sits on the selected segment's bounds, resolved in the same
+        // layout pass. Resolved bounds are left-to-right coordinates in either
+        // direction, so the pill layer is laid out left to right too. With no
+        // selected segment there is no pill, so one that appears does so in
+        // place.
+        .backgroundPreferenceValue(SegmentedControlBoundsKey.self) { bounds in
+            GeometryReader { geometry in
+                ZStack(alignment: .topLeading) {
+                    Color.clear
+                    if let selectedIndex, let anchor = bounds[selectedIndex] {
+                        let frame = geometry[anchor]
+                        RoundedRectangle(cornerRadius: Layout.segmentCornerRadius)
+                            .fill(Color.dash.segmentControlBackground)
+                            .shadow(color: Color.dash.shadow, radius: Layout.shadowRadius, x: 0, y: Layout.shadowY)
+                            .frame(width: frame.width, height: frame.height)
+                            .offset(x: frame.minX, y: frame.minY)
+                    }
                 }
+                .environment(\.layoutDirection, .leftToRight)
             }
-            .environment(\.layoutDirection, .leftToRight)
         }
         .animation(Layout.animation, value: selectedIndex)
-        // A tap goes to the segment's Button; a drag across the track, its
-        // inset included, selects the segment under the finger.
+        // A tap on a segment goes to its Button; a tap on the track's inset
+        // goes to the segment beside it. A horizontal drag across the track
+        // selects the segment under the finger; a vertical one is left to the
+        // container.
         .contentShape(Rectangle())
-        .highPriorityGesture(
+        .gesture(
+            SpatialTapGesture(coordinateSpace: .named(SegmentedControlSelection.space))
+                .onEnded { value in
+                    updateSelection(at: value.location.x)
+                }
+        )
+        .simultaneousGesture(
             DragGesture(minimumDistance: Layout.dragMinimumDistance,
                         coordinateSpace: .named(SegmentedControlSelection.space))
                 .onChanged { value in
+                    guard abs(value.translation.width) >= abs(value.translation.height) else { return }
                     updateSelection(at: value.location.x)
                 }
         )
@@ -206,6 +222,7 @@ public struct SegmentedControl<T: Hashable>: View {
                     .resizable()
                     .scaledToFit()
                     .frame(height: Layout.iconHeight)
+                    .accessibilityHidden(true)
                 segmentLabel(option)
             }
         } else {

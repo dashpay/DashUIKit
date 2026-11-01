@@ -39,7 +39,9 @@ final class SegmentedControlLayoutDirectionTests: XCTestCase {
                     Color.clear
                         .frame(maxWidth: .infinity)
                         .frame(height: 32)
-                        .segmentedControlFrame { recorder.frames[index] = $0 }
+                        .readingFrame(coordinateSpace: .named(SegmentedControlSelection.space)) {
+                            recorder.frames[index] = $0
+                        }
                 }
             }
             .padding(4)
