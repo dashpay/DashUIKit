@@ -38,7 +38,7 @@ sees.
 
 Covered: `DashButton` (every style and size, enabled and disabled, icons, full width),
 `MenuItem`, `Toast` (every style but `.loading`, whose spinner animates on a timer), `SwitchView`, `NavigationBar`, `BottomSheet` and `SheetFeature`,
-`SearchBar`, `TransactionView`. Every render is pinned to the Large text size, the
+`SearchBar`, `TransactionView`, `NumericKeyboardView`. Every render is pinned to the Large text size, the
 simulator default. The type tokens are fixed sizes (`Font.system(size:)`), but SF Symbols
 and text that take the default font (the `DashButton` icons) scale, and no reference
 covers a larger text size.

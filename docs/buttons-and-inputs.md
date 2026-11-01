@@ -276,6 +276,20 @@ NumericKeyboardView(
 )
 ```
 
+### Layout
+
+Top to bottom: the helper text (Footnote, secondary text, centred; omitted when `nil` or
+empty), the key grid, then the action button, 20 pt apart.
+
+- **Panel:** `secondaryBackground`, top corners 32 (continuous), padding 20 on every side.
+  The content stays inside the safe area; the background runs on through the bottom safe
+  area to the screen edge, so place the view flush with the bottom of the screen.
+- **Keys:** three equal columns 5 pt apart, rows 50 pt tall with no gap between them; the
+  whole key is the tap target. Digits and the decimal separator use Title 3 (medium) in
+  primary text; delete is the `delete.left` symbol drawn about 18.5 × 15.9 pt.
+- **Button:** a large `filledBlue` `DashButton`, full width less 20 pt on each side (40 pt
+  from the panel edges).
+
 Key-press logic lives in `NumericKeyboardLocaleSupport` (public, unit-testable):
 appends digits, inserts at most one decimal separator (only when `showDecimalSeparator`),
 ignores the grouping separator, and `⌫` removes the last character. The action button is
