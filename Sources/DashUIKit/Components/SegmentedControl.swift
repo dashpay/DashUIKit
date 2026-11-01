@@ -29,6 +29,8 @@ private enum SegmentedControlLayout {
     /// How far a finger travels before the track takes it as a drag; a
     /// shorter touch is a tap.
     static let dragMinimumDistance: CGFloat = 8
+    /// How far a tap's finger may slip before it is a swipe instead.
+    static let tapSlop: CGFloat = 24
 
     // Icon variant (artwork stacked over the label). It sizes to its content
     // instead of `height`, which only fits a single text line. The icons are
@@ -187,7 +189,7 @@ public struct SegmentedControl<T: Hashable>: View {
             DragGesture(minimumDistance: Layout.dragMinimumDistance,
                         coordinateSpace: .named(SegmentedControlSelection.space))
                 .onChanged { value in
-                    if tracking.drag?.start != value.startLocation {
+                    if tracking.drag == nil || tracking.drag?.start != value.startLocation {
                         let isHorizontal = abs(value.translation.width) >= abs(value.translation.height)
                         tracking.drag = (value.startLocation, isHorizontal)
                     }
@@ -195,10 +197,16 @@ public struct SegmentedControl<T: Hashable>: View {
                         updateSelection(at: value.location.x)
                     }
                 }
+                .onEnded { value in
+                    // A tap whose finger slipped vertically still selects
+                    // where it landed; a longer vertical swipe does not.
+                    if tracking.drag?.isHorizontal == false,
+                       hypot(value.translation.width, value.translation.height) < Layout.tapSlop {
+                        updateSelection(at: value.startLocation.x)
+                    }
+                    tracking.drag = nil
+                }
         )
-        .onChange(of: options.count) {
-            tracking.frames = [:]
-        }
         .coordinateSpace(.named(SegmentedControlSelection.space))
         // The icon variant is two lines tall, so it sizes to its content —
         // `height` is the single-line text measurement. Either way the control
