@@ -27,4 +27,12 @@ final class NavigationBarElementTests: XCTestCase {
             XCTAssertEqual(element.rawValue, element.asset.assetName, "\(element)")
         }
     }
+
+    /// Host UI tests look the buttons up by these identifiers.
+    func testAccessibilityIdentifiersAreTheDocumentedOnes() {
+        XCTAssertEqual(NavigationBarElement.back.accessibilityIdentifier, "navigationbar-back")
+        XCTAssertEqual(NavigationBarElement.close.accessibilityIdentifier, "navigationbar-close")
+        XCTAssertEqual(NavigationBarElement.plus.accessibilityIdentifier, "navigationbar-plus")
+        XCTAssertEqual(NavigationBarElement.info.accessibilityIdentifier, "navigationbar-info")
+    }
 }
