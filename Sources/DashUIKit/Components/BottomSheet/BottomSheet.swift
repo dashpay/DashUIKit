@@ -5,7 +5,7 @@ import UIKit
 #endif
 
 public struct BottomSheet<Content: View>: View {
-    @Environment(\.presentationMode) private var presentationMode
+    @Environment(\.dismiss) private var dismiss
 
     public var title: String = ""
     @Binding public var showBackButton: Bool
@@ -29,11 +29,16 @@ public struct BottomSheet<Content: View>: View {
     /// the sheet snaps to its content. Prefer `BottomSheet.selfSizing(...)` as the entry point
     /// when natural sizing is needed — it guarantees `fillsHeight: false` and the modifier are
     /// always applied together.
+    ///
+    /// Either way the content sits directly in the sheet, with no navigation container around
+    /// it. A host that moves between screens inside the sheet keeps the route in its own state
+    /// and drives the back button with `showBackButton` / `onBackButtonPressed`.
     public var fillsHeight: Bool = true
-    /// Fill behind the whole sheet — grabber, header and content alike. Also
-    /// used as the presentation background so the home-indicator inset the
-    /// detent adds matches; a host that only restyles its own content would
-    /// otherwise get a strip of this colour along the bottom edge.
+    /// Fill behind the whole sheet — grabber, header and content alike — running
+    /// under the home indicator. `BottomSheet` does not set the presentation
+    /// background; `BottomSheet.selfSizing(...)` passes this colour to
+    /// `selfSizingSheet`, which does, so the inset its height detent adds below
+    /// the content matches.
     public var background: Color = .dash.primaryBackground
     @ViewBuilder public var content: () -> Content
 
@@ -70,44 +75,43 @@ public struct BottomSheet<Content: View>: View {
                 header
             }
 
-            contentSection
+            content()
+                .frame(maxWidth: .infinity, maxHeight: fillsHeight ? .infinity : nil)
         }
-        .background(background)
+        // The shape-style overload, which `.background(Color)` resolves to: the fill
+        // runs under the safe areas the sheet keeps, so a `fillsHeight` sheet's
+        // home-indicator strip matches the content.
+        .background(background, ignoresSafeAreaEdges: .all)
 
-        Group {
-            if fillsHeight {
-                // `.container` rather than every region: the point is to let the
-                // sheet's background run under the home indicator, and
-                // `edgesIgnoringSafeArea` — like `ignoresSafeArea(.all)` — also
-                // swallows `.keyboard`, which switches off SwiftUI's keyboard
-                // avoidance for the whole sheet. Hosts with a text field then
-                // find their content pinned under the keyboard with no way to
-                // scroll to it.
-                sheet.ignoresSafeArea(.container, edges: .bottom)
-            } else {
-                // Publish the natural content height for `.selfSizingSheet()`. The bottom safe area is
-                // intentionally NOT ignored here, so the measured height excludes the home-indicator
-                // inset — `.presentationDetents([.height])` adds that inset itself.
-                //
-                // `.fixedSize(vertical:)` is critical: it makes the sheet report its *ideal* height
-                // independent of the height the sheet currently offers. Without it the measurement is
-                // coupled to the detent (detent <- measured <- offered height <- detent), so it ping-pongs
-                // by ~the safe-area inset and the presenting view (HomeView) jitters up/down.
-                sheet
-                    .fixedSize(horizontal: false, vertical: true)
-                    .background(
-                        GeometryReader { proxy in
-                            Color.clear.preference(
-                                key: BottomSheetHeightPreferenceKey.self,
-                                value: proxy.size.height
-                            )
-                        }
-                    )
+        // One view for both modes and both dismissal states, with the flags passed as
+        // values: an if/else would be `_ConditionalContent`, which rebuilds the sheet
+        // and drops host state when a host flips `fillsHeight` or `isDismissalEnabled`.
+        //
+        // A `fillsHeight` sheet keeps its safe areas: the content stops above the home
+        // indicator, and keyboard avoidance stays on, so a text field near the bottom
+        // is lifted above the keyboard.
+        //
+        // A natural-height sheet publishes its height for `.selfSizingSheet()`. The
+        // bottom safe area is not ignored, so the measured height excludes the
+        // home-indicator inset — `.presentationDetents([.height])` adds that inset
+        // itself. `.fixedSize(vertical:)` is critical there: it makes the sheet report
+        // its *ideal* height independent of the height the sheet currently offers.
+        // Without it the measurement is coupled to the detent (detent <- measured <-
+        // offered height <- detent), so it ping-pongs by ~the safe-area inset and the
+        // presenting view (HomeView) jitters up/down.
+        sheet
+            .fixedSize(horizontal: false, vertical: !fillsHeight)
+            .background {
+                if !fillsHeight {
+                    GeometryReader { proxy in
+                        Color.clear.preference(
+                            key: BottomSheetHeightPreferenceKey.self,
+                            value: proxy.size.height
+                        )
+                    }
+                }
             }
-        }
-        // Pass the flag rather than branching on it: an if/else is
-        // `_ConditionalContent`, which rebuilds the sheet and drops host state.
-        .interactiveDismissDisabled(!isDismissalEnabled)
+            .interactiveDismissDisabled(!isDismissalEnabled)
     }
 
     private var grabber: some View {
@@ -152,32 +156,13 @@ public struct BottomSheet<Content: View>: View {
                         BottomSheetDismissalAction.perform(
                             isDismissalEnabled: isDismissalEnabled,
                             onClose: onClose,
-                            dismiss: { presentationMode.wrappedValue.dismiss() }
+                            dismiss: { dismiss() }
                         )
                     }
                     .disabled(!isCloseButtonActive)
                 }
             }
         )
-    }
-
-    @ViewBuilder
-    private var contentSection: some View {
-        if fillsHeight {
-            NavigationView {
-                content()
-                    #if os(iOS)
-                    .navigationBarHidden(true)
-                    #endif
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .background(background)
-            }
-        } else {
-            // Natural height — no greedy NavigationView / maxHeight so the sheet can self-size.
-            content()
-                .frame(maxWidth: .infinity)
-                .background(background)
-        }
     }
 }
 
@@ -365,6 +350,34 @@ private struct SelfSizingSheetModifier: ViewModifier {
                 .foregroundColor(.dash.secondaryText)
         }
         .padding()
+    }
+}
+
+#Preview("BottomSheet Text Field") {
+    @Previewable @State var amount = ""
+
+    BottomSheet(
+        title: "Bottom Sheet",
+        showBackButton: .constant(false)
+    ) {
+        VStack(spacing: 0) {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 12) {
+                    ForEach(1...20, id: \.self) { row in
+                        Text("Row \(row)")
+                            .dashFont(.body)
+                            .foregroundColor(.dash.primaryText)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                }
+                .padding()
+            }
+
+            // Stays above the home indicator, and rises with the keyboard.
+            TextField("Amount", text: $amount)
+                .textFieldStyle(.roundedBorder)
+                .padding()
+        }
     }
 }
 
