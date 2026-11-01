@@ -9,7 +9,7 @@ Interactive controls for tapping and text/number entry.
 File `Button/DashButton.swift`
 
 The design-system button. Supports leading/trailing icons, a loading spinner,
-optional full-width fill, four sizes, and eleven styles.
+optional full-width fill, four sizes, and twelve styles.
 
 ```swift
 DashButton(
@@ -32,7 +32,7 @@ corner radius, icon gap, and font size (16 / 14 / 13 / 12 pt).
 disabled variants):
 
 - Filled: `.filledBlue`, `.filledRed`, `.filledWhiteBlue`
-- Tinted: `.tintedBlue`, `.tintedGray`, `.tintedWhite`
+- Tinted: `.tintedBlue`, `.tintedRed`, `.tintedGray`, `.tintedWhite`
 - Stroke: `.strokeGray` (transparent fill + 1pt border)
 - Plain (no background): `.plainBlue`, `.plainBlack`, `.plainRed`, `.plainWhite`
 
@@ -251,6 +251,46 @@ VoiceOver reads it as a button, with the selected trait on the chosen option.
 
 For a row with an icon, a trailing value or an explicit radio/checkbox mark, use
 [`RadioButtonRow`](lists-and-rows.md#radiobuttonrow).
+
+---
+
+## SegmentedControl
+
+File `Components/SegmentedControl.swift`
+
+A row of mutually exclusive options on a track, with a raised pill under the selected one.
+Tap a segment; the pill springs to it. Each segment's share of the track, inset included,
+takes the tap.
+
+```swift
+SegmentedControl(options: ["Active", "Disconnected", "Expired"], selection: $filter)
+
+SegmentedControl(
+    options: Direction.allCases,
+    selection: $direction,
+    label: { $0.title },
+    icon: { option, isSelected in option.icon(isSelected: isSelected).source })
+```
+
+- `SegmentedControl<T: Hashable>`: `init(options: [T], selection: Binding<T>, label: @escaping (T) -> String, icon: ((T, Bool) -> DashIconSource)? = nil)`
+- `init(options: [String], selection: Binding<String>)` — the options are their own labels.
+
+`icon` gets the option and whether it is selected, so a segment can switch between two
+artworks (`DashIcon.SegmentedControl.receive` / `.receiveDisabled`) rather than tint one.
+
+The text-only control is 40pt tall; with icons it sizes to its content (17pt artwork over
+the label). Neither grows when its container offers more height. Labels are `.footnoteMedium`
+in `segmentControlContSelected` / `segmentControlContNotSelected`. Track
+`segmentControlBackgroundGroup`, 20pt corners, 4pt inset; pill `segmentControlBackground` with
+16pt corners and the `shadow` token. VoiceOver reads one button per segment, with the selected
+trait on the chosen one.
+
+The first option equal to `selection` is the selected segment; a selection that matches no
+option selects none and draws no pill. Options are expected to be distinct; of a repeated
+option only the first copy is ever selected. In a right-to-left layout the row mirrors and the
+pill follows it. Labels stay on one line and truncate when a segment is too narrow.
+`.disabled(true)` stops taps and VoiceOver activation; the control has no disabled look of
+its own.
 
 ---
 

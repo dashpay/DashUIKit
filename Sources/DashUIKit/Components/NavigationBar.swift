@@ -118,9 +118,25 @@ public enum NavigationBarElement: String, CaseIterable {
 
     private var source: DashIconSource { asset.source }
 
+    /// The element as a button. Its accessibility identifier is
+    /// `navigationbar-back`, `navigationbar-close`, `navigationbar-plus` or
+    /// `navigationbar-info`, whatever the language.
     public func button(action: @escaping () -> Void) -> some View {
         NavigationBarButton(accessibilityLabel: Text(accessibilityLabelText), action: action) {
             icon
+        }
+        .accessibilityIdentifier(accessibilityIdentifier)
+    }
+
+    /// The button's accessibility identifier: a handle for UI tests that does
+    /// not change with the language, unlike the label. Spelled out rather than
+    /// taken from the raw value, so renaming an imageset cannot change it.
+    var accessibilityIdentifier: String {
+        switch self {
+        case .back: return "navigationbar-back"
+        case .close: return "navigationbar-close"
+        case .plus: return "navigationbar-plus"
+        case .info: return "navigationbar-info"
         }
     }
 
@@ -150,7 +166,7 @@ public enum NavigationBarElement: String, CaseIterable {
         central: {
             Text("Title")
                 .dashFont(.subheadMedium)
-                .foregroundColor(.dash.primaryText)
+                .foregroundStyle(Color.dash.primaryText)
         }
     )
 }
@@ -161,7 +177,7 @@ public enum NavigationBarElement: String, CaseIterable {
         central: {
             Text("Title")
                 .dashFont(.subheadMedium)
-                .foregroundColor(.dash.primaryText)
+                .foregroundStyle(Color.dash.primaryText)
         },
         trailing: { NavigationBarElement.info.button { } }
     )
@@ -216,7 +232,7 @@ public enum NavigationBarElement: String, CaseIterable {
         central: {
             Text("Title")
                 .dashFont(.subheadMedium)
-                .foregroundColor(.dash.primaryText)
+                .foregroundStyle(Color.dash.primaryText)
         },
         trailing: { NavigationBarElement.close.button { } }
     )

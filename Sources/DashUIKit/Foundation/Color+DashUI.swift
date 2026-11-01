@@ -95,6 +95,11 @@ public enum DashColors {
     public static var buttonTintedBlueContent: Color { dashAsset("ButtonTintedBlueContent") }
     public static var buttonTintedBlueContentDisabled: Color { dashAsset("ButtonTintedBlueContentDisabled") }
 
+    public static var buttonTintedRedBackground: Color { dashAsset("ButtonTintedRedBackground") }
+    public static var buttonTintedRedBackgroundDisabled: Color { dashAsset("ButtonTintedRedBackgroundDisabled") }
+    public static var buttonTintedRedContent: Color { dashAsset("ButtonTintedRedContent") }
+    public static var buttonTintedRedContentDisabled: Color { dashAsset("ButtonTintedRedContentDisabled") }
+
     public static var buttonTintedGrayBackground: Color { dashAsset("ButtonTintedGrayBackground") }
     public static var buttonTintedGrayBackgroundDisabled: Color { dashAsset("ButtonTintedGrayBackgroundDisabled") }
     public static var buttonTintedGrayContent: Color { dashAsset("ButtonTintedGrayContent") }

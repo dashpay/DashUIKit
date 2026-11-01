@@ -55,7 +55,7 @@ public struct List8View<Avatar: View>: View {
         HStack(spacing: 0) {
             Text(label)
                 .dashFont(.subheadMedium)
-                .foregroundColor(Color.dash.tertiaryText)
+                .foregroundStyle(Color.dash.tertiaryText)
                 .lineLimit(1)
 
             Spacer(minLength: 20)
@@ -68,7 +68,7 @@ public struct List8View<Avatar: View>: View {
 
                 Text(value)
                     .dashFont(.subhead)
-                    .foregroundColor(Color.dash.primaryText)
+                    .foregroundStyle(Color.dash.primaryText)
                     .lineLimit(1)
                     .truncationMode(truncationMode)
             }

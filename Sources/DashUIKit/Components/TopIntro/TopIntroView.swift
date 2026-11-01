@@ -33,14 +33,14 @@ public struct TopIntroView: View {
             //MARK: Title
             Text(title)
                 .dashFont(.title1)
-                .foregroundColor(Color.dash.primaryText)
+                .foregroundStyle(Color.dash.primaryText)
 
             //MARK: Main description
 
             if let mainDescription {
                 Text(mainDescription)
                     .dashFont(.subhead)
-                    .foregroundColor(Color.dash.primaryText)
+                    .foregroundStyle(Color.dash.primaryText)
             }
 
 
@@ -49,7 +49,7 @@ public struct TopIntroView: View {
             if let secondaryDescription {
                 Text(secondaryDescription)
                     .dashFont(.subhead)
-                    .foregroundColor(Color.dash.primaryText)
+                    .foregroundStyle(Color.dash.primaryText)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)

@@ -53,11 +53,11 @@ public struct SheetFeature<Icon: View>: View {
                 // of this size.
                 Text(title)
                     .dashFont(.subheadMedium)
-                    .foregroundColor(Color.dash.primaryText)
+                    .foregroundStyle(Color.dash.primaryText)
 
                 Text(description)
                     .dashFont(.subhead)
-                    .foregroundColor(Color.dash.primaryText)
+                    .foregroundStyle(Color.dash.primaryText)
             }
             .padding(.top, 10)
             .frame(maxWidth: .infinity, alignment: .topLeading)
@@ -90,7 +90,7 @@ public extension SheetFeature where Icon == AnyView {
                     .renderingMode(.template)
                     .resizable()
                     .scaledToFit()
-                    .foregroundColor(iconColor))
+                    .foregroundStyle(iconColor))
         } else {
             rendered = AnyView(
                 Image(dash: source)
@@ -128,7 +128,7 @@ public extension SheetFeature where Icon == AnyView {
         description: "The icon is a ViewBuilder, so a badge or a coloured container fits too."
     ) {
         Circle().fill(Color.dash.blueAlpha10)
-            .overlay(InfoRoundIcon(size: 20))
+            .overlay { InfoRoundIcon(size: 20) }
     }
     .padding(20)
     .background(Color.dash.primaryBackground)
