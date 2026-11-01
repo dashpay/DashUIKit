@@ -21,10 +21,10 @@ import XCTest
 @MainActor
 final class SegmentedControlSnapshotTests: XCTestCase {
 
-    private let days = ["Day", "Week", "Month"]
-    private let directions = ["Receive", "Internal", "Send"]
+    private static let days = ["Day", "Week", "Month"]
+    private static let directions = ["Receive", "Internal", "Send"]
 
-    private func icon(_ option: String, _ isSelected: Bool) -> DashIconSource {
+    private static func icon(_ option: String, _ isSelected: Bool) -> DashIconSource {
         switch option {
         case "Receive":
             return (isSelected ? DashIcon.SegmentedControl.receive : .receiveDisabled).source
@@ -39,8 +39,8 @@ final class SegmentedControlSnapshotTests: XCTestCase {
     func testText() throws {
         let view = VStack(spacing: 16) {
             SegmentedControl(options: ["Single", "Multiple"], selection: .constant("Multiple"))
-            ForEach(days, id: \.self) { selected in
-                SegmentedControl(options: days, selection: .constant(selected))
+            ForEach(Self.days, id: \.self) { selected in
+                SegmentedControl(options: Self.days, selection: .constant(selected))
             }
         }
         try assertComponentSnapshots(of: view, named: "text")
@@ -50,8 +50,8 @@ final class SegmentedControlSnapshotTests: XCTestCase {
     /// shows the coloured artwork, the others the grey one.
     func testIcon() throws {
         let view = VStack(spacing: 16) {
-            ForEach(directions, id: \.self) { selected in
-                SegmentedControl(options: directions, selection: .constant(selected), label: { $0 }, icon: icon)
+            ForEach(Self.directions, id: \.self) { selected in
+                SegmentedControl(options: Self.directions, selection: .constant(selected), label: { $0 }, icon: Self.icon)
             }
         }
         try assertComponentSnapshots(of: view, named: "icon")
@@ -59,7 +59,7 @@ final class SegmentedControlSnapshotTests: XCTestCase {
 
     /// Offered more height than it needs, the icon variant keeps its own.
     func testIconInATallContainer() throws {
-        let view = SegmentedControl(options: directions, selection: .constant("Receive"), label: { $0 }, icon: icon)
+        let view = SegmentedControl(options: Self.directions, selection: .constant("Receive"), label: { $0 }, icon: Self.icon)
             .frame(height: 160, alignment: .top)
         try assertComponentSnapshots(of: view, named: "icon-tall-container")
     }
@@ -67,8 +67,8 @@ final class SegmentedControlSnapshotTests: XCTestCase {
     /// Mirrored: the first option is on the right, under the pill.
     func testRightToLeft() throws {
         let view = VStack(spacing: 16) {
-            SegmentedControl(options: days, selection: .constant("Day"))
-            SegmentedControl(options: directions, selection: .constant("Receive"), label: { $0 }, icon: icon)
+            SegmentedControl(options: Self.days, selection: .constant("Day"))
+            SegmentedControl(options: Self.directions, selection: .constant("Receive"), label: { $0 }, icon: Self.icon)
         }
         .environment(\.layoutDirection, .rightToLeft)
         try assertComponentSnapshots(of: view, named: "right-to-left")
@@ -76,7 +76,7 @@ final class SegmentedControlSnapshotTests: XCTestCase {
 
     /// A selection that is none of the options draws no pill.
     func testNoMatchingSelection() throws {
-        let view = SegmentedControl(options: days, selection: .constant("Year"))
+        let view = SegmentedControl(options: Self.days, selection: .constant("Year"))
         try assertComponentSnapshots(of: view, named: "no-matching-selection")
     }
 }
