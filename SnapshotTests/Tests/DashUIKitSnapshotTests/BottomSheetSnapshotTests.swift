@@ -46,7 +46,7 @@ final class BottomSheetSnapshotTests: XCTestCase {
         let view = BottomSheet(
             title: "Confirm",
             showBackButton: .constant(false),
-            isDismissalEnabled: .constant(false),
+            isDismissalEnabled: .constant(true),
             isCloseButtonEnabled: false,
             fillsHeight: false
         ) {
@@ -72,6 +72,24 @@ final class BottomSheetSnapshotTests: XCTestCase {
                 .padding()
         }
         try assertComponentSnapshots(of: view, named: "dismissal-disabled")
+    }
+
+    /// Blocked dismissal with an `onClose`: the close button stays live, so the host can
+    /// confirm before closing.
+    func testDismissalDisabledWithOnClose() throws {
+        let view = BottomSheet(
+            title: "Confirm",
+            showBackButton: .constant(false),
+            isDismissalEnabled: .constant(false),
+            onClose: {},
+            fillsHeight: false
+        ) {
+            Text("Closing asks first.")
+                .dashFont(.body)
+                .foregroundColor(.dash.secondaryText)
+                .padding()
+        }
+        try assertComponentSnapshots(of: view, named: "close-confirms")
     }
 
     func testSheetFeatureList() throws {

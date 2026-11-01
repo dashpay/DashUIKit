@@ -38,10 +38,10 @@ sees.
 
 Covered: `DashButton` (every style and size, enabled and disabled, icons, full width),
 `MenuItem`, `Toast` (every style but `.loading`, whose spinner animates on a timer), `SwitchView`, `NavigationBar`, `BottomSheet` and `SheetFeature`,
-`SearchBar`, `TransactionView`. There is no Dynamic Type snapshot: the type tokens are fixed
-sizes (`Font.system(size:)`). SF Symbols and text that take the default font (the
-`DashButton` icons) do scale, so every render is pinned to the Large text size, the
-simulator default.
+`SearchBar`, `TransactionView`. Every render is pinned to the Large text size, the
+simulator default. The type tokens are fixed sizes (`Font.system(size:)`), but SF Symbols
+and text that take the default font (the `DashButton` icons) scale, and no reference
+covers a larger text size.
 
 Without a host app the images are drawn from the layer tree, so a `UIVisualEffectView` (the
 blur behind `Toast`) is not in them; a change to it does not fail a test.

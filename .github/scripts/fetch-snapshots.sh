@@ -10,7 +10,8 @@
 #   must be pushed, in an open PR (CI runs on pull requests and on master).
 #   A run id must be a run of HEAD too.
 # The references show the committed code of HEAD, so the tree must have no uncommitted
-# changes to tracked files and no new files under Sources/ or SnapshotTests/.
+# changes to tracked files and no new files under Sources/ or SnapshotTests/, apart from
+# SnapshotTests/Package.resolved, which a local Xcode rewrites.
 # Env: REPO (default dashpay/DashUIKit). Needs gh, logged in.
 set -euo pipefail
 

@@ -135,7 +135,8 @@ func assertComponentSnapshots(
             .environment(\.colorScheme, style == .dark ? .dark : .light)
             // The simulator's text size would otherwise scale SF Symbols and text that
             // take the default font (the DashButton icons). Set on the view, so it holds
-            // for the measured height as well as the render; the traits above pin UIKit.
+            // for the measured height as well as the render; the traits above reach
+            // UIKit views only at render time.
             .dynamicTypeSize(.large)
 
         assertSnapshot(
