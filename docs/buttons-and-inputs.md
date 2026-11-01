@@ -9,7 +9,7 @@ Interactive controls for tapping and text/number entry.
 File `Button/DashButton.swift`
 
 The design-system button. Supports leading/trailing icons, a loading spinner,
-optional full-width fill, four sizes, and eleven styles.
+optional full-width fill, four sizes, and twelve styles.
 
 ```swift
 DashButton(
@@ -32,7 +32,7 @@ corner radius, icon gap, and font size (16 / 14 / 13 / 12 pt).
 disabled variants):
 
 - Filled: `.filledBlue`, `.filledRed`, `.filledWhiteBlue`
-- Tinted: `.tintedBlue`, `.tintedGray`, `.tintedWhite`
+- Tinted: `.tintedBlue`, `.tintedRed`, `.tintedGray`, `.tintedWhite`
 - Stroke: `.strokeGray` (transparent fill + 1pt border)
 - Plain (no background): `.plainBlue`, `.plainBlack`, `.plainRed`, `.plainWhite`
 

@@ -25,7 +25,7 @@ Token groups (see the source for the full list):
   `successText`, `errorText`
 - **Background:** `primaryBackground`, `secondaryBackground`, `tertiaryBackground`,
   `blueBackground`
-- **Buttons:** `buttonFilledBlue…`, `buttonFilledRed…`, `buttonTintedBlue/Gray/White…`,
+- **Buttons:** `buttonFilledBlue…`, `buttonFilledRed…`, `buttonTintedBlue/Red/Gray/White…`,
   `buttonStrokeGray…`, `buttonPlainBlue/Black/Red/White…`, `buttonFilledWhite…`
   (each has `…Background`, `…BackgroundDisabled`, `…Content`, `…ContentDisabled` where
   applicable). These back `DashButtonStyle`.
