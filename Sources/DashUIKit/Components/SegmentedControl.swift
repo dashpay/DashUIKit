@@ -69,6 +69,16 @@ enum SegmentedControlSelection {
     }
 }
 
+/// Touch bookkeeping kept out of the view's observed state, so updating it
+/// does not redraw the control.
+private final class SegmentedControlTracking {
+    /// Each segment's frame in `SegmentedControlSelection.space`, by index.
+    var frames: [Int: CGRect] = [:]
+    /// Where the current drag started, and whether its first movement was
+    /// horizontal.
+    var drag: (start: CGPoint, isHorizontal: Bool)?
+}
+
 /// Each segment's bounds, by index, for drawing the pill in the same layout
 /// pass as the segments.
 private struct SegmentedControlBoundsKey: PreferenceKey {
@@ -103,9 +113,10 @@ public struct SegmentedControl<T: Hashable>: View {
     /// unselected treatment the label gets.
     private let icon: ((_ option: T, _ isSelected: Bool) -> DashIconSource)?
 
-    /// Each segment's frame in `SegmentedControlSelection.space`, by index:
-    /// what a drag or a tap on the inset is hit-tested against.
-    @State private var segmentFrames: [Int: CGRect] = [:]
+    @Environment(\.isEnabled) private var isEnabled
+    /// The segment frames a drag or a tap on the inset is hit-tested
+    /// against, and the direction of the drag in progress.
+    @State private var tracking = SegmentedControlTracking()
 
     /// - Parameters:
     ///   - options: The segments, in reading order. Expected to be distinct.
@@ -133,9 +144,9 @@ public struct SegmentedControl<T: Hashable>: View {
             ForEach(options.indices, id: \.self) { index in
                 segment(options[index], isSelected: index == selectedIndex)
                     .anchorPreference(key: SegmentedControlBoundsKey.self, value: .bounds) { [index: $0] }
-                    .readingFrame(coordinateSpace: .named(SegmentedControlSelection.space)) {
-                        segmentFrames[index] = $0
-                    }
+                    .onGeometryChange(for: CGRect.self) {
+                        $0.frame(in: .named(SegmentedControlSelection.space))
+                    } action: { tracking.frames[index] = $0 }
             }
         }
         .padding(Layout.containerPadding)
@@ -162,24 +173,32 @@ public struct SegmentedControl<T: Hashable>: View {
         }
         .animation(Layout.animation, value: selectedIndex)
         // A tap on a segment goes to its Button; a tap on the track's inset
-        // goes to the segment beside it. A horizontal drag across the track
-        // selects the segment under the finger; a vertical one is left to the
-        // container.
-        .contentShape(Rectangle())
+        // goes to the segment beside it. A drag that starts horizontally
+        // selects the segment under the finger and cancels the Button it
+        // started on; one that starts vertically selects nothing.
+        .contentShape(.rect(cornerRadius: Layout.containerCornerRadius))
         .gesture(
             SpatialTapGesture(coordinateSpace: .named(SegmentedControlSelection.space))
                 .onEnded { value in
                     updateSelection(at: value.location.x)
                 }
         )
-        .simultaneousGesture(
+        .highPriorityGesture(
             DragGesture(minimumDistance: Layout.dragMinimumDistance,
                         coordinateSpace: .named(SegmentedControlSelection.space))
                 .onChanged { value in
-                    guard abs(value.translation.width) >= abs(value.translation.height) else { return }
-                    updateSelection(at: value.location.x)
+                    if tracking.drag?.start != value.startLocation {
+                        let isHorizontal = abs(value.translation.width) >= abs(value.translation.height)
+                        tracking.drag = (value.startLocation, isHorizontal)
+                    }
+                    if tracking.drag?.isHorizontal == true {
+                        updateSelection(at: value.location.x)
+                    }
                 }
         )
+        .onChange(of: options.count) {
+            tracking.frames = [:]
+        }
         .coordinateSpace(.named(SegmentedControlSelection.space))
         // The icon variant is two lines tall, so it sizes to its content —
         // `height` is the single-line text measurement. Either way the control
@@ -237,7 +256,8 @@ public struct SegmentedControl<T: Hashable>: View {
     }
 
     private func updateSelection(at x: CGFloat) {
-        let frames = options.indices.compactMap { segmentFrames[$0] }
+        guard isEnabled else { return }
+        let frames = options.indices.compactMap { tracking.frames[$0] }
         guard frames.count == options.count,
               let index = Selection.segmentIndex(at: x, in: frames) else { return }
         select(options[index])
