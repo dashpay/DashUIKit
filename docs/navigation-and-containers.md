@@ -206,7 +206,7 @@ the new content is measured.
   the SwiftUI side of the change (the measured height), so its curve may not show on the
   sheet's edge.
 - The first measurement replaces `fallback` (or `.medium` when there is none) without
-  animation.
+  `animation`.
 - A change that leaves the capped detent where it is (both heights above the
   `maxHeightFraction` cap) is not animated.
 - Limit: if the content reports a provisional height while the sheet is being presented

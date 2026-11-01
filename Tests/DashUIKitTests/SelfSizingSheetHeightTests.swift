@@ -43,19 +43,14 @@ final class SelfSizingSheetHeightTests: XCTestCase {
 
     // MARK: - animation
 
-    /// The animation for a measurement change from `old` (applied at `oldCap`) to `new` at `newCap`.
+    /// The animation for a measurement change from `old` to `new` under a cap of `cap`.
     private func animation(
         _ requested: Animation?,
         from old: CGFloat,
         to new: CGFloat,
-        oldCap: CGFloat = 800,
-        newCap: CGFloat = 800
+        cap: CGFloat = 800
     ) -> Animation? {
-        let applied = old > 0
-            ? SelfSizingSheetHeight.resolved(measured: old, fallback: 0, maxHeight: oldCap)
-            : 0
-        let next = SelfSizingSheetHeight.resolved(measured: new, fallback: 0, maxHeight: newCap)
-        return SelfSizingSheetHeight.animation(for: requested, from: applied, to: next)
+        SelfSizingSheetHeight.animation(for: requested, from: old, to: new, maxHeight: cap)
     }
 
     func testDefaultPathTakesNoAnimation() {
@@ -91,17 +86,11 @@ final class SelfSizingSheetHeightTests: XCTestCase {
         XCTAssertNil(animation(.easeInOut, from: 1000, to: 800))
     }
 
-    func testEqualCappedHeightsFromBelowAreNotAnimated() {
-        XCTAssertNil(SelfSizingSheetHeight.animation(for: .easeInOut, from: 400, to: 400))
-    }
-
-    func testChangeIsComparedAgainstTheCapItWasAppliedAt() {
-        // Applied at 800 under the old cap; after a rotation the cap is 600, so the detent moves.
-        XCTAssertEqual(animation(.easeInOut, from: 1000, to: 1100, oldCap: 800, newCap: 600), .easeInOut)
-        // Applied at 600 under the old cap; under the new cap of 1200 the 900 is shown in full.
-        XCTAssertEqual(animation(.easeInOut, from: 1000, to: 900, oldCap: 600, newCap: 1200), .easeInOut)
-        // Applied at 600 under the cap of 600; after rotation to 900, 600 measured stays at 600.
-        XCTAssertNil(animation(.easeInOut, from: 700, to: 600, oldCap: 600, newCap: 900))
+    func testBothHeightsAreJudgedAtTheCurrentCap() {
+        // 1000 → 1100 stays above a cap of 600: the detent does not move.
+        XCTAssertNil(animation(.easeInOut, from: 1000, to: 1100, cap: 600))
+        // Under a cap of 1200 the same change moves the detent.
+        XCTAssertEqual(animation(.easeInOut, from: 1000, to: 1100, cap: 1200), .easeInOut)
     }
 
     // MARK: - overloads

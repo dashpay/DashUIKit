@@ -333,9 +333,11 @@ public extension View {
     ///   and the detent follows it in an animation instead of jumping. The sheet's own resize
     ///   runs with the system sheet animation; `animation` applies to the SwiftUI side of the
     ///   change. The first measurement replaces `fallback` (or `.medium` when there is none)
-    ///   without animation. A provisional measurement during presentation followed by the
-    ///   settled one counts as a change, so that second step can animate. `nil` applies every
-    ///   change without animation, as the overload without `animation` does.
+    ///   without `animation`, and so does a change that leaves the capped detent where it is (both
+    ///   heights above the `maxHeightFraction` cap). A provisional measurement during
+    ///   presentation followed by the settled one counts as a change, so that second step can
+    ///   animate. `nil` applies every change without animation, as the overload without
+    ///   `animation` does.
     @ViewBuilder
     func selfSizingSheet(
         fallback: CGFloat = 0,
@@ -376,10 +378,6 @@ private struct SelfSizingSheetModifier: ViewModifier {
     let maxHeightFraction: CGFloat
     let animation: Animation?
     @State private var measured: CGFloat = 0
-    /// The capped detent height the last measurement was applied at, kept only when an
-    /// `animation` is requested, so a change of the cap (rotation) between two measurements
-    /// is compared against the detent actually shown. Zero before the first measurement.
-    @State private var appliedHeight: CGFloat = 0
 
     func body(content: Content) -> some View {
         // Measure the wrapped content directly — reliable on first layout (`onAppear`) and on
@@ -406,15 +404,11 @@ private struct SelfSizingSheetModifier: ViewModifier {
 
     private func update(_ newHeight: CGFloat) {
         guard newHeight > 0, newHeight != measured else { return }
-        guard let animation else {
-            measured = newHeight
-            return
-        }
-        let next = SelfSizingSheetHeight.resolved(
-            measured: newHeight, fallback: fallback, maxHeight: maxSheetHeight)
         let heightAnimation = SelfSizingSheetHeight.animation(
-            for: animation, from: appliedHeight, to: next)
-        appliedHeight = next
+            for: animation,
+            from: measured,
+            to: newHeight,
+            maxHeight: maxSheetHeight)
         if let heightAnimation {
             withAnimation(heightAnimation) { measured = newHeight }
         } else {
@@ -444,18 +438,19 @@ enum SelfSizingSheetHeight {
         min(measured > 0 ? measured : fallback, maxHeight)
     }
 
-    /// The animation to apply a new measurement in, or `nil` to apply it as is. Both heights
-    /// are capped detent heights: `applied` the one the last measurement was applied at (zero
-    /// before the first), `next` the new one at the current cap. `nil` without a requested
+    /// The animation to apply a new measurement in, or `nil` to apply it as is. `measured` is
+    /// the current measurement (zero before the first), `newMeasured` the one arriving; both
+    /// are compared capped at the current `maxHeight`. `nil` without a requested
     /// animation, for the first measurement (it replaces the fallback as is), and when the
     /// detent does not move.
     static func animation(
         for requested: Animation?,
-        from applied: CGFloat,
-        to next: CGFloat
+        from measured: CGFloat,
+        to newMeasured: CGFloat,
+        maxHeight: CGFloat
     ) -> Animation? {
-        guard let requested, applied > 0, applied != next else { return nil }
-        return requested
+        guard let requested, measured > 0 else { return nil }
+        return min(measured, maxHeight) != min(newMeasured, maxHeight) ? requested : nil
     }
 }
 
