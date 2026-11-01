@@ -182,7 +182,7 @@ the modifier are applied together:
         maxHeightFraction: 0.95,  // cap at 95% of window height (clip taller → use ScrollView)
         background: .dash.secondaryBackground, // also fills the home-indicator strip
         cornerRadius: 24,         // below iOS 26; iOS 26+ keeps system corners
-        animation: .easeInOut     // optional: animate height changes after the first
+        animatesHeightChanges: true // optional: animate height changes after the first
     ) {
         MyContent()
     }
@@ -192,27 +192,25 @@ the modifier are applied together:
 `.selfSizingSheet(…)` (a `View` extension) measures the wrapped content directly via a
 `GeometryReader` and drives `presentationDetents(_:selection:)` with a height detent: the
 measured height capped at `maxHeightFraction`, or `fallback` (`.medium` when there is none)
-before the first measurement. The measured
-content must have a finite intrinsic height (no
+before the first measurement. The measured content must have a finite intrinsic height (no
 greedy `Spacer`/`maxHeight: .infinity`), or the measurement is wrong.
 `BottomSheetHeightPreferenceKey` is exposed for advanced cases.
 
 Both `BottomSheet.selfSizing(…)` and `.selfSizingSheet(…)` have an overload that takes
-`animation:`, for content that switches in place between views of different heights — a
-preset list and a keypad or a calendar. With it, a change of the measured height after the
-first one is applied inside `withAnimation(animation)` (exceptions below), and the sheet's
-top edge moves to the new height instead of jumping once the new content is measured.
+`animatesHeightChanges:`, for content that switches in place between views of different
+heights — a preset list and a keypad or a calendar. With `true`, after a change of the
+measured height (exceptions below) the sheet's top edge moves to the new height instead of
+jumping once the new content is measured.
 
-- The edge moves with the system sheet spring (about half a second) whatever `animation`
-  is; `animation` is only the transaction the new height is applied in. To
-  move the edge, the sheet briefly offers both the old and the new height as detents and
-  selects the new one; the old one is dropped right after.
+- The edge moves with the system sheet spring (about half a second). To move it, the sheet
+  briefly offers both the old and the new height as detents and selects the new one; the
+  old one is dropped right after.
 - The first measurement replaces `fallback` (or `.medium` when there is none) without
-  `animation`.
+  animation.
 - The content stays at the top edge of the sheet, whether it grew or shrank, while the edge
   catches up and at any other time the sheet is shorter than the content: content taller
   than the cap is clipped at the bottom, and when the keyboard shrinks the sheet, what it
-  covers is at the bottom (without `animation` the content is centred).
+  covers is at the bottom (without `animatesHeightChanges` the content is centred).
 - With Reduce Motion on, the new height is applied without animation and the edge jumps to
   it; the content is still held at the top edge.
 - A change that leaves the capped detent where it is (both heights above the
@@ -220,8 +218,8 @@ top edge moves to the new height instead of jumping once the new content is meas
 - Limit: if the content reports a provisional height while the sheet is being presented
   and then the settled one, the second step counts as a change and can animate.
 
-Without `animation` (or with `nil`) the sheet adds no animation of its own to a height
-change: the edge jumps to the new height, and the content keeps its default placement.
+Without `animatesHeightChanges` (or with `false`) the sheet adds no animation of its own to a
+height change: the edge jumps to the new height, and the content keeps its default placement.
 
 `background` fills the sheet **and** its presentation. The measured height excludes the
 home-indicator inset that `presentationDetents([.height])` adds back, so that strip lies

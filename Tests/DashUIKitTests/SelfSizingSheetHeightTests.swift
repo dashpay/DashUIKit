@@ -73,79 +73,73 @@ final class SelfSizingSheetHeightTests: XCTestCase {
         XCTAssertEqual(SelfSizingSheetHeight.detents(current: 320, outgoing: [0]), [.height(320)])
     }
 
-    // MARK: - animation
+    // MARK: - animates
 
-    /// The animation for a measurement change from `old` to `new` under a cap of `cap`.
-    private func animation(
-        _ requested: Animation?,
+    /// Whether a measurement change from `old` to `new` under a cap of `cap` is animated.
+    private func animates(
         from old: CGFloat,
         to new: CGFloat,
         cap: CGFloat = 800,
         reduceMotion: Bool = false
-    ) -> Animation? {
-        SelfSizingSheetHeight.animation(
-            for: requested, reduceMotion: reduceMotion, from: old, to: new, maxHeight: cap)
-    }
-
-    func testDefaultPathTakesNoAnimation() {
-        XCTAssertNil(animation(nil, from: 200, to: 400))
+    ) -> Bool {
+        SelfSizingSheetHeight.animates(reduceMotion: reduceMotion, from: old, to: new, maxHeight: cap)
     }
 
     func testFirstMeasurementIsNotAnimated() {
-        XCTAssertNil(animation(.easeInOut, from: 0, to: 400))
+        XCTAssertFalse(animates(from: 0, to: 400))
     }
 
-    func testLaterChangeTakesTheRequestedAnimation() {
-        XCTAssertEqual(animation(.easeInOut, from: 200, to: 400), .easeInOut)
-        XCTAssertEqual(animation(.easeInOut, from: 400, to: 200), .easeInOut)
+    func testLaterChangeIsAnimated() {
+        XCTAssertTrue(animates(from: 200, to: 400))
+        XCTAssertTrue(animates(from: 400, to: 200))
     }
 
-    func testReduceMotionTakesNoAnimation() {
-        XCTAssertNil(animation(.easeInOut, from: 200, to: 400, reduceMotion: true))
+    func testReduceMotionIsNotAnimated() {
+        XCTAssertFalse(animates(from: 200, to: 400, reduceMotion: true))
     }
 
     func testChangeAboveTheCapIsNotAnimated() {
-        XCTAssertNil(animation(.easeInOut, from: 900, to: 1000))
+        XCTAssertFalse(animates(from: 900, to: 1000))
     }
 
     func testGrowingAcrossTheCapIsAnimated() {
-        XCTAssertEqual(animation(.easeInOut, from: 400, to: 1000), .easeInOut)
+        XCTAssertTrue(animates(from: 400, to: 1000))
     }
 
     func testShrinkingAcrossTheCapIsAnimated() {
-        XCTAssertEqual(animation(.easeInOut, from: 1000, to: 400), .easeInOut)
+        XCTAssertTrue(animates(from: 1000, to: 400))
     }
 
     func testReachingExactlyTheCapIsAnimated() {
-        XCTAssertEqual(animation(.easeInOut, from: 400, to: 800), .easeInOut)
+        XCTAssertTrue(animates(from: 400, to: 800))
     }
 
     func testMovingFromAboveTheCapToExactlyTheCapIsNotAnimated() {
-        XCTAssertNil(animation(.easeInOut, from: 1000, to: 800))
+        XCTAssertFalse(animates(from: 1000, to: 800))
     }
 
     func testBothHeightsAreJudgedAtTheCurrentCap() {
         // 1000 → 1100 stays above a cap of 600: the detent does not move.
-        XCTAssertNil(animation(.easeInOut, from: 1000, to: 1100, cap: 600))
+        XCTAssertFalse(animates(from: 1000, to: 1100, cap: 600))
         // Under a cap of 1200 the same change moves the detent.
-        XCTAssertEqual(animation(.easeInOut, from: 1000, to: 1100, cap: 1200), .easeInOut)
+        XCTAssertTrue(animates(from: 1000, to: 1100, cap: 1200))
     }
 
     // MARK: - overloads
 
-    /// Checked at compile time: a call without `animation` keeps resolving to the overload
-    /// without it, and one with it, `nil` included, to the overload that takes it, with no
-    /// ambiguity between the two.
+    /// Checked at compile time: a call without `animatesHeightChanges` keeps resolving to the
+    /// overload without it, and one with it, `false` included, to the overload that takes it,
+    /// with no ambiguity between the two.
     @MainActor
-    func testCallsResolveWithAndWithoutAnimation() {
+    func testCallsResolveWithAndWithoutAnimatesHeightChanges() {
         _ = Text("").selfSizingSheet()
         _ = Text("").selfSizingSheet(
             fallback: 240, maxHeightFraction: 0.9, background: .dash.secondaryBackground, cornerRadius: 24)
-        _ = Text("").selfSizingSheet(animation: .easeInOut)
-        _ = Text("").selfSizingSheet(animation: nil)
+        _ = Text("").selfSizingSheet(animatesHeightChanges: true)
+        _ = Text("").selfSizingSheet(animatesHeightChanges: false)
         _ = BottomSheet.selfSizing(showBackButton: .constant(false)) { Text("") }
         _ = BottomSheet.selfSizing(showBackButton: .constant(false), cornerRadius: 24) { Text("") }
-        _ = BottomSheet.selfSizing(showBackButton: .constant(false), animation: .easeInOut) { Text("") }
-        _ = BottomSheet.selfSizing(showBackButton: .constant(false), animation: nil) { Text("") }
+        _ = BottomSheet.selfSizing(showBackButton: .constant(false), animatesHeightChanges: true) { Text("") }
+        _ = BottomSheet.selfSizing(showBackButton: .constant(false), animatesHeightChanges: false) { Text("") }
     }
 }
