@@ -307,9 +307,8 @@ public extension View {
     ///   - cornerRadius: Optional corner radius applied via `presentationCornerRadius`
     ///     below iOS 26 (iOS 26+ keeps the system corner styling).
     ///
-    /// The sheet adds no animation to height changes (a transaction the host is already
-    /// animating in still applies); for content that switches in place, pass `animation:` to
-    /// the overload that takes one.
+    /// The sheet adds no animation of its own to height changes; for content that switches in
+    /// place, pass `animation:` to the overload that takes one.
     @ViewBuilder
     func selfSizingSheet(
         fallback: CGFloat = 0,

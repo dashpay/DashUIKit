@@ -216,8 +216,8 @@ the new content is measured.
 - Limit: if the content reports a provisional height while the sheet is being presented
   and then the settled one, the second step counts as a change and can animate.
 
-Without `animation` (or with `nil`) the sheet adds no animation to a height change; a
-transaction the host is already animating in still applies.
+Without `animation` (or with `nil`) the sheet adds no animation of its own to a height
+change, and its layout is as before.
 
 `background` fills the sheet **and** its presentation. The measured height excludes the
 home-indicator inset that `presentationDetents([.height])` adds back, so that strip lies
