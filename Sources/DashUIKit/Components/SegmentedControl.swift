@@ -154,7 +154,7 @@ public struct SegmentedControl<T: Hashable>: View {
         .frame(height: icon == nil ? Layout.height : nil)
         .fixedSize(horizontal: false, vertical: true)
         .background(Color.dash.segmentControlBackgroundGroup)
-        .clipShape(RoundedRectangle(cornerRadius: Layout.containerCornerRadius))
+        .clipShape(.rect(cornerRadius: Layout.containerCornerRadius))
     }
 
     private func segment(_ option: T, index: Int, isSelected: Bool) -> some View {
