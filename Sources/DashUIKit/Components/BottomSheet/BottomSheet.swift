@@ -338,8 +338,9 @@ public extension View {
     ///   `fallback` (or `.medium` when there is none) without `animation`, and so does a
     ///   change that leaves the capped detent where it is (both heights above the
     ///   `maxHeightFraction` cap). A provisional measurement during presentation followed by
-    ///   the settled one counts as a change, so that second step can animate. With `nil` the sheet adds no animation and leaves the
-    ///   layout alone, as the overload without `animation` does.
+    ///   the settled one counts as a change, so that second step can animate. With `nil` the
+    ///   sheet adds no animation and leaves the layout alone, as the overload without
+    ///   `animation` does.
     @ViewBuilder
     func selfSizingSheet(
         fallback: CGFloat = 0,
@@ -388,6 +389,7 @@ private struct SelfSizingSheetModifier: ViewModifier {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     func body(content: Content) -> some View {
+        let current = currentHeight(maxHeight: maxSheetHeight)
         // Measure the wrapped content directly — reliable on first layout (`onAppear`) and on
         // changes, without depending on a published preference.
         content
@@ -399,33 +401,30 @@ private struct SelfSizingSheetModifier: ViewModifier {
                 }
             )
             .modifier(TopAligned(isActive: animation != nil))
+            // The selection is always the current height: the sheet follows the measurement,
+            // and a drag to the outgoing detent in the moment it is still offered is not kept.
             .presentationDetents(
-                SelfSizingSheetHeight.detents(current: currentHeight, outgoing: outgoing),
-                selection: selection)
+                SelfSizingSheetHeight.detents(current: current, outgoing: outgoing),
+                selection: .constant(SelfSizingSheetHeight.detent(for: current)))
             .presentationDragIndicator(.hidden)
     }
 
-    private var currentHeight: CGFloat {
-        SelfSizingSheetHeight.resolved(measured: measured, fallback: fallback, maxHeight: maxSheetHeight)
-    }
-
-    /// Always the detent for the current height: the sheet follows the measurement, and a drag
-    /// to the outgoing detent in the moment it is still offered is not kept.
-    private var selection: Binding<PresentationDetent> {
-        let current = SelfSizingSheetHeight.detent(for: currentHeight)
-        return Binding(get: { current }, set: { _ in })
+    private func currentHeight(maxHeight: CGFloat) -> CGFloat {
+        SelfSizingSheetHeight.resolved(measured: measured, fallback: fallback, maxHeight: maxHeight)
     }
 
     private func update(_ newHeight: CGFloat) {
         guard newHeight > 0, newHeight != measured else { return }
+        let maxHeight = maxSheetHeight
         let heightAnimation = SelfSizingSheetHeight.animation(
             for: animation,
             reduceMotion: reduceMotion,
             from: measured,
             to: newHeight,
-            maxHeight: maxSheetHeight)
+            maxHeight: maxHeight)
         if let heightAnimation {
-            let leaving = currentHeight
+            // A change earlier in this turn already set the height the sheet still shows.
+            let leaving = outgoing ?? currentHeight(maxHeight: maxHeight)
             withAnimation(heightAnimation) {
                 outgoing = leaving
                 measured = newHeight
@@ -433,10 +432,10 @@ private struct SelfSizingSheetModifier: ViewModifier {
             // Dropped on the next turn of the main queue, once the sheet has taken the new
             // selection with both detents in its set. Not in `withAnimation`'s completion:
             // nothing in SwiftUI animates here, so that can run before the sheet sees the
-            // change, and the sheet then jumps.
+            // change, and the sheet then jumps. A change applied without animation leaves
+            // a pending outgoing height alone: it is dropped here as well.
             DispatchQueue.main.async { outgoing = nil }
         } else {
-            outgoing = nil
             measured = newHeight
         }
     }
