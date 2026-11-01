@@ -333,7 +333,7 @@ public extension View {
     ///   measured height the sheet's top edge moves to the new height with the system sheet
     ///   spring instead of jumping, with the content held at that edge. Not animated: the
     ///   first measurement, which replaces `fallback` (or `.medium` when there is none); a
-    ///   change that leaves the capped detent where it is (both heights above the
+    ///   change that leaves the capped detent where it is (both heights at or above the
     ///   `maxHeightFraction` cap); and any change with Reduce Motion on, where the edge jumps.
     ///   The content stays at the top edge whenever this is `true`, so when the keyboard
     ///   shrinks the sheet the overflow is at the bottom. A provisional measurement during

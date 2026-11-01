@@ -202,9 +202,9 @@ heights — a preset list and a keypad or a calendar. With `true`, after a chang
 measured height (exceptions below) the sheet's top edge moves to the new height instead of
 jumping once the new content is measured.
 
-- The edge moves with the system sheet spring (about half a second). To move it, the sheet
-  briefly offers both the old and the new height as detents and selects the new one; the
-  old one is dropped right after.
+- The edge moves with the system sheet spring. To move it, the sheet briefly offers both
+  the old and the new height as detents and selects the new one; the old one is dropped
+  right after.
 - The first measurement replaces `fallback` (or `.medium` when there is none) without
   animation.
 - The content stays at the top edge of the sheet, whether it grew or shrank, while the edge
@@ -213,7 +213,7 @@ jumping once the new content is measured.
   covers is at the bottom (without `animatesHeightChanges` the content is centred).
 - With Reduce Motion on, the new height is applied without animation and the edge jumps to
   it; the content is still held at the top edge.
-- A change that leaves the capped detent where it is (both heights above the
+- A change that leaves the capped detent where it is (both heights at or above the
   `maxHeightFraction` cap) is not animated.
 - Limit: if the content reports a provisional height while the sheet is being presented
   and then the settled one, the second step counts as a change and can animate.
