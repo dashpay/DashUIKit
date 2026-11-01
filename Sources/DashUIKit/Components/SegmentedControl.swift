@@ -144,13 +144,13 @@ public struct SegmentedControl<T: Hashable>: View {
                 let cells = options.indices.compactMap { index in
                     bounds[index].map { (index, geometry[$0]) }
                 }
-                let left = cells.map(\.1.minX).min()
-                let right = cells.map(\.1.maxX).max()
+                let leftmost = cells.min { $0.1.minX < $1.1.minX }?.0
+                let rightmost = cells.max { $0.1.minX < $1.1.minX }?.0
                 ZStack(alignment: .topLeading) {
                     Color.clear
                     ForEach(cells, id: \.0) { index, cell in
-                        let minX = cell.minX == left ? 0 : cell.minX
-                        let maxX = cell.maxX == right ? geometry.size.width : cell.maxX
+                        let minX = index == leftmost ? 0 : cell.minX
+                        let maxX = index == rightmost ? geometry.size.width : cell.maxX
                         segmentButton(options[index], isSelected: index == selectedIndex)
                             .frame(width: maxX - minX, height: geometry.size.height)
                             .offset(x: minX)
@@ -284,6 +284,13 @@ private struct SegmentedControlPreview: View {
     // Labels that do not fit truncate on one line.
     SegmentedControl(options: ["Active", "Disconnected", "Expired"], selection: .constant("Active"))
         .frame(width: 240)
+        .padding()
+}
+
+#Preview("Disabled") {
+    // Taps and VoiceOver activation do nothing; the look does not change.
+    SegmentedControl(options: ["Day", "Week", "Month"], selection: .constant("Week"))
+        .disabled(true)
         .padding()
 }
 
