@@ -42,7 +42,10 @@ Convenience initializers let you omit any slot (e.g. only `leading`, or `central
   by its accessibility identifier (`navigationbar-back`, `navigationbar-close`,
   `navigationbar-plus`, `navigationbar-info`), which does not change with the language:
   `app.buttons["navigationbar-back"]` in XCUITest, `id: "navigationbar-back"` in Maestro (its
-  `text:` selector matches the label).
+  `text:` selector matches the label). An identifier set on an ancestor that is not an
+  accessibility container (a host's header `HStack`, the `NavigationBar`) can replace the button's;
+  add `.accessibilityElement(children: .contain)` to that ancestor. The bare `.icon` carries no
+  identifier.
   `BottomSheet`'s header back and close buttons are these buttons, so they carry the same
   identifiers. `NavigationBarCircleButton` and `NavigationBarCircleMenu` carry none: give
   them your own with `.accessibilityIdentifier(_:)`.

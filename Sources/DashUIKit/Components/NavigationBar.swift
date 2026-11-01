@@ -118,7 +118,9 @@ public enum NavigationBarElement: String, CaseIterable {
 
     private var source: DashIconSource { asset.source }
 
-    /// The element as a button, identified by `accessibilityIdentifier`.
+    /// The element as a button. Its accessibility identifier is
+    /// `navigationbar-back`, `navigationbar-close`, `navigationbar-plus` or
+    /// `navigationbar-info`, whatever the language.
     public func button(action: @escaping () -> Void) -> some View {
         NavigationBarButton(accessibilityLabel: Text(accessibilityLabelText), action: action) {
             icon
