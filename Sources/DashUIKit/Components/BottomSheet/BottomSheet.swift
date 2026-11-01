@@ -205,7 +205,39 @@ public extension BottomSheet {
         maxHeightFraction: CGFloat = 0.95,
         background: Color = .dash.primaryBackground,
         cornerRadius: CGFloat? = nil,
-        animation: Animation? = nil,
+        @ViewBuilder content: @escaping () -> Content
+    ) -> some View {
+        selfSizing(
+            title: title,
+            showBackButton: showBackButton,
+            onBackButtonPressed: onBackButtonPressed,
+            isDismissalEnabled: isDismissalEnabled,
+            showsCloseButton: showsCloseButton,
+            isCloseButtonEnabled: isCloseButtonEnabled,
+            onClose: onClose,
+            fallback: fallback,
+            maxHeightFraction: maxHeightFraction,
+            background: background,
+            cornerRadius: cornerRadius,
+            animation: nil,
+            content: content)
+    }
+
+    /// `selfSizing(...)` whose height changes after the first measurement are animated — see
+    /// `selfSizingSheet(fallback:maxHeightFraction:background:cornerRadius:animation:)`.
+    static func selfSizing(
+        title: String = "",
+        showBackButton: Binding<Bool>,
+        onBackButtonPressed: (() -> Void)? = nil,
+        isDismissalEnabled: Binding<Bool> = .constant(true),
+        showsCloseButton: Bool = true,
+        isCloseButtonEnabled: Bool = true,
+        onClose: (() -> Void)? = nil,
+        fallback: CGFloat = 0,
+        maxHeightFraction: CGFloat = 0.95,
+        background: Color = .dash.primaryBackground,
+        cornerRadius: CGFloat? = nil,
+        animation: Animation?,
         @ViewBuilder content: @escaping () -> Content
     ) -> some View {
         BottomSheet(
@@ -273,22 +305,44 @@ public extension View {
     ///     forwards a single `background` to both.
     ///   - cornerRadius: Optional corner radius applied via `presentationCornerRadius`
     ///     below iOS 26 (iOS 26+ keeps the system corner styling).
-    ///   - animation: For content that switches in place between views of different heights
-    ///     (a preset list and a keypad). When set, a change of the measured height after the
-    ///     first one is applied in `withAnimation(animation)`: the content changes first, and
-    ///     the detent follows it in an animation instead of jumping. The sheet's own resize
-    ///     runs with the system sheet animation; `animation` applies to the SwiftUI side of the
-    ///     change. The first measurement replaces `fallback` (or `.medium` when there is none)
-    ///     without animation. A provisional measurement during presentation followed by the
-    ///     settled one counts as a change, so that second step can animate. `nil` (default)
-    ///     applies every change without animation.
+    ///
+    /// Height changes are applied without animation; for content that switches in place,
+    /// pass `animation:` to the overload that takes one.
+    @ViewBuilder
+    func selfSizingSheet(
+        fallback: CGFloat = 0,
+        maxHeightFraction: CGFloat = 0.95,
+        background: Color = .dash.primaryBackground,
+        cornerRadius: CGFloat? = nil
+    ) -> some View {
+        selfSizingSheet(
+            fallback: fallback,
+            maxHeightFraction: maxHeightFraction,
+            background: background,
+            cornerRadius: cornerRadius,
+            animation: nil)
+    }
+
+    /// `selfSizingSheet(fallback:maxHeightFraction:background:cornerRadius:)` that can animate
+    /// the sheet's height changes. `fallback`, `maxHeightFraction`, `background` and
+    /// `cornerRadius` work as they do there.
+    ///
+    /// - Parameter animation: For content that switches in place between views of different
+    ///   heights (a preset list and a keypad). When set, a change of the measured height after
+    ///   the first one is applied in `withAnimation(animation)`: the content changes first,
+    ///   and the detent follows it in an animation instead of jumping. The sheet's own resize
+    ///   runs with the system sheet animation; `animation` applies to the SwiftUI side of the
+    ///   change. The first measurement replaces `fallback` (or `.medium` when there is none)
+    ///   without animation. A provisional measurement during presentation followed by the
+    ///   settled one counts as a change, so that second step can animate. `nil` applies every
+    ///   change without animation, as the overload without `animation` does.
     @ViewBuilder
     func selfSizingSheet(
         fallback: CGFloat = 0,
         maxHeightFraction: CGFloat = 0.95,
         background: Color = .dash.primaryBackground,
         cornerRadius: CGFloat? = nil,
-        animation: Animation? = nil
+        animation: Animation?
     ) -> some View {
         let modified = modifier(SelfSizingSheetModifier(
             fallback: fallback,
@@ -547,13 +601,13 @@ private struct SelfSizingSheetResizeContent: View {
         VStack(alignment: .leading, spacing: 12) {
             Text(isTall ? "Tall content" : "Short content")
                 .dashFont(.calloutMedium)
-                .foregroundColor(.dash.primaryText)
+                .foregroundStyle(Color.dash.primaryText)
 
             if isTall {
                 ForEach(1...6, id: \.self) { row in
                     Text("Row \(row)")
                         .dashFont(.body)
-                        .foregroundColor(.dash.secondaryText)
+                        .foregroundStyle(Color.dash.secondaryText)
                         .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
                         .modifier(MenuViewModifier())
                 }

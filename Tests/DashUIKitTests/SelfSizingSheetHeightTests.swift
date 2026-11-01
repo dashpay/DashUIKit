@@ -103,4 +103,22 @@ final class SelfSizingSheetHeightTests: XCTestCase {
         // Applied at 600 under the cap of 600; after rotation to 900, 600 measured stays at 600.
         XCTAssertNil(animation(.easeInOut, from: 700, to: 600, oldCap: 600, newCap: 900))
     }
+
+    // MARK: - overloads
+
+    /// Checked at compile time: a call without `animation` keeps resolving to the overload
+    /// without it, and one with it, `nil` included, to the overload that takes it, with no
+    /// ambiguity between the two.
+    @MainActor
+    func testCallsResolveWithAndWithoutAnimation() {
+        _ = Text("").selfSizingSheet()
+        _ = Text("").selfSizingSheet(
+            fallback: 240, maxHeightFraction: 0.9, background: .dash.secondaryBackground, cornerRadius: 24)
+        _ = Text("").selfSizingSheet(animation: .easeInOut)
+        _ = Text("").selfSizingSheet(animation: nil)
+        _ = BottomSheet.selfSizing(showBackButton: .constant(false)) { Text("") }
+        _ = BottomSheet.selfSizing(showBackButton: .constant(false), cornerRadius: 24) { Text("") }
+        _ = BottomSheet.selfSizing(showBackButton: .constant(false), animation: .easeInOut) { Text("") }
+        _ = BottomSheet.selfSizing(showBackButton: .constant(false), animation: nil) { Text("") }
+    }
 }
