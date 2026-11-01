@@ -338,10 +338,10 @@ public extension View {
     ///   `fallback` (or `.medium` when there is none) without `animation`, and so does a
     ///   change that leaves the capped detent where it is (both heights above the
     ///   `maxHeightFraction` cap). The content stays at the top edge whenever `animation` is
-    ///   set, so when the keyboard shrinks the sheet the overflow is at the bottom. A provisional measurement during presentation followed by
-    ///   the settled one counts as a change, so that second step can animate. With `nil` the
-    ///   sheet adds no animation and leaves the layout alone, as the overload without
-    ///   `animation` does.
+    ///   set, so when the keyboard shrinks the sheet the overflow is at the bottom. A
+    ///   provisional measurement during presentation followed by the settled one counts as a
+    ///   change, so that second step can animate. With `nil` the sheet adds no animation and
+    ///   leaves the layout alone, as the overload without `animation` does.
     @ViewBuilder
     func selfSizingSheet(
         fallback: CGFloat = 0,
@@ -391,7 +391,8 @@ private struct SelfSizingSheetModifier: ViewModifier {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     func body(content: Content) -> some View {
-        let current = currentHeight(maxHeight: maxSheetHeight)
+        let current = SelfSizingSheetHeight.resolved(
+            measured: measured, fallback: fallback, maxHeight: maxSheetHeight)
         // Measure the wrapped content directly — reliable on first layout (`onAppear`) and on
         // changes, without depending on a published preference.
         content
@@ -411,12 +412,12 @@ private struct SelfSizingSheetModifier: ViewModifier {
             .presentationDragIndicator(.hidden)
     }
 
-    private func currentHeight(maxHeight: CGFloat) -> CGFloat {
-        SelfSizingSheetHeight.resolved(measured: measured, fallback: fallback, maxHeight: maxHeight)
-    }
-
     private func update(_ newHeight: CGFloat) {
         guard newHeight > 0, newHeight != measured else { return }
+        guard animation != nil else {
+            measured = newHeight
+            return
+        }
         let maxHeight = maxSheetHeight
         let heightAnimation = SelfSizingSheetHeight.animation(
             for: animation,
@@ -425,7 +426,8 @@ private struct SelfSizingSheetModifier: ViewModifier {
             to: newHeight,
             maxHeight: maxHeight)
         if let heightAnimation {
-            let leaving = currentHeight(maxHeight: maxHeight)
+            let leaving = SelfSizingSheetHeight.resolved(
+                measured: measured, fallback: fallback, maxHeight: maxHeight)
             let needsDrop = outgoing.isEmpty
             withAnimation(heightAnimation) {
                 outgoing.insert(leaving)
