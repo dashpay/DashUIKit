@@ -192,7 +192,8 @@ public struct BottomSheetHeightPreferenceKey: PreferenceKey {
 public extension BottomSheet {
     /// Self-sizing bottom sheet: builds with `fillsHeight: false` and applies
     /// `.selfSizingSheet(...)` so the two can't be mismatched. Drop the result
-    /// directly into a `.sheet { }`.
+    /// directly into a `.sheet { }`. For content that switches in place, use the overload
+    /// that takes `animatesHeightChanges:`.
     static func selfSizing(
         title: String = "",
         showBackButton: Binding<Bool>,
