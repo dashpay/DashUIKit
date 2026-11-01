@@ -76,9 +76,9 @@ enum SegmentedControlSelection {
 private final class SegmentedControlTracking {
     /// Each segment's frame in `SegmentedControlSelection.space`, by index.
     var frames: [Int: CGRect] = [:]
-    /// Where the current drag started, and whether its first movement was
-    /// horizontal.
-    var drag: (start: CGPoint, isHorizontal: Bool)?
+    /// Whether the drag in progress first moved horizontally, and the
+    /// farthest it has gone from where it started; `nil` between drags.
+    var drag: (isHorizontal: Bool, farthest: CGFloat)?
 }
 
 /// Each segment's bounds, by index, for drawing the pill in the same layout
@@ -119,6 +119,9 @@ public struct SegmentedControl<T: Hashable>: View {
     /// The segment frames a drag or a tap on the inset is hit-tested
     /// against, and the direction of the drag in progress.
     @State private var tracking = SegmentedControlTracking()
+    /// True while a drag is in progress. It resets when the drag ends or is
+    /// cancelled, which is what clears `tracking.drag`.
+    @GestureState private var isDragging = false
 
     /// - Parameters:
     ///   - options: The segments, in reading order. Expected to be distinct.
@@ -188,10 +191,16 @@ public struct SegmentedControl<T: Hashable>: View {
         .highPriorityGesture(
             DragGesture(minimumDistance: Layout.dragMinimumDistance,
                         coordinateSpace: .named(SegmentedControlSelection.space))
+                .updating($isDragging) { _, isDragging, _ in
+                    isDragging = true
+                }
                 .onChanged { value in
-                    if tracking.drag == nil || tracking.drag?.start != value.startLocation {
+                    let distance = hypot(value.translation.width, value.translation.height)
+                    if let drag = tracking.drag {
+                        tracking.drag = (drag.isHorizontal, max(drag.farthest, distance))
+                    } else {
                         let isHorizontal = abs(value.translation.width) >= abs(value.translation.height)
-                        tracking.drag = (value.startLocation, isHorizontal)
+                        tracking.drag = (isHorizontal, distance)
                     }
                     if tracking.drag?.isHorizontal == true {
                         updateSelection(at: value.location.x)
@@ -199,14 +208,18 @@ public struct SegmentedControl<T: Hashable>: View {
                 }
                 .onEnded { value in
                     // A tap whose finger slipped vertically still selects
-                    // where it landed; a longer vertical swipe does not.
-                    if tracking.drag?.isHorizontal == false,
-                       hypot(value.translation.width, value.translation.height) < Layout.tapSlop {
+                    // where it landed; a vertical swipe does not.
+                    if let drag = tracking.drag, !drag.isHorizontal, drag.farthest < Layout.tapSlop {
                         updateSelection(at: value.startLocation.x)
                     }
                     tracking.drag = nil
                 }
         )
+        .onChange(of: isDragging) {
+            if !isDragging {
+                tracking.drag = nil
+            }
+        }
         .coordinateSpace(.named(SegmentedControlSelection.space))
         // The icon variant is two lines tall, so it sizes to its content —
         // `height` is the single-line text measurement. Either way the control
