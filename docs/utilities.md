@@ -5,28 +5,19 @@ mechanics for measuring and fitting views.
 
 ---
 
-## Frame & location readers
+## Frame reader
 
-Files `Components/Geometry/FrameReader.swift`, `LocationReader.swift`
+File `Components/Geometry/FrameReader.swift`
 
-Read a view's frame or center point in a coordinate space via a background `GeometryReader`,
-without disturbing layout. Callbacks fire on appear and on change.
+Reads a view's frame in a coordinate space via a background `GeometryReader`, without
+disturbing layout. The callback fires on appear and on change.
 
 ```swift
-// Public: read the full frame.
 MyView()
     .readingFrame(coordinateSpace: .global) { frame in
         // frame: CGRect
     }
-
-// Read just the center point (internal helper used by ScrollViewWithOnScrollChanged).
-MyView()
-    .readingLocation { center in
-        // center: CGPoint
-    }
 ```
-
-`readingFrame` is public; `LocationReader` / `readingLocation` are internal building blocks.
 
 ---
 
@@ -35,17 +26,28 @@ MyView()
 File `Components/Geometry/ScrollViewWithOnScrollChanged.swift`
 
 A `ScrollView` that reports its content's scroll origin as it moves — handy for
-scroll-driven effects (collapsing headers, shadows, parallax). It works by placing a
-`LocationReader` at the top of the content in a named coordinate space, which predates
-`onScrollGeometryChange`; new code can use the system API directly.
+scroll-driven effects (collapsing headers, shadows, parallax). Built on
+`onScrollGeometryChange`.
 
 ```swift
 ScrollViewWithOnScrollChanged(.vertical, showsIndicators: false) {
     VStack { /* content */ }
 } onScrollChanged: { origin in
-    // origin: CGPoint — content offset within the scroll view
+    // origin: CGPoint — .zero at rest, negative as the content scrolls towards its end,
+    // positive while it is pulled past the start (rubber-banding)
 }
 ```
+
+- The origin is measured inside every content inset — safe area, `safeAreaPadding` and
+  `contentMargins` alike — so it reads `.zero` at rest whatever insets the host adds.
+- `x` follows the layout direction: in right-to-left layouts, scrolling towards the end is
+  negative too.
+- Only this scroll view's own offset is reported; a scroll view nested in the content does not
+  feed it.
+- The last value is sent again when the content appears again with its state kept (switching
+  back to its tab, for example).
+- The content starts one default stack spacing from the start edge (below the top in a
+  vertical view, after the leading edge in a horizontal one).
 
 ---
 

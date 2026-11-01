@@ -37,8 +37,8 @@ struct Example: View {
     var body: some View {
         VStack(spacing: 16) {
             Text("Send")
-                .dashFont(.title2)                 // DS typography + line height
-                .foregroundColor(.dash.primaryText) // DS color token
+                .dashFont(.title2)                       // DS typography + line height
+                .foregroundStyle(Color.dash.primaryText) // DS color token
 
             DashButton(
                 text: "Continue",
@@ -65,11 +65,13 @@ a component already exists before building your own.
 
 | Component | What it is | Doc |
 |---|---|---|
-| `DashButton` | Themed button — 4 sizes × 11 styles, icons, loading, full-width | [Buttons & inputs](docs/buttons-and-inputs.md) |
+| `DashButton` | Themed button — 4 sizes × 12 styles, icons, loading, full-width | [Buttons & inputs](docs/buttons-and-inputs.md) |
 | `DashSwitch` | DS-tinted toggle | [Buttons & inputs](docs/buttons-and-inputs.md) |
+| `SwitchView` | DS-drawn switch; a native `Toggle` to VoiceOver | [Buttons & inputs](docs/buttons-and-inputs.md) |
 | `SearchBar` | Search field with an animated cancel button | [Buttons & inputs](docs/buttons-and-inputs.md) |
 | `AddressFieldView` | Labeled text field (label / field / help text) with optional QR, clear and error state | [Buttons & inputs](docs/buttons-and-inputs.md) |
 | `Criteria` | Requirement check-list — `Criterion` rows in six states | [Buttons & inputs](docs/buttons-and-inputs.md) |
+| `SegmentedControl` | Sliding-pill segmented control, text-only or with icons | [Buttons & inputs](docs/buttons-and-inputs.md) |
 | `NumericKeyboardView` | Locale-aware on-screen number pad with action button | [Buttons & inputs](docs/buttons-and-inputs.md) |
 | `EnterAmountView` | Amount-entry screen control — single & dual-swap modes | [Amount & currency](docs/amount-and-currency.md) |
 | `SwapAmountView` | Animated primary/secondary amount display | [Amount & currency](docs/amount-and-currency.md) |
@@ -93,7 +95,7 @@ a component already exists before building your own.
 | `XmarkIcon` | Code-drawn close (✕) icon | [Feedback](docs/feedback.md) |
 | `CheckmarkIcon` | Code-drawn selection (✓) mark | [Feedback](docs/feedback.md) |
 | `ChevronIcon` | Code-drawn chevron, in any of the four directions | [Feedback](docs/feedback.md) |
-| Geometry helpers | `readingFrame`, `readingLocation`, `ScrollViewWithOnScrollChanged`, `scaleToFitWidth` | [Utilities](docs/utilities.md) |
+| Geometry helpers | `readingFrame`, `ScrollViewWithOnScrollChanged`, `scaleToFitWidth` | [Utilities](docs/utilities.md) |
 | Foundation | `Color.dash.*`, `Font.dash.*`, `.dashFont`, `DashIconSource` | [Foundation](docs/foundation.md) |
 
 ## Project layout

@@ -116,7 +116,7 @@ internal struct DualInputTypeSwitcher: View {
                 } label: {
                     Text(code)
                         .dashFont(.caption2)
-                        .foregroundColor(
+                        .foregroundStyle(
                             code == selected
                                 ? Color.dash.primaryText
                                 : Color.dash.primaryText.opacity(0.8)

@@ -9,7 +9,7 @@ Interactive controls for tapping and text/number entry.
 File `Button/DashButton.swift`
 
 The design-system button. Supports leading/trailing icons, a loading spinner,
-optional full-width fill, four sizes, and eleven styles.
+optional full-width fill, four sizes, and twelve styles.
 
 ```swift
 DashButton(
@@ -32,7 +32,7 @@ corner radius, icon gap, and font size (16 / 14 / 13 / 12 pt).
 disabled variants):
 
 - Filled: `.filledBlue`, `.filledRed`, `.filledWhiteBlue`
-- Tinted: `.tintedBlue`, `.tintedGray`, `.tintedWhite`
+- Tinted: `.tintedBlue`, `.tintedRed`, `.tintedGray`, `.tintedWhite`
 - Stroke: `.strokeGray` (transparent fill + 1pt border)
 - Plain (no background): `.plainBlue`, `.plainBlack`, `.plainRed`, `.plainWhite`
 
@@ -59,6 +59,31 @@ DashSwitch(isOn: $isOn)
 
 ---
 
+## SwitchView
+
+File `Components/Switch/SwitchView.swift`
+
+The design system's switch: the DS track and thumb drawn in SwiftUI, on iOS and macOS.
+`MenuItem`'s `.toggle` accessory uses it. It takes its enabled state from the environment,
+so `.disabled(true)` dims it and stops the tap. Use it where the DS switch is drawn;
+`DashSwitch` is the system switch with the DS tint, UIKit only.
+
+```swift
+@State private var isOn = false
+SwitchView(isOn: $isOn)
+    .accessibilityLabel("Advanced mode")   // optional, see below
+```
+
+To assistive technologies and UI tests it is a native switch-style `Toggle` with a hidden
+label: the same traits, the same state value, which VoiceOver speaks in the user's
+language, dimmed when disabled, and a double-tap flips `isOn`. Its own label is empty:
+name it with `.accessibilityLabel(_:)`, or put it in a row that combines its children
+(`.accessibilityElement(children: .combine)`), which then reads the row's text as the
+label and the switch's state as the value. On iOS, UI tests read the state as the value
+`"1"` / `"0"`, as for any `Toggle`.
+
+---
+
 ## SearchBar
 
 File `Components/SearchBar.swift` · **UIKit only**
@@ -72,8 +97,11 @@ SearchBar(text: $query, placeholder: "Search coins")   // placeholder optional
 
 Behavior:
 
-- Uses `@FocusState`; an animated **Cancel** button
-  slides in while editing (clears text + resigns focus on tap).
+- An animated **Cancel** button slides in while the field has focus (clears text + resigns
+  focus on tap).
+- Focus is internal (`@FocusState`): a host can neither read nor set it.
+- Typed text is `.subhead` in `Color.dash.primaryText`, the same size as the placeholder.
+  Like every `Font.dash` token it is a fixed size and does not scale with Dynamic Type.
 
 Default placeholder is the localized "Search". Background uses `Color.dash.searchBackground`.
 
@@ -226,6 +254,46 @@ For a row with an icon, a trailing value or an explicit radio/checkbox mark, use
 
 ---
 
+## SegmentedControl
+
+File `Components/SegmentedControl.swift`
+
+A row of mutually exclusive options on a track, with a raised pill under the selected one.
+Tap a segment; the pill springs to it. Each segment's share of the track, inset included,
+takes the tap.
+
+```swift
+SegmentedControl(options: ["Active", "Disconnected", "Expired"], selection: $filter)
+
+SegmentedControl(
+    options: Direction.allCases,
+    selection: $direction,
+    label: { $0.title },
+    icon: { option, isSelected in option.icon(isSelected: isSelected).source })
+```
+
+- `SegmentedControl<T: Hashable>`: `init(options: [T], selection: Binding<T>, label: @escaping (T) -> String, icon: ((T, Bool) -> DashIconSource)? = nil)`
+- `init(options: [String], selection: Binding<String>)` — the options are their own labels.
+
+`icon` gets the option and whether it is selected, so a segment can switch between two
+artworks (`DashIcon.SegmentedControl.receive` / `.receiveDisabled`) rather than tint one.
+
+The text-only control is 40pt tall; with icons it sizes to its content (17pt artwork over
+the label). Neither grows when its container offers more height. Labels are `.footnoteMedium`
+in `segmentControlContSelected` / `segmentControlContNotSelected`. Track
+`segmentControlBackgroundGroup`, 20pt corners, 4pt inset; pill `segmentControlBackground` with
+16pt corners and the `shadow` token. VoiceOver reads one button per segment, with the selected
+trait on the chosen one.
+
+The first option equal to `selection` is the selected segment; a selection that matches no
+option selects none and draws no pill. Options are expected to be distinct; of a repeated
+option only the first copy is ever selected. In a right-to-left layout the row mirrors and the
+pill follows it. Labels stay on one line and truncate when a segment is too narrow.
+`.disabled(true)` stops taps and VoiceOver activation; the control has no disabled look of
+its own.
+
+---
+
 ## NumericKeyboardView
 
 File `Components/NumericKeyboardView.swift`
@@ -247,6 +315,22 @@ NumericKeyboardView(
     actionHandler: { /* submit value */ }
 )
 ```
+
+### Layout
+
+Top to bottom: the helper text (Footnote, secondary text, centred; omitted when `nil` or
+empty), the key grid, then the action button, 20 pt apart.
+
+- **Panel:** `secondaryBackground`, top corners 32 (continuous), padding 20 on every side.
+  The content stays inside the safe area; the background runs on through the bottom safe
+  area to the screen edge, so place the view flush with the bottom of the screen. On a
+  screen with a home indicator the button therefore ends 20 pt above the safe area (54 pt
+  from the edge on a 34 pt inset), while the design frame shows 40 pt from its bottom.
+- **Keys:** three equal columns 5 pt apart, rows 50 pt tall with no gap between them; the
+  whole key is the tap target. Digits and the decimal separator use Title 3 (medium) in
+  primary text; delete is the `delete.left` symbol drawn about 18.5 × 15.9 pt.
+- **Button:** a large `filledBlue` `DashButton`, full width less 20 pt on each side (40 pt
+  from the panel edges).
 
 Key-press logic lives in `NumericKeyboardLocaleSupport` (public, unit-testable):
 appends digits, inserts at most one decimal separator (only when `showDecimalSeparator`),
