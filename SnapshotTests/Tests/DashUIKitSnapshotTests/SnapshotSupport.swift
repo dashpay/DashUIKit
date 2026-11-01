@@ -123,6 +123,7 @@ func assertComponentSnapshots(
         let traits = UITraitCollection { traits in
             traits.userInterfaceStyle = style
             traits.displayScale = SnapshotLayout.scale
+            traits.preferredContentSizeCategory = .large
         }
         let framed = view
             .padding(SnapshotLayout.padding)
@@ -132,8 +133,9 @@ func assertComponentSnapshots(
             .fixedSize(horizontal: false, vertical: true)
             .background(background)
             .environment(\.colorScheme, style == .dark ? .dark : .light)
-            // The simulator's text size would otherwise scale fonts and system icons;
-            // on the view, so it holds for the measured height as well as the render.
+            // The simulator's text size would otherwise scale SF Symbols and text that
+            // take the default font (the DashButton icons). Set on the view, so it holds
+            // for the measured height as well as the render; the traits above pin UIKit.
             .dynamicTypeSize(.large)
 
         assertSnapshot(

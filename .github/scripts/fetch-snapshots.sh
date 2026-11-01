@@ -25,10 +25,10 @@ fi
 
 # Package.resolved is left out: a local Xcode rewrites it, and it does not change
 # what CI rendered.
-changes=$( (git -C "$root" status --porcelain --untracked-files=no -- . \
-    ':!SnapshotTests/Package.resolved'
-  git -C "$root" status --porcelain --untracked-files=all -- Sources SnapshotTests \
-    ':!SnapshotTests/Package.resolved') | sort -u)
+resolved=':!SnapshotTests/Package.resolved'
+changes=$( (git -C "$root" status --porcelain --untracked-files=no -- . "$resolved"
+  git -C "$root" status --porcelain --untracked-files=all -- Sources SnapshotTests "$resolved") |
+  sort -u)
 if [ -n "$changes" ]; then
   echo "Uncommitted changes; the fetched references would show HEAD, not this tree." >&2
   echo "Commit or discard them first:" >&2
