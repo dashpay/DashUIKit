@@ -207,7 +207,9 @@ the new content is measured.
   sheet's edge.
 - The first measurement replaces `fallback` (or `.medium` when there is none) without
   `animation`.
-- While the detent catches up, the content stays at the top edge of the sheet.
+- While the detent catches up, the content stays at the top edge of the sheet, whether it
+  grew or shrank.
+- With Reduce Motion on, `animation` is left out and the change applies at once.
 - A change that leaves the capped detent where it is (both heights above the
   `maxHeightFraction` cap) is not animated.
 - Limit: if the content reports a provisional height while the sheet is being presented

@@ -331,14 +331,15 @@ public extension View {
     /// - Parameter animation: For content that switches in place between views of different
     ///   heights (a preset list and a keypad). When set, a change of the measured height after
     ///   the first one is applied in `withAnimation(animation)`: the content changes first,
-    ///   and the detent follows it in an animation instead of jumping. The sheet's own resize
-    ///   runs with the system sheet animation; `animation` applies to the SwiftUI side of the
-    ///   change. The first measurement replaces `fallback` (or `.medium` when there is none)
-    ///   without `animation`, and so does a change that leaves the capped detent where it is (both
-    ///   heights above the `maxHeightFraction` cap). A provisional measurement during
-    ///   presentation followed by the settled one counts as a change, so that second step can
-    ///   animate. `nil` applies every change without animation, as the overload without
-    ///   `animation` does.
+    ///   and the detent follows it in an animation instead of jumping, with the content held
+    ///   at the sheet's top edge meanwhile. The sheet's own resize runs with the system sheet
+    ///   animation; `animation` applies to the SwiftUI side of the change, and is left out
+    ///   when Reduce Motion is on. The first measurement replaces `fallback` (or `.medium`
+    ///   when there is none) without `animation`, and so does a change that leaves the capped
+    ///   detent where it is (both heights above the `maxHeightFraction` cap). A provisional
+    ///   measurement during presentation followed by the settled one counts as a change, so
+    ///   that second step can animate. `nil` applies every change without animation, as the
+    ///   overload without `animation` does.
     @ViewBuilder
     func selfSizingSheet(
         fallback: CGFloat = 0,
@@ -379,6 +380,12 @@ private struct SelfSizingSheetModifier: ViewModifier {
     let maxHeightFraction: CGFloat
     let animation: Animation?
     @State private var measured: CGFloat = 0
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    /// The requested animation, unless the user asked for reduced motion.
+    private var heightAnimation: Animation? {
+        reduceMotion ? nil : animation
+    }
 
     func body(content: Content) -> some View {
         // Measure the wrapped content directly — reliable on first layout (`onAppear`) and on
@@ -392,10 +399,13 @@ private struct SelfSizingSheetModifier: ViewModifier {
                 }
             )
             // While an animated detent catches up with content that already changed, the sheet
-            // and its content differ in height; keep the content at the top edge rather than
-            // centred, so the header stays put. Without `animation` the two differ for a frame
-            // only, and the layout stays as it is.
-            .frame(maxHeight: animation == nil ? nil : .infinity, alignment: .top)
+            // and its content differ in height. Take exactly the height the sheet offers and keep
+            // the content at its top edge, so the header stays put whether the content grew or
+            // shrank. Without `animation` the layout is left as it was.
+            .frame(
+                minHeight: heightAnimation == nil ? nil : 0,
+                maxHeight: heightAnimation == nil ? nil : .infinity,
+                alignment: .top)
             .presentationDetents(detents)
             .presentationDragIndicator(.hidden)
     }
@@ -410,13 +420,13 @@ private struct SelfSizingSheetModifier: ViewModifier {
 
     private func update(_ newHeight: CGFloat) {
         guard newHeight > 0, newHeight != measured else { return }
-        let heightAnimation = SelfSizingSheetHeight.animation(
-            for: animation,
+        let changeAnimation = SelfSizingSheetHeight.animation(
+            for: heightAnimation,
             from: measured,
             to: newHeight,
             maxHeight: maxSheetHeight)
-        if let heightAnimation {
-            withAnimation(heightAnimation) { measured = newHeight }
+        if let changeAnimation {
+            withAnimation(changeAnimation) { measured = newHeight }
         } else {
             measured = newHeight
         }
