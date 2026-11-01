@@ -39,42 +39,34 @@ final class SegmentedControlSelectionTests: XCTestCase {
 
     // MARK: Touch to segment
 
-    /// Three 100 pt segments, option 0 on the left.
-    private let leftToRight = [
-        CGRect(x: 0, y: 0, width: 100, height: 32),
-        CGRect(x: 100, y: 0, width: 100, height: 32),
-        CGRect(x: 200, y: 0, width: 100, height: 32),
-    ]
-
-    /// The same row mirrored: option 0 on the right, as an `HStack` lays it out
-    /// right to left.
-    private let rightToLeft = [
-        CGRect(x: 200, y: 0, width: 100, height: 32),
-        CGRect(x: 100, y: 0, width: 100, height: 32),
-        CGRect(x: 0, y: 0, width: 100, height: 32),
-    ]
-
-    func testTouchSelectsTheSegmentUnderIt() {
-        XCTAssertEqual(SegmentedControlSelection.segmentIndex(at: 10, in: leftToRight), 0)
-        XCTAssertEqual(SegmentedControlSelection.segmentIndex(at: 100, in: leftToRight), 1)
-        XCTAssertEqual(SegmentedControlSelection.segmentIndex(at: 299, in: leftToRight), 2)
+    private func index(at x: CGFloat, rightToLeft: Bool = false) -> Int? {
+        SegmentedControlSelection.segmentIndex(at: x, width: 300, count: 3, rightToLeft: rightToLeft)
     }
 
+    func testTouchSelectsTheSegmentUnderIt() {
+        XCTAssertEqual(index(at: 10), 0)
+        XCTAssertEqual(index(at: 100), 1)
+        XCTAssertEqual(index(at: 299), 2)
+    }
+
+    /// Right to left the first option is on the right, and touch coordinates
+    /// still run from the left edge.
     func testTouchFollowsAMirroredRow() {
-        XCTAssertEqual(SegmentedControlSelection.segmentIndex(at: 10, in: rightToLeft), 2)
-        XCTAssertEqual(SegmentedControlSelection.segmentIndex(at: 150, in: rightToLeft), 1)
-        XCTAssertEqual(SegmentedControlSelection.segmentIndex(at: 299, in: rightToLeft), 0)
+        XCTAssertEqual(index(at: 10, rightToLeft: true), 2)
+        XCTAssertEqual(index(at: 150, rightToLeft: true), 1)
+        XCTAssertEqual(index(at: 299, rightToLeft: true), 0)
     }
 
     /// A drag that leaves the track keeps the segment at the end it left by.
     func testTouchPastEitherEndSelectsTheEndSegment() {
-        XCTAssertEqual(SegmentedControlSelection.segmentIndex(at: -40, in: leftToRight), 0)
-        XCTAssertEqual(SegmentedControlSelection.segmentIndex(at: 340, in: leftToRight), 2)
-        XCTAssertEqual(SegmentedControlSelection.segmentIndex(at: -40, in: rightToLeft), 2)
-        XCTAssertEqual(SegmentedControlSelection.segmentIndex(at: 340, in: rightToLeft), 0)
+        XCTAssertEqual(index(at: -40), 0)
+        XCTAssertEqual(index(at: 340), 2)
+        XCTAssertEqual(index(at: -40, rightToLeft: true), 2)
+        XCTAssertEqual(index(at: 340, rightToLeft: true), 0)
     }
 
-    func testNoSegmentsSelectNothing() {
-        XCTAssertNil(SegmentedControlSelection.segmentIndex(at: 10, in: []))
+    func testNothingToSelectBeforeLayoutOrWithoutOptions() {
+        XCTAssertNil(SegmentedControlSelection.segmentIndex(at: 10, width: 0, count: 3, rightToLeft: false))
+        XCTAssertNil(SegmentedControlSelection.segmentIndex(at: 10, width: 300, count: 0, rightToLeft: false))
     }
 }

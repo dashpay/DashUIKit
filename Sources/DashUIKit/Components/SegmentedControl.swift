@@ -46,19 +46,14 @@ enum SegmentedControlSelection {
         options.firstIndex(of: selection)
     }
 
-    /// The segment under `x`, given each segment's frame in the same
-    /// coordinate space as `x`. A touch past either end of the track belongs to
-    /// the segment at that end. The frames carry the layout direction, so the
-    /// answer follows a right-to-left `HStack` without knowing about it.
-    static func segmentIndex(at x: CGFloat, in frames: [CGRect]) -> Int? {
-        if let hit = frames.firstIndex(where: { x >= $0.minX && x < $0.maxX }) {
-            return hit
-        }
-        return frames.indices.min { distance(from: x, to: frames[$0]) < distance(from: x, to: frames[$1]) }
-    }
-
-    private static func distance(from x: CGFloat, to frame: CGRect) -> CGFloat {
-        x < frame.minX ? frame.minX - x : x - frame.maxX
+    /// The segment under `x`, for `count` equal segments across `width`,
+    /// with `x` measured from the left edge. A right-to-left row lays the
+    /// first option out on the right; touch coordinates do not mirror, so the
+    /// index does. A touch past either end belongs to the segment at that end.
+    static func segmentIndex(at x: CGFloat, width: CGFloat, count: Int, rightToLeft: Bool) -> Int? {
+        guard count > 0, width > 0 else { return nil }
+        let column = max(0, min(count - 1, Int((x / width * CGFloat(count)).rounded(.down))))
+        return rightToLeft ? count - 1 - column : column
     }
 }
 
@@ -86,10 +81,9 @@ public struct SegmentedControl<T: Hashable>: View {
     /// unselected treatment the label gets.
     private let icon: ((_ option: T, _ isSelected: Bool) -> DashIconSource)?
 
-    /// Each segment's frame in the control's own coordinate space, by index, for drag-to-select.
-    @State private var segmentFrames: [Int: CGRect] = [:]
-
-    private static var spaceName: String { "DashUIKit.SegmentedControl" }
+    @Environment(\.layoutDirection) private var layoutDirection
+    /// The width the segments share, for drag-to-select.
+    @State private var rowWidth: CGFloat = 0
 
     /// - Parameters:
     ///   - options: The segments, in reading order. Expected to be distinct.
@@ -114,10 +108,11 @@ public struct SegmentedControl<T: Hashable>: View {
         let selectedIndex = Selection.selectedIndex(of: selection, in: options)
 
         HStack(spacing: 0) {
-            ForEach(Array(options.enumerated()), id: \.offset) { index, option in
-                segment(option, index: index, isSelected: index == selectedIndex)
+            ForEach(options.indices, id: \.self) { index in
+                segment(options[index], isSelected: index == selectedIndex)
             }
         }
+        .readingFrame(coordinateSpace: .local) { rowWidth = $0.width }
         // A background is offered the row's size, so the pill is as tall as
         // the segments in both variants and is placed in the same layout pass.
         // `.leading` and the leading padding mirror with the row in a
@@ -125,7 +120,7 @@ public struct SegmentedControl<T: Hashable>: View {
         // one that appears does so in place rather than sliding in.
         .background {
             GeometryReader { geometry in
-                if let selectedIndex, !options.isEmpty {
+                if let selectedIndex {
                     let segmentWidth = geometry.size.width / CGFloat(options.count)
                     RoundedRectangle(cornerRadius: Layout.segmentCornerRadius)
                         .fill(Color.dash.segmentControlBackground)
@@ -138,16 +133,15 @@ public struct SegmentedControl<T: Hashable>: View {
         }
         .animation(Layout.animation, value: selectedIndex)
         .padding(Layout.containerPadding)
-        // The whole track takes the drag, its inset included. The segment
-        // frames and the touch share one coordinate space.
+        // The whole track takes the drag, its inset included; a touch on the
+        // inset belongs to the segment beside it.
         .contentShape(Rectangle())
         .highPriorityGesture(
-            DragGesture(minimumDistance: 0, coordinateSpace: .named(Self.spaceName))
+            DragGesture(minimumDistance: 0)
                 .onChanged { value in
-                    updateSelection(at: value.location.x)
+                    updateSelection(at: value.location.x - Layout.containerPadding)
                 }
         )
-        .coordinateSpace(.named(Self.spaceName))
         // The icon variant is two lines tall, so it sizes to its content —
         // `height` is the single-line text measurement. Either way the control
         // keeps its own height when its container offers more.
@@ -157,7 +151,7 @@ public struct SegmentedControl<T: Hashable>: View {
         .clipShape(.rect(cornerRadius: Layout.containerCornerRadius))
     }
 
-    private func segment(_ option: T, index: Int, isSelected: Bool) -> some View {
+    private func segment(_ option: T, isSelected: Bool) -> some View {
         Button(action: {
             select(option)
         }) {
@@ -173,7 +167,6 @@ public struct SegmentedControl<T: Hashable>: View {
                 .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .readingFrame(coordinateSpace: .named(Self.spaceName)) { segmentFrames[index] = $0 }
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(Text(label(option)))
         // The selected segment has nothing left to do on a double tap.
@@ -206,10 +199,13 @@ public struct SegmentedControl<T: Hashable>: View {
             .lineLimit(1)
     }
 
+    /// `x` is measured from the row's left edge, as the pill's segments are.
     private func updateSelection(at x: CGFloat) {
-        let frames = options.indices.compactMap { segmentFrames[$0] }
-        guard frames.count == options.count,
-              let index = Selection.segmentIndex(at: x, in: frames) else { return }
+        guard let index = Selection.segmentIndex(
+            at: x,
+            width: rowWidth,
+            count: options.count,
+            rightToLeft: layoutDirection == .rightToLeft) else { return }
         select(options[index])
     }
 

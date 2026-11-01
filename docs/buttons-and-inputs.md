@@ -258,7 +258,7 @@ For a row with an icon, a trailing value or an explicit radio/checkbox mark, use
 
 File `Components/SegmentedControl.swift`
 
-A row of mutually exclusive options on a grey track, with a white pill under the selected one.
+A row of mutually exclusive options on a track, with a raised pill under the selected one.
 Tap a segment or drag across the track; the pill springs to the new segment.
 
 ```swift
