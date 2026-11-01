@@ -58,6 +58,22 @@ final class BottomSheetSnapshotTests: XCTestCase {
         try assertComponentSnapshots(of: view, named: "close-disabled")
     }
 
+    /// The close button is enabled; blocked dismissal alone must disable it.
+    func testDismissalDisabledOnly() throws {
+        let view = BottomSheet(
+            title: "Confirm",
+            showBackButton: .constant(false),
+            isDismissalEnabled: .constant(false),
+            fillsHeight: false
+        ) {
+            Text("Dismissal is blocked while this runs.")
+                .dashFont(.body)
+                .foregroundColor(.dash.secondaryText)
+                .padding()
+        }
+        try assertComponentSnapshots(of: view, named: "dismissal-disabled")
+    }
+
     func testSheetFeatureList() throws {
         let view = VStack(alignment: .leading, spacing: 16) {
             SheetFeature(

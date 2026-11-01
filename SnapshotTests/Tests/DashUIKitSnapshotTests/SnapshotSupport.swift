@@ -132,6 +132,9 @@ func assertComponentSnapshots(
             .fixedSize(horizontal: false, vertical: true)
             .background(background)
             .environment(\.colorScheme, style == .dark ? .dark : .light)
+            // The simulator's text size would otherwise scale fonts and system icons;
+            // on the view, so it holds for the measured height as well as the render.
+            .dynamicTypeSize(.large)
 
         assertSnapshot(
             of: framed,
