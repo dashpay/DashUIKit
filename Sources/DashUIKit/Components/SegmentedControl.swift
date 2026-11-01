@@ -86,7 +86,6 @@ public struct SegmentedControl<T: Hashable>: View {
     /// unselected treatment the label gets.
     private let icon: ((_ option: T, _ isSelected: Bool) -> DashIconSource)?
 
-    @State private var containerWidth: CGFloat = 0
     /// Each segment's frame in the control's own coordinate space, by index, for drag-to-select.
     @State private var segmentFrames: [Int: CGRect] = [:]
 
@@ -111,11 +110,6 @@ public struct SegmentedControl<T: Hashable>: View {
         self.icon = icon
     }
 
-    private var segmentWidth: CGFloat {
-        guard options.count > 0 else { return 0 }
-        return containerWidth / CGFloat(options.count)
-    }
-
     public var body: some View {
         let selectedIndex = Selection.selectedIndex(of: selection, in: options)
 
@@ -125,18 +119,28 @@ public struct SegmentedControl<T: Hashable>: View {
             }
         }
         // A background is offered the row's size, so the pill is as tall as
-        // the segments in both variants. `.leading` and the leading padding
-        // mirror with the row in a right-to-left layout.
-        .background(alignment: .leading) {
-            RoundedRectangle(cornerRadius: Layout.segmentCornerRadius)
-                .fill(Color.dash.segmentControlBackground)
-                .shadow(color: Color.dash.shadow, radius: Layout.shadowRadius, x: 0, y: Layout.shadowY)
-                .frame(width: max(1, segmentWidth))
-                .padding(.leading, CGFloat(selectedIndex ?? 0) * segmentWidth)
-                .opacity(containerWidth > 0 && selectedIndex != nil ? 1 : 0)
+        // the segments in both variants and is placed in the same layout pass.
+        // `.leading` and the leading padding mirror with the row in a
+        // right-to-left layout. With no selected segment there is no pill, so
+        // one that appears does so in place rather than sliding in.
+        .background {
+            GeometryReader { geometry in
+                if let selectedIndex, !options.isEmpty {
+                    let segmentWidth = geometry.size.width / CGFloat(options.count)
+                    RoundedRectangle(cornerRadius: Layout.segmentCornerRadius)
+                        .fill(Color.dash.segmentControlBackground)
+                        .shadow(color: Color.dash.shadow, radius: Layout.shadowRadius, x: 0, y: Layout.shadowY)
+                        .frame(width: segmentWidth)
+                        .padding(.leading, CGFloat(selectedIndex) * segmentWidth)
+                        .frame(width: geometry.size.width, height: geometry.size.height, alignment: .leading)
+                }
+            }
         }
-        .readingFrame(coordinateSpace: .local) { containerWidth = $0.width }
         .animation(Layout.animation, value: selectedIndex)
+        .padding(Layout.containerPadding)
+        // The whole track takes the drag, its inset included. The segment
+        // frames and the touch share one coordinate space.
+        .contentShape(Rectangle())
         .highPriorityGesture(
             DragGesture(minimumDistance: 0, coordinateSpace: .named(Self.spaceName))
                 .onChanged { value in
@@ -144,7 +148,6 @@ public struct SegmentedControl<T: Hashable>: View {
                 }
         )
         .coordinateSpace(.named(Self.spaceName))
-        .padding(Layout.containerPadding)
         // The icon variant is two lines tall, so it sizes to its content —
         // `height` is the single-line text measurement. Either way the control
         // keeps its own height when its container offers more.
@@ -178,6 +181,8 @@ public struct SegmentedControl<T: Hashable>: View {
             ? Text(verbatim: "")
             : Text(NSLocalizedString("Double tap to select", bundle: .module, comment: "DashUIKit")))
         .accessibilityAddTraits(isSelected ? [.isButton, .isSelected] : .isButton)
+        // Activation does not depend on a synthesized touch reaching the drag.
+        .accessibilityAction { select(option) }
     }
 
     @ViewBuilder
