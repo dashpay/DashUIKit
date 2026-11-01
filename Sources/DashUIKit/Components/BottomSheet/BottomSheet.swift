@@ -330,15 +330,15 @@ public extension View {
     ///
     /// - Parameter animation: For content that switches in place between views of different
     ///   heights (a preset list and a keypad). When set, a change of the measured height after
-    ///   the first one is applied in `withAnimation(animation)`: the content changes first,
-    ///   and the detent follows it in an animation instead of jumping, with the content held
-    ///   at the sheet's top edge meanwhile. The sheet's own resize runs with the system sheet
-    ///   animation; `animation` applies to the SwiftUI side of the change, and is left out
-    ///   when Reduce Motion is on. The first measurement replaces `fallback` (or `.medium`
-    ///   when there is none) without `animation`, and so does a change that leaves the capped
-    ///   detent where it is (both heights above the `maxHeightFraction` cap). A provisional
-    ///   measurement during presentation followed by the settled one counts as a change, so
-    ///   that second step can animate. With `nil` the sheet adds no animation and leaves the
+    ///   the first one is applied in `withAnimation(animation)`, and the sheet's top edge
+    ///   moves to the new height instead of jumping, with the content held at that edge. The
+    ///   edge moves with the system sheet animation, not `animation`'s curve; `animation`
+    ///   applies to the SwiftUI side of the change. With Reduce Motion on, the new height is
+    ///   applied without animation and the edge jumps to it. The first measurement replaces
+    ///   `fallback` (or `.medium` when there is none) without `animation`, and so does a
+    ///   change that leaves the capped detent where it is (both heights above the
+    ///   `maxHeightFraction` cap). A provisional measurement during presentation followed by
+    ///   the settled one counts as a change, so that second step can animate. With `nil` the sheet adds no animation and leaves the
     ///   layout alone, as the overload without `animation` does.
     @ViewBuilder
     func selfSizingSheet(
@@ -380,6 +380,11 @@ private struct SelfSizingSheetModifier: ViewModifier {
     let maxHeightFraction: CGFloat
     let animation: Animation?
     @State private var measured: CGFloat = 0
+    /// The detent height an animated change is leaving. The sheet animates its edge only when
+    /// the selected detent moves to another one in its set; a set that swaps one height for
+    /// another makes it jump. So the old height stays in the set for the update in which the
+    /// selection moves to the new one, and is dropped right after.
+    @State private var outgoing: CGFloat?
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     func body(content: Content) -> some View {
@@ -394,16 +399,21 @@ private struct SelfSizingSheetModifier: ViewModifier {
                 }
             )
             .modifier(TopAligned(isActive: animation != nil))
-            .presentationDetents(detents)
+            .presentationDetents(
+                SelfSizingSheetHeight.detents(current: currentHeight, outgoing: outgoing),
+                selection: selection)
             .presentationDragIndicator(.hidden)
     }
 
-    private var detents: Set<PresentationDetent> {
-        let resolved = SelfSizingSheetHeight.resolved(
-            measured: measured, fallback: fallback, maxHeight: maxSheetHeight)
-        // Before the first measurement (and when no fallback is provided) use .medium so the
-        // sheet is never given an invalid 0-height detent.
-        return resolved > 0 ? [.height(resolved)] : [.medium]
+    private var currentHeight: CGFloat {
+        SelfSizingSheetHeight.resolved(measured: measured, fallback: fallback, maxHeight: maxSheetHeight)
+    }
+
+    /// Always the detent for the current height: the sheet follows the measurement, and a drag
+    /// to the outgoing detent in the moment it is still offered is not kept.
+    private var selection: Binding<PresentationDetent> {
+        let current = SelfSizingSheetHeight.detent(for: currentHeight)
+        return Binding(get: { current }, set: { _ in })
     }
 
     private func update(_ newHeight: CGFloat) {
@@ -415,8 +425,18 @@ private struct SelfSizingSheetModifier: ViewModifier {
             to: newHeight,
             maxHeight: maxSheetHeight)
         if let heightAnimation {
-            withAnimation(heightAnimation) { measured = newHeight }
+            let leaving = currentHeight
+            withAnimation(heightAnimation) {
+                outgoing = leaving
+                measured = newHeight
+            }
+            // Dropped on the next turn of the main queue, once the sheet has taken the new
+            // selection with both detents in its set. Not in `withAnimation`'s completion:
+            // nothing in SwiftUI animates here, so that can run before the sheet sees the
+            // change, and the sheet then jumps.
+            DispatchQueue.main.async { outgoing = nil }
         } else {
+            outgoing = nil
             measured = newHeight
         }
     }
@@ -457,6 +477,22 @@ enum SelfSizingSheetHeight {
     /// `maxHeight`. Zero means "nothing to size to yet".
     static func resolved(measured: CGFloat, fallback: CGFloat, maxHeight: CGFloat) -> CGFloat {
         min(measured > 0 ? measured : fallback, maxHeight)
+    }
+
+    /// The detent for a resolved height: `.medium` while there is nothing to size to, so the
+    /// sheet is never given a 0-height detent.
+    static func detent(for height: CGFloat) -> PresentationDetent {
+        height > 0 ? .height(height) : .medium
+    }
+
+    /// The detents offered: the current one, plus the one an animated change is leaving while
+    /// the selection moves away from it.
+    static func detents(current: CGFloat, outgoing: CGFloat?) -> Set<PresentationDetent> {
+        var detents: Set<PresentationDetent> = [detent(for: current)]
+        if let outgoing, outgoing > 0 {
+            detents.insert(.height(outgoing))
+        }
+        return detents
     }
 
     /// The animation to apply a new measurement in, or `nil` to apply it as is. `measured` is

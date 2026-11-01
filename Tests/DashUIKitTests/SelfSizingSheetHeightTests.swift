@@ -41,6 +41,32 @@ final class SelfSizingSheetHeightTests: XCTestCase {
         XCTAssertEqual(SelfSizingSheetHeight.resolved(measured: 0, fallback: 0, maxHeight: 800), 0)
     }
 
+    // MARK: - detents
+
+    func testNothingToSizeToOffersMedium() {
+        XCTAssertEqual(SelfSizingSheetHeight.detent(for: 0), .medium)
+        XCTAssertEqual(SelfSizingSheetHeight.detents(current: 0, outgoing: nil), [.medium])
+    }
+
+    func testAtRestOnlyTheCurrentHeightIsOffered() {
+        XCTAssertEqual(SelfSizingSheetHeight.detent(for: 320), .height(320))
+        XCTAssertEqual(SelfSizingSheetHeight.detents(current: 320, outgoing: nil), [.height(320)])
+    }
+
+    func testAnAnimatedChangeOffersTheOutgoingHeightToo() {
+        XCTAssertEqual(
+            SelfSizingSheetHeight.detents(current: 600, outgoing: 320),
+            [.height(600), .height(320)])
+    }
+
+    func testAnOutgoingHeightEqualToTheCurrentOneAddsNothing() {
+        XCTAssertEqual(SelfSizingSheetHeight.detents(current: 320, outgoing: 320), [.height(320)])
+    }
+
+    func testAZeroOutgoingHeightIsNotOffered() {
+        XCTAssertEqual(SelfSizingSheetHeight.detents(current: 320, outgoing: 0), [.height(320)])
+    }
+
     // MARK: - animation
 
     /// The animation for a measurement change from `old` to `new` under a cap of `cap`.

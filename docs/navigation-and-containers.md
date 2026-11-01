@@ -198,19 +198,19 @@ greedy `Spacer`/`maxHeight: .infinity`), or the measurement is wrong.
 Both `BottomSheet.selfSizing(…)` and `.selfSizingSheet(…)` have an overload that takes
 `animation:`, for content that switches in place between views of different heights — a
 preset list and a keypad or a calendar. With it, a change of the measured height after the
-first one is applied inside `withAnimation(animation)` (exceptions below): the
-content changes first, and the detent follows it in an animation instead of jumping once
-the new content is measured.
+first one is applied inside `withAnimation(animation)` (exceptions below), and the sheet's
+top edge moves to the new height instead of jumping once the new content is measured.
 
-- The sheet itself resizes with the system sheet animation; the given animation applies to
-  the SwiftUI side of the change (the measured height), so its curve may not show on the
-  sheet's edge.
+- The edge moves with the system sheet animation (its spring, about half a second), not
+  `animation`'s curve; the given animation applies to the SwiftUI side of the change. To
+  move the edge, the sheet briefly offers both the old and the new height as detents and
+  selects the new one; the old one is dropped right after.
 - The first measurement replaces `fallback` (or `.medium` when there is none) without
   `animation`.
 - While the detent catches up, the content stays at the top edge of the sheet, whether it
   grew or shrank. Content taller than the cap is clipped at the bottom.
-- With Reduce Motion on, the sheet leaves `animation` out; the content is still held at
-  the top edge.
+- With Reduce Motion on, the new height is applied without animation and the edge jumps to
+  it; the content is still held at the top edge.
 - A change that leaves the capped detent where it is (both heights above the
   `maxHeightFraction` cap) is not animated.
 - Limit: if the content reports a provisional height while the sheet is being presented
