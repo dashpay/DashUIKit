@@ -105,8 +105,8 @@ public enum NavigationBarElement: String, CaseIterable {
     }
 
     /// The imageset drawn for the element. The raw value is the same name,
-    /// kept for hosts; drawing goes through `DashIcon` so the catalog check
-    /// sees it.
+    /// kept for hosts as the button's accessibility identifier; drawing goes
+    /// through `DashIcon` so the catalog check sees it.
     var asset: DashIcon.NavigationBar {
         switch self {
         case .back: return .back
@@ -118,10 +118,14 @@ public enum NavigationBarElement: String, CaseIterable {
 
     private var source: DashIconSource { asset.source }
 
+    /// The element as a button. Its accessibility identifier is the raw value
+    /// (`navigationbar-back`, …): a handle for UI tests that does not change
+    /// with the language, unlike the label.
     public func button(action: @escaping () -> Void) -> some View {
         NavigationBarButton(accessibilityLabel: Text(accessibilityLabelText), action: action) {
             icon
         }
+        .accessibilityIdentifier(rawValue)
     }
 
     var accessibilityLabelText: String {

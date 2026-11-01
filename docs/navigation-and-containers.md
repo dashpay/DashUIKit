@@ -38,7 +38,9 @@ Convenience initializers let you omit any slot (e.g. only `leading`, or `central
 - `.button(action:)` — the icon as a button. The touch area is 44pt tall and at least 44pt wide
   for hit testing, while the element keeps its hug width in layout (so a circle stays on the
   bar's 20pt inset). Press animation: scale 0.88 + opacity 0.7; dimmed to 0.35 opacity while
-  `.disabled(true)`.
+  `.disabled(true)`. VoiceOver reads its label ("Back", "Close", "Add", "Info"); UI tests find it
+  by its accessibility identifier, the raw value (`navigationbar-back`, `navigationbar-close`,
+  `navigationbar-plus`, `navigationbar-info`), which does not change with the language.
 
 ### Custom circle actions
 
