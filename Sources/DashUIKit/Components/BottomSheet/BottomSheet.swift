@@ -337,9 +337,8 @@ public extension View {
     ///   applied without animation and the edge jumps to it. The first measurement replaces
     ///   `fallback` (or `.medium` when there is none) without `animation`, and so does a
     ///   change that leaves the capped detent where it is (both heights above the
-    ///   `maxHeightFraction` cap) or moves it by less than half a point. The content stays at
-    ///   the top edge whenever `animation` is set, so when the keyboard shrinks the sheet the
-    ///   overflow is at the bottom. A provisional measurement during presentation followed by
+    ///   `maxHeightFraction` cap). The content stays at the top edge whenever `animation` is
+    ///   set, so when the keyboard shrinks the sheet the overflow is at the bottom. A provisional measurement during presentation followed by
     ///   the settled one counts as a change, so that second step can animate. With `nil` the
     ///   sheet adds no animation and leaves the layout alone, as the overload without
     ///   `animation` does.
@@ -388,7 +387,7 @@ private struct SelfSizingSheetModifier: ViewModifier {
     /// another makes it jump. So a height being left stays in the set for the update in which
     /// the selection moves on, and is dropped right after. Every height left in one turn is
     /// kept, so the detent the sheet shows or was just given is offered whichever it is.
-    @State private var outgoing: [CGFloat] = []
+    @State private var outgoing: Set<CGFloat> = []
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     func body(content: Content) -> some View {
@@ -427,16 +426,19 @@ private struct SelfSizingSheetModifier: ViewModifier {
             maxHeight: maxHeight)
         if let heightAnimation {
             let leaving = currentHeight(maxHeight: maxHeight)
+            let needsDrop = outgoing.isEmpty
             withAnimation(heightAnimation) {
-                outgoing.append(leaving)
+                outgoing.insert(leaving)
                 measured = newHeight
             }
             // Dropped on the next turn of the main queue, once the sheet has taken the new
             // selection with both detents in its set. Not in `withAnimation`'s completion:
             // nothing in SwiftUI animates here, so that can run before the sheet sees the
             // change, and the sheet then jumps. A change applied without animation leaves
-            // pending outgoing heights alone: they are dropped here as well.
-            DispatchQueue.main.async { outgoing = [] }
+            // pending outgoing heights alone: they are dropped here as well, once per turn.
+            if needsDrop {
+                DispatchQueue.main.async { outgoing = [] }
+            }
         } else {
             measured = newHeight
         }
@@ -488,7 +490,7 @@ enum SelfSizingSheetHeight {
 
     /// The detents offered: the current one, plus the ones animated changes are leaving while
     /// the selection moves away from them.
-    static func detents(current: CGFloat, outgoing: [CGFloat]) -> Set<PresentationDetent> {
+    static func detents(current: CGFloat, outgoing: Set<CGFloat>) -> Set<PresentationDetent> {
         var detents: Set<PresentationDetent> = [detent(for: current)]
         for height in outgoing where height > 0 {
             detents.insert(.height(height))
@@ -500,8 +502,7 @@ enum SelfSizingSheetHeight {
     /// the current measurement (zero before the first), `newMeasured` the one arriving; both
     /// are compared capped at the current `maxHeight`. `nil` without a requested animation,
     /// with Reduce Motion on, for the first measurement (it replaces the fallback as is), and
-    /// when the detent moves by less than `minimumAnimatedChange` (measurement noise) or not
-    /// at all.
+    /// when the detent does not move.
     static func animation(
         for requested: Animation?,
         reduceMotion: Bool,
@@ -510,12 +511,8 @@ enum SelfSizingSheetHeight {
         maxHeight: CGFloat
     ) -> Animation? {
         guard let requested, !reduceMotion, measured > 0 else { return nil }
-        let change = abs(min(measured, maxHeight) - min(newMeasured, maxHeight))
-        return change >= minimumAnimatedChange ? requested : nil
+        return min(measured, maxHeight) != min(newMeasured, maxHeight) ? requested : nil
     }
-
-    /// The smallest detent change, in points, that is animated.
-    static let minimumAnimatedChange: CGFloat = 0.5
 }
 
 #if DEBUG

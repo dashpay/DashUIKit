@@ -104,11 +104,6 @@ final class SelfSizingSheetHeightTests: XCTestCase {
         XCTAssertNil(animation(.easeInOut, from: 200, to: 400, reduceMotion: true))
     }
 
-    func testSubPointChangeIsNotAnimated() {
-        XCTAssertNil(animation(.easeInOut, from: 320, to: 320.33))
-        XCTAssertEqual(animation(.easeInOut, from: 320, to: 320.5), .easeInOut)
-    }
-
     func testChangeAboveTheCapIsNotAnimated() {
         XCTAssertNil(animation(.easeInOut, from: 900, to: 1000))
     }

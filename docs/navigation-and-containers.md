@@ -190,8 +190,9 @@ the modifier are applied together:
 ```
 
 `.selfSizingSheet(…)` (a `View` extension) measures the wrapped content directly via a
-`GeometryReader` and drives `presentationDetents(_:selection:)` with a `.height(measured)`
-detent. The measured
+`GeometryReader` and drives `presentationDetents(_:selection:)` with a height detent: the
+measured height capped at `maxHeightFraction`, or `fallback` (`.medium` when there is none)
+before the first measurement. The measured
 content must have a finite intrinsic height (no
 greedy `Spacer`/`maxHeight: .infinity`), or the measurement is wrong.
 `BottomSheetHeightPreferenceKey` is exposed for advanced cases.
@@ -215,7 +216,7 @@ top edge moves to the new height instead of jumping once the new content is meas
 - With Reduce Motion on, the new height is applied without animation and the edge jumps to
   it; the content is still held at the top edge.
 - A change that leaves the capped detent where it is (both heights above the
-  `maxHeightFraction` cap), or moves it by less than half a point, is not animated.
+  `maxHeightFraction` cap) is not animated.
 - Limit: if the content reports a provisional height while the sheet is being presented
   and then the settled one, the second step counts as a change and can animate.
 
