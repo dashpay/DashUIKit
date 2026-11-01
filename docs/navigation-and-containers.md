@@ -39,8 +39,10 @@ Convenience initializers let you omit any slot (e.g. only `leading`, or `central
   for hit testing, while the element keeps its hug width in layout (so a circle stays on the
   bar's 20pt inset). Press animation: scale 0.88 + opacity 0.7; dimmed to 0.35 opacity while
   `.disabled(true)`. VoiceOver reads its label ("Back", "Close", "Add", "Info"); UI tests find it
-  by its accessibility identifier, the raw value (`navigationbar-back`, `navigationbar-close`,
-  `navigationbar-plus`, `navigationbar-info`), which does not change with the language.
+  by its accessibility identifier (`navigationbar-back`, `navigationbar-close`,
+  `navigationbar-plus`, `navigationbar-info`), which does not change with the language:
+  `app.buttons["navigationbar-back"]` in XCUITest, `id: "navigationbar-back"` in Maestro (its
+  `text:` selector matches the label).
   `BottomSheet`'s header back and close buttons are these buttons, so they carry the same
   identifiers. `NavigationBarCircleButton` and `NavigationBarCircleMenu` carry none: give
   them your own with `.accessibilityIdentifier(_:)`.
