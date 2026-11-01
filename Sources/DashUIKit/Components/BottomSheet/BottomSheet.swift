@@ -306,8 +306,9 @@ public extension View {
     ///   - cornerRadius: Optional corner radius applied via `presentationCornerRadius`
     ///     below iOS 26 (iOS 26+ keeps the system corner styling).
     ///
-    /// Height changes are applied without animation; for content that switches in place,
-    /// pass `animation:` to the overload that takes one.
+    /// The sheet adds no animation to height changes (a transaction the host is already
+    /// animating in still applies); for content that switches in place, pass `animation:` to
+    /// the overload that takes one.
     @ViewBuilder
     func selfSizingSheet(
         fallback: CGFloat = 0,
@@ -390,6 +391,11 @@ private struct SelfSizingSheetModifier: ViewModifier {
                         .onChange(of: proxy.size.height) { _, newHeight in update(newHeight) }
                 }
             )
+            // While an animated detent catches up with content that already changed, the sheet
+            // and its content differ in height; keep the content at the top edge rather than
+            // centred, so the header stays put. Without `animation` the two differ for a frame
+            // only, and the layout stays as it is.
+            .frame(maxHeight: animation == nil ? nil : .infinity, alignment: .top)
             .presentationDetents(detents)
             .presentationDragIndicator(.hidden)
     }

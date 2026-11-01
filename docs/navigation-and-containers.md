@@ -207,12 +207,14 @@ the new content is measured.
   sheet's edge.
 - The first measurement replaces `fallback` (or `.medium` when there is none) without
   `animation`.
+- While the detent catches up, the content stays at the top edge of the sheet.
 - A change that leaves the capped detent where it is (both heights above the
   `maxHeightFraction` cap) is not animated.
 - Limit: if the content reports a provisional height while the sheet is being presented
   and then the settled one, the second step counts as a change and can animate.
 
-Without `animation` (or with `nil`) every change is applied unanimated.
+Without `animation` (or with `nil`) the sheet adds no animation to a height change; a
+transaction the host is already animating in still applies.
 
 `background` fills the sheet **and** its presentation. The measured height excludes the
 home-indicator inset that `presentationDetents([.height])` adds back, so that strip lies
