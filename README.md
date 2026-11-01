@@ -71,6 +71,7 @@ a component already exists before building your own.
 | `SearchBar` | Search field with an animated cancel button | [Buttons & inputs](docs/buttons-and-inputs.md) |
 | `AddressFieldView` | Labeled text field (label / field / help text) with optional QR, clear and error state | [Buttons & inputs](docs/buttons-and-inputs.md) |
 | `Criteria` | Requirement check-list — `Criterion` rows in six states | [Buttons & inputs](docs/buttons-and-inputs.md) |
+| `SegmentedControl` | Sliding-pill segmented control, text-only or with icons | [Buttons & inputs](docs/buttons-and-inputs.md) |
 | `NumericKeyboardView` | Locale-aware on-screen number pad with action button | [Buttons & inputs](docs/buttons-and-inputs.md) |
 | `EnterAmountView` | Amount-entry screen control — single & dual-swap modes | [Amount & currency](docs/amount-and-currency.md) |
 | `SwapAmountView` | Animated primary/secondary amount display | [Amount & currency](docs/amount-and-currency.md) |
