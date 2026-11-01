@@ -67,6 +67,125 @@ jobs:
             CODE_SIGNING_ALLOWED=NO \
             test
 
+  snapshots:
+    # fetch-snapshots.sh finds the job by this name.
+    name: Snapshot tests (iOS Simulator)
+    runs-on: macos-26
+    timeout-minutes: 30
+    steps:
+      # The PR head, not the merge with master: the references it records are committed
+      # to the branch, so they must show the branch's own code.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+
+      - uses: ./.github/actions/select-xcode
+
+      - name: Note what is rendered
+        env:
+          BASE_REF: ${{ github.base_ref }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          if [ -n "$BASE_REF" ]; then
+            echo "Rendered the PR head \`${HEAD_SHA:0:10}\`, not its merge with \`${BASE_REF}\`: after \`${BASE_REF}\` changes a covered component, merge it in and re-record before merging (docs/snapshot-tests.md)." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      # Xcode versions resolve and name packages differently (swift-issue-reporting,
+      # formerly xctest-dynamic-overlay), so the clones are kept per Xcode.
+      - id: xcode
+        run: echo "version=$(xcodebuild -version | tr '\n' ' ' | tr -c 'A-Za-z0-9.' '-')" >> "$GITHUB_OUTPUT"
+
+      # swift-snapshot-testing pulls swift-syntax into the graph; keep the clones.
+      # Restore and save are separate steps because a recording run fails on purpose.
+      - id: packages
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ runner.temp }}/SourcePackages
+          key: snapshot-packages-${{ runner.os }}-${{ steps.xcode.outputs.version }}-${{ hashFiles('SnapshotTests/Package.resolved') }}
+
+      # Package.resolved is the one this Xcode writes: a version it would change, or any
+      # edit to SnapshotTests/Package.swift (the file carries a hash of the manifest),
+      # fails here, with the file to commit in the log. Another Xcode (a local Xcode 27, say)
+      # rewrites it; don't commit that.
+      - name: Resolve packages
+        working-directory: SnapshotTests
+        env:
+          PACKAGES: ${{ runner.temp }}/SourcePackages
+        run: |
+          xcodebuild -resolvePackageDependencies \
+            -scheme DashUIKitSnapshotTests-Package \
+            -clonedSourcePackagesDirPath "$PACKAGES"
+          if ! git diff --quiet -- Package.resolved; then
+            echo "::error file=SnapshotTests/Package.resolved::Package.resolved is not what $(xcodebuild -version | sed -n 1p) resolves. Commit this file:"
+            cat Package.resolved
+            exit 1
+          fi
+
+      - name: Save the package clones
+        if: ${{ steps.packages.outputs.cache-hit != 'true' }}
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ runner.temp }}/SourcePackages
+          key: ${{ steps.packages.outputs.cache-primary-key }}
+
+      # The references are rendered here and only compared here (docs/snapshot-tests.md).
+      # REQUIRE turns a runner on another iOS runtime into a failure, not a skip.
+      # RECORD=failed rewrites a missing or changed reference in the checkout and still
+      # fails the test; the upload step below sends the rewritten set to
+      # .github/scripts/fetch-snapshots.sh. xcodebuild passes a run where every test was
+      # skipped, so the summary line is checked too.
+      - name: Run snapshot tests
+        id: test
+        working-directory: SnapshotTests
+        env:
+          LOG: ${{ runner.temp }}/snapshot-tests.log
+          PACKAGES: ${{ runner.temp }}/SourcePackages
+          TEST_RUNNER_SNAPSHOT_REQUIRE_REFERENCE_ENVIRONMENT: "1"
+          TEST_RUNNER_SNAPSHOT_TESTING_RECORD: failed
+        run: |
+          set -o pipefail
+          # One device, so code that reads the screen size renders the same every time.
+          udid=$(../.github/scripts/pick-simulator.sh "iPhone 17")
+          xcodebuild -scheme DashUIKitSnapshotTests-Package \
+            -destination "platform=iOS Simulator,id=${udid}" \
+            -clonedSourcePackagesDirPath "$PACKAGES" \
+            -disableAutomaticPackageResolution \
+            -testLanguage en -testRegion US \
+            -parallel-testing-enabled NO \
+            -collect-test-diagnostics never \
+            CODE_SIGNING_ALLOWED=NO \
+            test 2>&1 | tee "$LOG"
+          summary=$(grep -E "Executed [0-9]+ tests?," "$LOG" | tail -1 || true)
+          case "$summary" in
+            *"Executed 0 tests"* | *skipped* | "")
+              echo "::error::Snapshot tests did not all run: ${summary:-no summary line}"
+              exit 1 ;;
+          esac
+
+      # Only when a reference was written: a run that failed before rendering (build
+      # error, environment mismatch) has nothing to fetch.
+      - name: Check for re-recorded references
+        id: recorded
+        if: ${{ failure() && steps.test.outcome == 'failure' }}
+        run: |
+          if [ -n "$(git status --porcelain --untracked-files=all -- SnapshotTests/Tests/DashUIKitSnapshotTests/__Snapshots__)" ]; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "::notice::No reference was re-recorded; see the test log for the failure."
+          fi
+
+      - name: Upload re-recorded references
+        if: ${{ failure() && steps.recorded.outputs.changed == 'true' }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: snapshots
+          path: SnapshotTests/Tests/DashUIKitSnapshotTests/__Snapshots__
+          if-no-files-found: error
+          # A re-run of the job replaces the set of the earlier attempt.
+          overwrite: true
+          retention-days: 14
+
   conventions:
     name: "Conventions: assets, colors, strings"
     runs-on: ubuntu-latest
