@@ -14,7 +14,6 @@
 //  limitations under the License.
 //
 
-import CoreGraphics
 import XCTest
 @testable import DashUIKit
 
@@ -35,45 +34,5 @@ final class SegmentedControlSelectionTests: XCTestCase {
 
     func testRepeatedOptionSelectsItsFirstCopy() {
         XCTAssertEqual(SegmentedControlSelection.selectedIndex(of: "Day", in: ["Week", "Day", "Day"]), 1)
-    }
-
-    // MARK: Touch to segment
-
-    /// Three 100 pt segments, option 0 on the left.
-    private let leftToRight = [
-        CGRect(x: 0, y: 0, width: 100, height: 32),
-        CGRect(x: 100, y: 0, width: 100, height: 32),
-        CGRect(x: 200, y: 0, width: 100, height: 32),
-    ]
-
-    /// The same row as a right-to-left layout measures it: option 0 on the right.
-    private let rightToLeft = [
-        CGRect(x: 200, y: 0, width: 100, height: 32),
-        CGRect(x: 100, y: 0, width: 100, height: 32),
-        CGRect(x: 0, y: 0, width: 100, height: 32),
-    ]
-
-    func testTouchSelectsTheSegmentUnderIt() {
-        XCTAssertEqual(SegmentedControlSelection.segmentIndex(at: 10, in: leftToRight), 0)
-        XCTAssertEqual(SegmentedControlSelection.segmentIndex(at: 100, in: leftToRight), 1)
-        XCTAssertEqual(SegmentedControlSelection.segmentIndex(at: 299, in: leftToRight), 2)
-    }
-
-    func testTouchFollowsAMirroredRow() {
-        XCTAssertEqual(SegmentedControlSelection.segmentIndex(at: 10, in: rightToLeft), 2)
-        XCTAssertEqual(SegmentedControlSelection.segmentIndex(at: 150, in: rightToLeft), 1)
-        XCTAssertEqual(SegmentedControlSelection.segmentIndex(at: 299, in: rightToLeft), 0)
-    }
-
-    /// A drag that leaves the track keeps the segment at the end it left by.
-    func testTouchPastEitherEndSelectsTheEndSegment() {
-        XCTAssertEqual(SegmentedControlSelection.segmentIndex(at: -40, in: leftToRight), 0)
-        XCTAssertEqual(SegmentedControlSelection.segmentIndex(at: 340, in: leftToRight), 2)
-        XCTAssertEqual(SegmentedControlSelection.segmentIndex(at: -40, in: rightToLeft), 2)
-        XCTAssertEqual(SegmentedControlSelection.segmentIndex(at: 340, in: rightToLeft), 0)
-    }
-
-    func testNoSegmentsSelectNothing() {
-        XCTAssertNil(SegmentedControlSelection.segmentIndex(at: 10, in: []))
     }
 }

@@ -259,7 +259,8 @@ For a row with an icon, a trailing value or an explicit radio/checkbox mark, use
 File `Components/SegmentedControl.swift`
 
 A row of mutually exclusive options on a track, with a raised pill under the selected one.
-Tap a segment or drag across the track; the pill springs to the new segment.
+Tap a segment; the pill springs to it. Each segment's share of the track, inset included,
+takes the tap.
 
 ```swift
 SegmentedControl(options: ["Active", "Disconnected", "Expired"], selection: $filter)
@@ -286,7 +287,7 @@ trait on the chosen one.
 
 The first option equal to `selection` is the selected segment; a selection that matches no
 option selects none and draws no pill. Options are expected to be distinct. In a right-to-left
-layout the row mirrors, and the pill and drag-to-select follow it.
+layout the row mirrors and the pill follows it.
 
 ---
 
