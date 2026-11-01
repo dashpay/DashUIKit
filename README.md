@@ -37,8 +37,8 @@ struct Example: View {
     var body: some View {
         VStack(spacing: 16) {
             Text("Send")
-                .dashFont(.title2)                 // DS typography + line height
-                .foregroundColor(.dash.primaryText) // DS color token
+                .dashFont(.title2)                       // DS typography + line height
+                .foregroundStyle(Color.dash.primaryText) // DS color token
 
             DashButton(
                 text: "Continue",

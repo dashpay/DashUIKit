@@ -19,7 +19,7 @@ NavigationBar(
     central: {
         Text("Title")
             .dashFont(.subheadMedium)
-            .foregroundColor(.dash.primaryText)
+            .foregroundStyle(Color.dash.primaryText)
     },
     trailing: { NavigationBarElement.info.button { showInfo() } }
 )

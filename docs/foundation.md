@@ -15,7 +15,7 @@ so light/dark variants come from the assets — never hardcode hex.
 
 ```swift
 Text("Hi")
-    .foregroundColor(.dash.primaryText)
+    .foregroundStyle(Color.dash.primaryText)
     .background(Color.dash.secondaryBackground)
 ```
 

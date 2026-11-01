@@ -16,10 +16,10 @@ struct ThumbView: View {
 
     var body: some View {
         Rectangle()
-          .foregroundColor(.clear)
+          .foregroundStyle(Color.clear)
           .frame(width: 39, height: 24)
           .background(Constants.switchThumbFill)
-          .cornerRadius(Constants.switchThumbRadius)
+          .clipShape(.rect(cornerRadius: Constants.switchThumbRadius))
           .shadow(color: Color.dash.switchThumbShadow.opacity(0.06), radius: 1, x: 0, y: 1)
           .shadow(color: Color.dash.switchThumbShadow.opacity(0.1), radius: 1.5, x: 0, y: 1)
     }

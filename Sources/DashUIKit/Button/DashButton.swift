@@ -187,20 +187,20 @@ public struct DashButton: View {
                 content
                     .padding(.horizontal, size.hPadding)
                     .padding(.vertical, size.vPadding)
-                    .foregroundColor(style.foregroundColor(isEnabled: isEnabled))
+                    .foregroundStyle(style.foregroundColor(isEnabled: isEnabled))
                     .background(style.backgroundColor(isEnabled: isEnabled))
                     .clipShape(RoundedRectangle(cornerRadius: size.radius, style: .continuous))
                     .frame(maxWidth: fillsWidth ? .infinity : nil)
-                    .overlay(
+                    .overlay {
                         RoundedRectangle(cornerRadius: size.radius)
                             .inset(by: 0.5)
                             .stroke(Color.dash.buttonStrokeGrayStroke, lineWidth: 1)
-                    )
+                    }
             } else {
                 content
                     .padding(.horizontal, size.hPadding)
                     .padding(.vertical, size.vPadding)
-                    .foregroundColor(style.foregroundColor(isEnabled: isEnabled))
+                    .foregroundStyle(style.foregroundColor(isEnabled: isEnabled))
                     .frame(maxWidth: fillsWidth ? .infinity : nil)
                     .background(style.backgroundColor(isEnabled: isEnabled))
                     .clipShape(RoundedRectangle(cornerRadius: size.radius, style: .continuous))
@@ -287,7 +287,7 @@ private struct DashButtonStylePreview: View {
                 VStack(alignment: .leading, spacing: 8) {
                     Text("Enabled")
                         .dashFont(.subhead)
-                        .foregroundColor(.secondary)
+                        .foregroundStyle(Color.secondary)
 
                     HStack(alignment: .top, spacing: 12) {
                         ForEach(Array(previewButtonSizes.enumerated()), id: \.offset) { _, size in
@@ -305,7 +305,7 @@ private struct DashButtonStylePreview: View {
                 VStack(alignment: .leading, spacing: 8) {
                     Text("Disabled")
                         .dashFont(.subhead)
-                        .foregroundColor(.secondary)
+                        .foregroundStyle(Color.secondary)
 
                     HStack(alignment: .top, spacing: 12) {
                         ForEach(Array(previewButtonSizes.enumerated()), id: \.offset) { _, size in

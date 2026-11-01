@@ -63,14 +63,13 @@ public struct ConverterCard: View {
             }
         }
         .animation(.spring(response: 0.35, dampingFraction: 0.82), value: fromItem.id)
-        .overlay(
+        .overlay(alignment: .top) {
             ConverterArrowBadge(onSwap: onSwap)
                 // Anchor the badge's CENTER to the overlay's .top point, so the offset below
                 // places the badge centre exactly on the seam — independent of the badge's height.
                 .alignmentGuide(VerticalAlignment.top) { $0[VerticalAlignment.center] }
-                .offset(y: seamY),
-            alignment: .top
-        )
+                .offset(y: seamY)
+        }
         .onPreferenceChange(ConverterRowHeightKey.self) { heights in
             if let h = heights[.top], h > 0 { topRowHeight = h }
         }
@@ -105,12 +104,12 @@ public struct ConverterCard: View {
             VStack(alignment: .leading, spacing: 1) {
                 Text(item.title)
                     .dashFont(.subheadMedium)
-                    .foregroundColor(Color.dash.primaryText)
+                    .foregroundStyle(Color.dash.primaryText)
 
                 if let subtitle = item.subtitle {
                     Text(subtitle)
                         .dashFont(.footnote)
-                        .foregroundColor(Color.dash.secondaryText)
+                        .foregroundStyle(Color.dash.secondaryText)
                         .lineLimit(item.subtitleLineLimit)
                         .fixedSize(horizontal: false, vertical: true)
                         .frame(maxWidth: .infinity, alignment: .leading)
@@ -152,12 +151,12 @@ public struct ConverterCard: View {
         } else if item.showsBalance {
             VStack(alignment: .trailing, spacing: 1) {
                 DashAmount(amount: item.dashBalance, sign: .none)
-                    .foregroundColor(Color.dash.primaryText)
+                    .foregroundStyle(Color.dash.primaryText)
 
                 if item.dashBalance != 0, let fiat = item.fiat {
                     Text(fiat)
                         .dashFont(.footnote)
-                        .foregroundColor(Color.dash.secondaryText)
+                        .foregroundStyle(Color.dash.secondaryText)
                 }
             }
         }

@@ -126,20 +126,20 @@ public struct AddressFieldView<Accessory: View>: View {
             .padding(.trailing, Layout.tPadding)
             .background(backgroundColor)
             .clipShape(RoundedRectangle(cornerRadius: Layout.cornerRadius, style: .continuous))
-            .overlay(
+            .overlay {
                 RoundedRectangle(cornerRadius: Layout.cornerRadius)
                     .stroke(borderColor, lineWidth: borderWidth)
-            )
+            }
             // Not `.shadow`: with no blur and no offset a shadow lands exactly
             // under the field and is never seen, and in the focused state the
             // background is clear, so what little showed would be cast by the
             // text rather than by the field's outline. A stroke on the outward
             // inset is the ring the design draws.
-            .overlay(
+            .overlay {
                 RoundedRectangle(cornerRadius: Layout.cornerRadius + Layout.ringWidth / 2, style: .continuous)
                     .inset(by: -Layout.ringWidth / 2)
                     .stroke(ringColor, lineWidth: Layout.ringWidth)
-            )
+            }
 
             if let errorText {
                 Text(errorText)
