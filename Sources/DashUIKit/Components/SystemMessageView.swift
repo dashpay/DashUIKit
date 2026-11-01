@@ -67,12 +67,12 @@ public struct SystemMessageView: View {
                 VStack(alignment: .leading, spacing: 0) {
                     Text(title)
                         .dashFont(.subhead)
-                        .foregroundColor(Color.dash.primaryText)
+                        .foregroundStyle(Color.dash.primaryText)
 
                     if let subtitle {
                         Text(subtitle)
                             .dashFont(.subhead)
-                            .foregroundColor(Color.dash.secondaryText)
+                            .foregroundStyle(Color.dash.secondaryText)
                             .multilineTextAlignment(.leading)
                     }
                 }

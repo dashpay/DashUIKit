@@ -37,8 +37,8 @@ struct Example: View {
     var body: some View {
         VStack(spacing: 16) {
             Text("Send")
-                .dashFont(.title2)                 // DS typography + line height
-                .foregroundColor(.dash.primaryText) // DS color token
+                .dashFont(.title2)                       // DS typography + line height
+                .foregroundStyle(Color.dash.primaryText) // DS color token
 
             DashButton(
                 text: "Continue",
@@ -65,7 +65,7 @@ a component already exists before building your own.
 
 | Component | What it is | Doc |
 |---|---|---|
-| `DashButton` | Themed button — 4 sizes × 11 styles, icons, loading, full-width | [Buttons & inputs](docs/buttons-and-inputs.md) |
+| `DashButton` | Themed button — 4 sizes × 12 styles, icons, loading, full-width | [Buttons & inputs](docs/buttons-and-inputs.md) |
 | `DashSwitch` | DS-tinted toggle | [Buttons & inputs](docs/buttons-and-inputs.md) |
 | `SwitchView` | DS-drawn switch; a native `Toggle` to VoiceOver | [Buttons & inputs](docs/buttons-and-inputs.md) |
 | `SearchBar` | Search field with an animated cancel button | [Buttons & inputs](docs/buttons-and-inputs.md) |

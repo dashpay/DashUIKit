@@ -52,12 +52,12 @@ public struct SimpleSelect: View {
             VStack(alignment: .leading, spacing: 1) {
                 Text(title)
                     .dashFont(.subheadMedium)
-                    .foregroundColor(Color.dash.primaryText)
+                    .foregroundStyle(Color.dash.primaryText)
 
                 if let description {
                     Text(description)
                         .dashFont(.footnote)
-                        .foregroundColor(Color.dash.secondaryText)
+                        .foregroundStyle(Color.dash.secondaryText)
                 }
             }
             .multilineTextAlignment(.leading)
@@ -70,11 +70,12 @@ public struct SimpleSelect: View {
             .background(
                 RoundedRectangle(cornerRadius: 16)
                     .fill(isSelected ? Color.dash.blueAlpha5 : Color.clear))
-            .overlay(
+            .overlay {
                 RoundedRectangle(cornerRadius: 16)
                     .stroke(
                         isSelected ? Color.dash.blue : Color.dash.gray300Alpha30,
-                        lineWidth: 1.5))
+                        lineWidth: 1.5)
+            }
             // An unselected card has no fill, and an unfilled shape takes taps
             // only where it is drawn — without this only the text is tappable.
             .contentShape(RoundedRectangle(cornerRadius: 16))

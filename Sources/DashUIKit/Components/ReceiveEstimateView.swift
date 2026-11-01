@@ -73,15 +73,15 @@ public struct ReceiveEstimateView: View {
                     // be set at once, so show the error first.
                     Text(errorMessage)
                         .dashFont(.caption1)
-                        .foregroundColor(Color.dash.errorText)
+                        .foregroundStyle(Color.dash.errorText)
                 } else if let amount {
                     Text(title)
                         .dashFont(.caption1)
-                        .foregroundColor(Color.dash.tertiaryText)
+                        .foregroundStyle(Color.dash.tertiaryText)
 
                     Text(amountText(amount))
                         .dashFont(.subhead)
-                        .foregroundColor(Color.dash.primaryText)
+                        .foregroundStyle(Color.dash.primaryText)
                 }
             }
             .frame(maxWidth: .infinity, alignment: .center)

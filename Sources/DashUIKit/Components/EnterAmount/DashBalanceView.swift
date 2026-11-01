@@ -42,12 +42,12 @@ public struct DashBalanceView: View {
 
                 dashSymbol
             }
-            .foregroundColor(Color.dash.primaryText)
+            .foregroundStyle(Color.dash.primaryText)
 
             if let fiat {
                 Text(fiat)
                     .dashFont(.caption1)
-                    .foregroundColor(Color.dash.primaryText)
+                    .foregroundStyle(Color.dash.primaryText)
             }
         }
     }

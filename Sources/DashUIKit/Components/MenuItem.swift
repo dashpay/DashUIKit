@@ -100,7 +100,7 @@ public struct MenuItem: View {
             HStack(spacing: 6) {
                 Text(title)
                     .dashFont(.subheadMedium)
-                    .foregroundColor(isEnabled ? Color.dash.primaryText : Color.dash.secondaryText)
+                    .foregroundStyle(isEnabled ? Color.dash.primaryText : Color.dash.secondaryText)
 
                 if let info {
                     switch info {
@@ -117,7 +117,7 @@ public struct MenuItem: View {
             if let helpText {
                 Text(helpText)
                     .dashFont(.footnote)
-                    .foregroundColor(isEnabled ? Color.dash.secondaryText : Color.dash.tertiaryText)
+                    .foregroundStyle(isEnabled ? Color.dash.secondaryText : Color.dash.tertiaryText)
             }
         }
         .padding(.leading, 6)
@@ -138,18 +138,18 @@ public struct MenuItem: View {
         case .text(let value):
             Text(value)
                 .dashFont(.subhead)
-                .foregroundColor(Color.dash.secondaryText)
+                .foregroundStyle(Color.dash.secondaryText)
         case .button(let button):
             button
         case .balance(let dash, let sign, let fiat, let maximumFractionDigits):
             VStack(alignment: .trailing, spacing: 1) {
                 DashAmount(amount: dash, sign: sign, maximumFractionDigits: maximumFractionDigits)
-                    .foregroundColor(Color.dash.primaryText)
+                    .foregroundStyle(Color.dash.primaryText)
 
                 if dash != 0, dash != .max, dash != .min, let fiat {
                     Text(fiat)
                         .dashFont(.footnote)
-                        .foregroundColor(Color.dash.secondaryText)
+                        .foregroundStyle(Color.dash.secondaryText)
                 }
             }
         case .selection(let isSelected):
