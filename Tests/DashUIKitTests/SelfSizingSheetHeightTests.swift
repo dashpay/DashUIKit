@@ -45,26 +45,32 @@ final class SelfSizingSheetHeightTests: XCTestCase {
 
     func testNothingToSizeToOffersMedium() {
         XCTAssertEqual(SelfSizingSheetHeight.detent(for: 0), .medium)
-        XCTAssertEqual(SelfSizingSheetHeight.detents(current: 0, outgoing: nil), [.medium])
+        XCTAssertEqual(SelfSizingSheetHeight.detents(current: 0, outgoing: []), [.medium])
     }
 
     func testAtRestOnlyTheCurrentHeightIsOffered() {
         XCTAssertEqual(SelfSizingSheetHeight.detent(for: 320), .height(320))
-        XCTAssertEqual(SelfSizingSheetHeight.detents(current: 320, outgoing: nil), [.height(320)])
+        XCTAssertEqual(SelfSizingSheetHeight.detents(current: 320, outgoing: []), [.height(320)])
     }
 
     func testAnAnimatedChangeOffersTheOutgoingHeightToo() {
         XCTAssertEqual(
-            SelfSizingSheetHeight.detents(current: 600, outgoing: 320),
+            SelfSizingSheetHeight.detents(current: 600, outgoing: [320]),
             [.height(600), .height(320)])
     }
 
+    func testEveryHeightLeftInOneTurnIsOffered() {
+        XCTAssertEqual(
+            SelfSizingSheetHeight.detents(current: 700, outgoing: [320, 600]),
+            [.height(700), .height(600), .height(320)])
+    }
+
     func testAnOutgoingHeightEqualToTheCurrentOneAddsNothing() {
-        XCTAssertEqual(SelfSizingSheetHeight.detents(current: 320, outgoing: 320), [.height(320)])
+        XCTAssertEqual(SelfSizingSheetHeight.detents(current: 320, outgoing: [320]), [.height(320)])
     }
 
     func testAZeroOutgoingHeightIsNotOffered() {
-        XCTAssertEqual(SelfSizingSheetHeight.detents(current: 320, outgoing: 0), [.height(320)])
+        XCTAssertEqual(SelfSizingSheetHeight.detents(current: 320, outgoing: [0]), [.height(320)])
     }
 
     // MARK: - animation
@@ -96,6 +102,11 @@ final class SelfSizingSheetHeightTests: XCTestCase {
 
     func testReduceMotionTakesNoAnimation() {
         XCTAssertNil(animation(.easeInOut, from: 200, to: 400, reduceMotion: true))
+    }
+
+    func testSubPointChangeIsNotAnimated() {
+        XCTAssertNil(animation(.easeInOut, from: 320, to: 320.33))
+        XCTAssertEqual(animation(.easeInOut, from: 320, to: 320.5), .easeInOut)
     }
 
     func testChangeAboveTheCapIsNotAnimated() {

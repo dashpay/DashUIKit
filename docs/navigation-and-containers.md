@@ -190,7 +190,8 @@ the modifier are applied together:
 ```
 
 `.selfSizingSheet(…)` (a `View` extension) measures the wrapped content directly via a
-`GeometryReader` and drives `presentationDetents([.height(measured)])`. The measured
+`GeometryReader` and drives `presentationDetents(_:selection:)` with a `.height(measured)`
+detent. The measured
 content must have a finite intrinsic height (no
 greedy `Spacer`/`maxHeight: .infinity`), or the measurement is wrong.
 `BottomSheetHeightPreferenceKey` is exposed for advanced cases.
@@ -201,23 +202,25 @@ preset list and a keypad or a calendar. With it, a change of the measured height
 first one is applied inside `withAnimation(animation)` (exceptions below), and the sheet's
 top edge moves to the new height instead of jumping once the new content is measured.
 
-- The edge moves with the system sheet animation (its spring, about half a second), not
-  `animation`'s curve; the given animation applies to the SwiftUI side of the change. To
+- The edge moves with the system sheet spring (about half a second) whatever `animation`
+  is; `animation` is only the transaction the new height is applied in. To
   move the edge, the sheet briefly offers both the old and the new height as detents and
   selects the new one; the old one is dropped right after.
 - The first measurement replaces `fallback` (or `.medium` when there is none) without
   `animation`.
-- While the detent catches up, the content stays at the top edge of the sheet, whether it
-  grew or shrank. Content taller than the cap is clipped at the bottom.
+- The content stays at the top edge of the sheet, whether it grew or shrank, while the edge
+  catches up and at any other time the sheet is shorter than the content: content taller
+  than the cap is clipped at the bottom, and when the keyboard shrinks the sheet, what it
+  covers is at the bottom (without `animation` the content is centred).
 - With Reduce Motion on, the new height is applied without animation and the edge jumps to
   it; the content is still held at the top edge.
 - A change that leaves the capped detent where it is (both heights above the
-  `maxHeightFraction` cap) is not animated.
+  `maxHeightFraction` cap), or moves it by less than half a point, is not animated.
 - Limit: if the content reports a provisional height while the sheet is being presented
   and then the settled one, the second step counts as a change and can animate.
 
 Without `animation` (or with `nil`) the sheet adds no animation of its own to a height
-change, and its layout is as before.
+change: the edge jumps to the new height, and the content keeps its default placement.
 
 `background` fills the sheet **and** its presentation. The measured height excludes the
 home-indicator inset that `presentationDetents([.height])` adds back, so that strip lies
