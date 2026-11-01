@@ -278,10 +278,15 @@ SegmentedControl(
 artworks (`DashIcon.SegmentedControl.receive` / `.receiveDisabled`) rather than tint one.
 
 The text-only control is 40pt tall; with icons it sizes to its content (17pt artwork over
-the label). Labels are `.footnoteMedium`, `primaryText` when selected and at 40% opacity
-otherwise. Track `gray300Alpha20`, 20pt corners, 4pt inset; pill `white` (`whiteAlpha20` in
-dark) with 16pt corners and the `shadow` token. VoiceOver reads one button per segment, with
-the selected trait on the chosen one.
+the label). Neither grows when its container offers more height. Labels are `.footnoteMedium`
+in `segmentControlContSelected` / `segmentControlContNotSelected`. Track
+`segmentControlBackgroundGroup`, 20pt corners, 4pt inset; pill `segmentControlBackground` with
+16pt corners and the `shadow` token. VoiceOver reads one button per segment, with the selected
+trait on the chosen one.
+
+The first option equal to `selection` is the selected segment; a selection that matches no
+option selects none and draws no pill. Options are expected to be distinct. In a right-to-left
+layout the row mirrors, and the pill and drag-to-select follow it.
 
 ---
 

@@ -25,8 +25,7 @@ private enum SegmentedControlLayout {
     static let height: CGFloat = 40
     static let shadowRadius: CGFloat = 10
     static let shadowY: CGFloat = 5
-    static let springResponse: Double = 0.3
-    static let springDamping: Double = 0.7
+    static let animation = Animation.spring(response: 0.3, dampingFraction: 0.7)
 
     // Icon variant (artwork stacked over the label). It sizes to its content
     // instead of `height`, which only fits a single text line. The icons are
@@ -38,11 +37,42 @@ private enum SegmentedControlLayout {
     static let iconSegmentVerticalPadding: CGFloat = 10
 }
 
-/// A row of mutually exclusive options with a sliding white pill on a grey
-/// track. Tap a segment or drag across the track to select; the host owns the
-/// selection through the binding.
+/// Which segment is selected, and which one a touch lands on. Kept apart from
+/// the view so the rules can be tested without rendering.
+enum SegmentedControlSelection {
+    /// The segment drawn and announced as selected: the first option equal to
+    /// `selection`, or `nil` when none is, in which case no segment is.
+    static func selectedIndex<T: Equatable>(of selection: T, in options: [T]) -> Int? {
+        options.firstIndex(of: selection)
+    }
+
+    /// The segment under `x`, given each segment's frame in the same
+    /// coordinate space as `x`. A touch past either end of the track belongs to
+    /// the segment at that end. The frames carry the layout direction, so the
+    /// answer follows a right-to-left `HStack` without knowing about it.
+    static func segmentIndex(at x: CGFloat, in frames: [CGRect]) -> Int? {
+        if let hit = frames.firstIndex(where: { x >= $0.minX && x < $0.maxX }) {
+            return hit
+        }
+        return frames.indices.min { distance(from: x, to: frames[$0]) < distance(from: x, to: frames[$1]) }
+    }
+
+    private static func distance(from x: CGFloat, to frame: CGRect) -> CGFloat {
+        x < frame.minX ? frame.minX - x : x - frame.maxX
+    }
+}
+
+/// A row of mutually exclusive options with a sliding pill on a track. Tap a
+/// segment or drag across the track to select; the host owns the selection
+/// through the binding.
+///
+/// The first option equal to `selection` is the selected segment. When no
+/// option matches, no segment is selected and no pill is drawn. Options are
+/// expected to be distinct; of a repeated option only the first copy is ever
+/// selected.
 public struct SegmentedControl<T: Hashable>: View {
     private typealias Layout = SegmentedControlLayout
+    private typealias Selection = SegmentedControlSelection
 
     private let options: [T]
     @Binding private var selection: T
@@ -56,12 +86,16 @@ public struct SegmentedControl<T: Hashable>: View {
     /// unselected treatment the label gets.
     private let icon: ((_ option: T, _ isSelected: Bool) -> DashIconSource)?
 
-    @Environment(\.colorScheme) private var colorScheme
     @State private var containerWidth: CGFloat = 0
+    /// Each segment's frame in the control's own coordinate space, by index, for drag-to-select.
+    @State private var segmentFrames: [Int: CGRect] = [:]
+
+    private static var spaceName: String { "DashUIKit.SegmentedControl" }
 
     /// - Parameters:
-    ///   - options: The segments, left to right.
-    ///   - selection: The selected option; one of `options`.
+    ///   - options: The segments, in reading order. Expected to be distinct.
+    ///   - selection: The selected option. A value that is not one of
+    ///     `options` selects no segment.
     ///   - label: The text of each segment, also its VoiceOver label.
     ///   - icon: Artwork above each label, per option and selection state.
     ///     `nil` draws text-only segments.
@@ -82,72 +116,75 @@ public struct SegmentedControl<T: Hashable>: View {
         return containerWidth / CGFloat(options.count)
     }
 
-    private var indicatorOffset: CGFloat {
-        let index = options.firstIndex(of: selection) ?? 0
-        return CGFloat(index) * segmentWidth
-    }
-
     public var body: some View {
-        ZStack(alignment: .leading) {
-            RoundedRectangle(cornerRadius: Layout.segmentCornerRadius)
-                .fill(colorScheme == .dark ? Color.dash.whiteAlpha20 : Color.dash.white)
-                .shadow(color: Color.dash.shadow, radius: Layout.shadowRadius, x: 0, y: Layout.shadowY)
-                .frame(width: max(1, segmentWidth))
-                .offset(x: indicatorOffset)
-                .animation(.spring(response: Layout.springResponse, dampingFraction: Layout.springDamping), value: selection)
-                .opacity(containerWidth > 0 ? 1 : 0)
+        let selectedIndex = Selection.selectedIndex(of: selection, in: options)
 
-            HStack(spacing: 0) {
-                ForEach(options, id: \.self) { option in
-                    Button(action: {
-                        select(option)
-                    }) {
-                        segmentContent(option)
-                            .foregroundColor(selection == option ? .dash.primaryText : .dash.primaryText.opacity(0.4))
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, icon == nil
-                                ? Layout.segmentVerticalPadding
-                                : Layout.iconSegmentVerticalPadding)
-                            .contentShape(Rectangle())
-                            .animation(.spring(response: Layout.springResponse, dampingFraction: Layout.springDamping), value: selection)
-                    }
-                    .buttonStyle(.plain)
-                    .accessibilityElement(children: .ignore)
-                    .accessibilityLabel(Text(label(option)))
-                    .accessibilityHint(Text(NSLocalizedString("Double tap to select", bundle: .module, comment: "DashUIKit")))
-                    .accessibilityAddTraits(selection == option ? [.isButton, .isSelected] : .isButton)
-                }
+        HStack(spacing: 0) {
+            ForEach(Array(options.enumerated()), id: \.offset) { index, option in
+                segment(option, index: index, isSelected: index == selectedIndex)
             }
         }
-        .background(
-            GeometryReader { geo in
-                Color.clear
-                    .onAppear { containerWidth = geo.size.width }
-                    .onChange(of: geo.size.width) { _, newWidth in
-                        containerWidth = newWidth
-                    }
-            }
-        )
+        // A background is offered the row's size, so the pill is as tall as
+        // the segments in both variants. `.leading` and the leading padding
+        // mirror with the row in a right-to-left layout.
+        .background(alignment: .leading) {
+            RoundedRectangle(cornerRadius: Layout.segmentCornerRadius)
+                .fill(Color.dash.segmentControlBackground)
+                .shadow(color: Color.dash.shadow, radius: Layout.shadowRadius, x: 0, y: Layout.shadowY)
+                .frame(width: max(1, segmentWidth))
+                .padding(.leading, CGFloat(selectedIndex ?? 0) * segmentWidth)
+                .opacity(containerWidth > 0 && selectedIndex != nil ? 1 : 0)
+        }
+        .readingFrame(coordinateSpace: .local) { containerWidth = $0.width }
+        .animation(Layout.animation, value: selectedIndex)
         .highPriorityGesture(
-            DragGesture(minimumDistance: 0)
+            DragGesture(minimumDistance: 0, coordinateSpace: .named(Self.spaceName))
                 .onChanged { value in
-                    guard segmentWidth > 0 else { return }
                     updateSelection(at: value.location.x)
                 }
         )
+        .coordinateSpace(.named(Self.spaceName))
         .padding(Layout.containerPadding)
         // The icon variant is two lines tall, so it sizes to its content —
-        // `height` is the single-line text measurement.
+        // `height` is the single-line text measurement. Either way the control
+        // keeps its own height when its container offers more.
         .frame(height: icon == nil ? Layout.height : nil)
-        .background(Color.dash.gray300Alpha20)
+        .fixedSize(horizontal: false, vertical: true)
+        .background(Color.dash.segmentControlBackgroundGroup)
         .clipShape(RoundedRectangle(cornerRadius: Layout.containerCornerRadius))
     }
 
+    private func segment(_ option: T, index: Int, isSelected: Bool) -> some View {
+        Button(action: {
+            select(option)
+        }) {
+            segmentContent(option, isSelected: isSelected)
+                .foregroundStyle(isSelected
+                    ? Color.dash.segmentControlContSelected
+                    : Color.dash.segmentControlContNotSelected)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, icon == nil
+                    ? Layout.segmentVerticalPadding
+                    : Layout.iconSegmentVerticalPadding)
+                .frame(maxHeight: .infinity)
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .readingFrame(coordinateSpace: .named(Self.spaceName)) { segmentFrames[index] = $0 }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(Text(label(option)))
+        // The selected segment has nothing left to do on a double tap.
+        .accessibilityHint(isSelected
+            ? Text(verbatim: "")
+            : Text(NSLocalizedString("Double tap to select", bundle: .module, comment: "DashUIKit")))
+        .accessibilityAddTraits(isSelected ? [.isButton, .isSelected] : .isButton)
+    }
+
     @ViewBuilder
-    private func segmentContent(_ option: T) -> some View {
+    private func segmentContent(_ option: T, isSelected: Bool) -> some View {
         if let icon {
             VStack(spacing: Layout.iconLabelSpacing) {
-                Image(dash: icon(option, selection == option))
+                Image(dash: icon(option, isSelected))
                     .resizable()
                     .scaledToFit()
                     .frame(height: Layout.iconHeight)
@@ -165,13 +202,17 @@ public struct SegmentedControl<T: Hashable>: View {
     }
 
     private func updateSelection(at x: CGFloat) {
-        let index = max(0, min(options.count - 1, Int(x / segmentWidth)))
+        let frames = options.indices.compactMap { segmentFrames[$0] }
+        guard frames.count == options.count,
+              let index = Selection.segmentIndex(at: x, in: frames) else { return }
         select(options[index])
     }
 
+    /// The host sees the change inside the control's animation, so content it
+    /// switches on the selection moves with the pill.
     private func select(_ option: T) {
         guard option != selection else { return }
-        withAnimation(.spring(response: Layout.springResponse, dampingFraction: Layout.springDamping)) {
+        withAnimation(Layout.animation) {
             selection = option
         }
     }
@@ -210,6 +251,35 @@ private struct SegmentedControlPreview: View {
     SegmentedControlIconPreview()
 }
 
+#Preview("Icon variant, tall container") {
+    // The control keeps its own height; the red frame is the space offered.
+    SegmentedControlIconPreview.control(selection: .constant("Receive"))
+        .frame(height: 200)
+        .border(Color.dash.red)
+        .padding()
+}
+
+#Preview("Right to left") {
+    // The pill and drag-to-select follow the mirrored row: "Day" is on the right.
+    SegmentedControlPreview()
+        .environment(\.layoutDirection, .rightToLeft)
+}
+
+#Preview("No matching selection") {
+    // A selection that is none of the options draws no pill.
+    SegmentedControl(options: ["Day", "Week", "Month"], selection: .constant("Year"))
+        .padding()
+}
+
+#Preview("Dark") {
+    VStack(spacing: 24) {
+        SegmentedControlPreview()
+        SegmentedControlIconPreview()
+    }
+    .background(Color.dash.primaryBackground)
+    .preferredColorScheme(.dark)
+}
+
 /// The icon variant next to the text-only one, so the two stay recognisably the
 /// same control: same track, same pill, only the segment is two lines tall. Tap
 /// through the segments — each swaps between its coloured and grey artwork.
@@ -217,8 +287,9 @@ private struct SegmentedControlIconPreview: View {
     @State private var withIcons = "Internal"
     @State private var textOnly = "Internal"
 
-    private let options = ["Receive", "Internal", "Send"]
-    private func icon(_ option: String, isSelected: Bool) -> DashIconSource {
+    fileprivate static let options = ["Receive", "Internal", "Send"]
+
+    fileprivate static func icon(_ option: String, isSelected: Bool) -> DashIconSource {
         switch option {
         case "Receive":
             return (isSelected ? DashIcon.SegmentedControl.receive : .receiveDisabled).source
@@ -229,15 +300,15 @@ private struct SegmentedControlIconPreview: View {
         }
     }
 
+    fileprivate static func control(selection: Binding<String>) -> SegmentedControl<String> {
+        SegmentedControl(options: options, selection: selection, label: { $0 }, icon: icon)
+    }
+
     var body: some View {
         VStack(spacing: 24) {
-            SegmentedControl(
-                options: options,
-                selection: $withIcons,
-                label: { $0 },
-                icon: icon)
+            Self.control(selection: $withIcons)
 
-            SegmentedControl(options: options, selection: $textOnly)
+            SegmentedControl(options: Self.options, selection: $textOnly)
         }
         .padding()
     }
