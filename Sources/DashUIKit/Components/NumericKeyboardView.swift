@@ -123,17 +123,21 @@ public enum NumericKeyboardLocaleSupport {
 public struct NumericKeyboardView: View {
 
     private enum Layout {
-        /// The panel the keypad sits on: inset from the screen edges,
-        /// clear of the home indicator, and rounded at the top.
+        /// The panel takes the full width and is rounded at the top; its content
+        /// is inset by these paddings. The bottom one sits above the bottom
+        /// safe area, which the background runs on through.
         static let panelHorizontalPadding: CGFloat = 20
         static let panelVerticalPadding: CGFloat = 20
         static let panelCornerRadius: CGFloat = 32
         static let rootSpacing: CGFloat = 20
-        static let rowsSpacing: CGFloat = 10
-        static let rowSpacing: CGFloat = 10
-        static let horizontalPadding: CGFloat = 40
-        static let keyFontSize: CGFloat = 20
-        static let keyFontWeight: Font.Weight = .medium
+        /// No gap between rows: the 50 pt keys are the rows' whole height, so
+        /// a tap anywhere in a column lands on a key.
+        static let keyRowSpacing: CGFloat = 0
+        static let keyColumnSpacing: CGFloat = 5
+        static let keyHeight: CGFloat = 50
+        static let actionButtonHorizontalPadding: CGFloat = 20
+        /// Draws the `delete.left` glyph about 18.5 × 15.9 pt, its size in the design.
+        static let deleteSymbolSize: CGFloat = 17.5
         static let disabledOpacity: CGFloat = 0.5
         static let enabledOpacity: CGFloat = 1.0
 
@@ -175,8 +179,8 @@ public struct NumericKeyboardView: View {
 
     public var body: some View {
         VStack(spacing: Layout.rootSpacing) {
-            keyboardRowsView
             helperTextRow(helperText)
+            keyboardRowsView
             actionButtonView
         }
         .padding(.horizontal, Layout.panelHorizontalPadding)
@@ -198,7 +202,7 @@ public struct NumericKeyboardView: View {
     }
 
     private var keyboardRowsView: some View {
-        VStack(spacing: Layout.rowsSpacing) {
+        VStack(spacing: Layout.keyRowSpacing) {
             ForEach(rows, id: \.self) { row in
                 keyboardRowView(row)
                     .opacity(inProgress ? Layout.disabledOpacity : Layout.enabledOpacity)
@@ -207,35 +211,52 @@ public struct NumericKeyboardView: View {
     }
 
     private func keyboardRowView(_ row: [String]) -> some View {
-        HStack(spacing: Layout.rowSpacing) {
+        HStack(spacing: Layout.keyColumnSpacing) {
             ForEach(row, id: \.self) { key in
                 keyButtonView(key)
             }
         }
     }
 
+    @ViewBuilder
     private func keyButtonView(_ key: String) -> some View {
+        if key == NumericKeyboardLocaleSupport.Layout.emptyKey {
+            // The bottom-left slot without a decimal separator: holds the
+            // grid's shape, and is neither a key nor a VoiceOver stop.
+            keyCell(Color.clear)
+                .accessibilityHidden(true)
+        } else {
+            keyButton(key)
+        }
+    }
+
+    private func keyButton(_ key: String) -> some View {
         Button {
             handleKeyPress(key)
         } label: {
-            keyContentView(key)
+            keyCell(keyContentView(key))
+                // The whole key is the target, not only its glyph.
+                .contentShape(Rectangle())
         }
-        .frame(height: 50)
-        .frame(maxWidth: .infinity)
         .disabled(inProgress)
+    }
+
+    /// One slot of the grid: an equal share of the row's width, one key tall.
+    private func keyCell(_ content: some View) -> some View {
+        content
+            .frame(maxWidth: .infinity)
+            .frame(height: Layout.keyHeight)
     }
 
     @ViewBuilder
     private func keyContentView(_ key: String) -> some View {
         if key == NumericKeyboardLocaleSupport.Layout.deleteKey {
-            Image(systemName: Layout.deleteSymbol)
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .font(.system(size: Layout.keyFontSize))
+            Image(dash: .system(Layout.deleteSymbol))
+                .font(.system(size: Layout.deleteSymbolSize))
                 .foregroundStyle(Color.dash.primaryText)
         } else {
             Text(key)
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .font(.system(size: Layout.keyFontSize, weight: Layout.keyFontWeight))
+                .dashFont(.title3Medium)
                 .foregroundStyle(Color.dash.primaryText)
         }
     }
@@ -250,7 +271,7 @@ public struct NumericKeyboardView: View {
             style: .filledBlue,
             action: actionHandler
         )
-        .padding(.horizontal, Layout.horizontalPadding)
+        .padding(.horizontal, Layout.actionButtonHorizontalPadding)
     }
 
     @ViewBuilder
@@ -278,20 +299,111 @@ public struct NumericKeyboardView: View {
 
 #if DEBUG
 
-#Preview {
-    ZStack {
-        Color.red.opacity(0.3)
+private let longHelperText = "The amount is converted at the current rate and may change slightly before the transfer is confirmed."
 
-        NumericKeyboardView(
-            value: .constant(""),
-            showDecimalSeparator: true,
-            locale: Locale(identifier: "en_US"),
-            actionButtonText: "Verify",
-            actionEnabled: true,
-            inProgress: false,
-            actionHandler: { print("Action button tapped") }
-        )
+private struct NumericKeyboardPreview: View {
+    private let showDecimalSeparator: Bool
+    private let actionEnabled: Bool
+    private let inProgress: Bool
+    private let helperText: String?
+    private let locale: Locale
+
+    @State private var value: String
+
+    init(
+        initialValue: String = "12",
+        showDecimalSeparator: Bool = true,
+        actionEnabled: Bool = true,
+        inProgress: Bool = false,
+        helperText: String? = "Help text",
+        locale: Locale = Locale(identifier: "uk_UA")
+    ) {
+        _value = State(initialValue: initialValue)
+        self.locale = locale
+        self.showDecimalSeparator = showDecimalSeparator
+        self.actionEnabled = actionEnabled
+        self.inProgress = inProgress
+        self.helperText = helperText
     }
+
+    var body: some View {
+        VStack(spacing: 0) {
+            Spacer()
+            Text(value.isEmpty ? " " : value)
+                .dashFont(.title1)
+                .foregroundStyle(Color.dash.primaryText)
+            Spacer()
+            NumericKeyboardView(
+                value: $value,
+                showDecimalSeparator: showDecimalSeparator,
+                locale: locale,
+                actionButtonText: "Continue",
+                actionEnabled: actionEnabled,
+                inProgress: inProgress,
+                helperText: helperText,
+                actionHandler: {}
+            )
+        }
+        .background(Color.dash.primaryBackground)
+    }
+}
+
+#Preview("Help text, decimal") {
+    NumericKeyboardPreview()
+}
+
+#Preview("Help text, decimal, dark") {
+    NumericKeyboardPreview()
+        .preferredColorScheme(.dark)
+}
+
+#Preview("Full stop decimal (en_US)") {
+    NumericKeyboardPreview(locale: Locale(identifier: "en_US"))
+}
+
+#Preview("No help text, no decimal") {
+    NumericKeyboardPreview(showDecimalSeparator: false, helperText: nil)
+}
+
+#Preview("No help text, no decimal, dark") {
+    NumericKeyboardPreview(showDecimalSeparator: false, helperText: nil)
+        .preferredColorScheme(.dark)
+}
+
+#Preview("In progress") {
+    NumericKeyboardPreview(inProgress: true)
+}
+
+#Preview("In progress, dark") {
+    NumericKeyboardPreview(inProgress: true)
+        .preferredColorScheme(.dark)
+}
+
+#Preview("Long help text") {
+    NumericKeyboardPreview(helperText: longHelperText)
+}
+
+#Preview("Long help text, dark") {
+    NumericKeyboardPreview(helperText: longHelperText)
+        .preferredColorScheme(.dark)
+}
+
+#Preview("Action disabled") {
+    NumericKeyboardPreview(actionEnabled: false)
+}
+
+#Preview("Action disabled, dark") {
+    NumericKeyboardPreview(actionEnabled: false)
+        .preferredColorScheme(.dark)
+}
+
+#Preview("Empty value") {
+    NumericKeyboardPreview(initialValue: "")
+}
+
+#Preview("Empty value, dark") {
+    NumericKeyboardPreview(initialValue: "")
+        .preferredColorScheme(.dark)
 }
 
 #endif
