@@ -12,8 +12,8 @@ and callbacks; they render and report intent. They require `import DashUIKit` an
 - **[Foundation](foundation.md)** — design tokens: colors (`Color.dash.*`), typography
   (`Font.dash.*`, `.dashFont`, `DashTextStyle`), icons (`DashIconSource`, `Image(dash:)`),
   bundle access.
-- **[Buttons & inputs](buttons-and-inputs.md)** — `DashButton`, `DashSwitch`, `SearchBar`,
-  `AddressFieldView`, `Criteria`, `SimpleSelect`, `NumericKeyboardView`.
+- **[Buttons & inputs](buttons-and-inputs.md)** — `DashButton`, `DashSwitch`, `SwitchView`,
+  `SearchBar`, `AddressFieldView`, `Criteria`, `SimpleSelect`, `NumericKeyboardView`.
 - **[Amount & currency](amount-and-currency.md)** — `EnterAmountView`, `SwapAmountView`,
   `ReceiveEstimateView`, `DashAmount`, `DashBalanceView`, `DashPickerView`,
   `CurrencyOption`.
@@ -25,8 +25,10 @@ and callbacks; they render and report intent. They require `import DashUIKit` an
 - **[Feedback](feedback.md)** — `Toast`, `SystemMessageView`,
   `LoadingIllustration` / `LoadingSpinner`, `SuccessIllustration`, `ErrorIllustration`,
   `XmarkIcon`, `CheckmarkIcon`, `ChevronIcon`, `InfoRoundIcon`.
-- **[Utilities](utilities.md)** — geometry readers (`readingFrame`, `readingLocation`),
+- **[Utilities](utilities.md)** — geometry reader (`readingFrame`),
   `ScrollViewWithOnScrollChanged`, `scaleToFitWidth`.
+- **[Snapshot tests](snapshot-tests.md)** — light / dark reference images of the
+  components, and how to record them.
 
 ## Alphabetical index
 
@@ -64,7 +66,7 @@ and callbacks; they render and report intent. They require `import DashUIKit` an
 | `NavigationBarCircleMenu` | [Navigation & containers](navigation-and-containers.md#custom-circle-actions) |
 | `NumericKeyboardView` | [Buttons & inputs](buttons-and-inputs.md#numerickeyboardview) |
 | `RadioButtonRow` | [Lists & rows](lists-and-rows.md#radiobuttonrow) |
-| `readingFrame` / `readingLocation` | [Utilities](utilities.md#frame--location-readers) |
+| `readingFrame` | [Utilities](utilities.md#frame-reader) |
 | `ReceiveEstimateView` | [Amount & currency](amount-and-currency.md#receiveestimateview) |
 | `ScrollViewWithOnScrollChanged` | [Utilities](utilities.md#scrollviewwithonscrollchanged) |
 | `scaleToFitWidth` | [Utilities](utilities.md#scaletofitwidth) |
@@ -72,6 +74,7 @@ and callbacks; they render and report intent. They require `import DashUIKit` an
 | `SimpleSelect` | [Buttons & inputs](buttons-and-inputs.md#simpleselect) |
 | `SuccessIllustration` | [Feedback](feedback.md#successillustration--errorillustration) |
 | `SwapAmountView` | [Amount & currency](amount-and-currency.md#swapamountview) |
+| `SwitchView` | [Buttons & inputs](buttons-and-inputs.md#switchview) |
 | `SystemMessageView` | [Feedback](feedback.md#systemmessageview) |
 | `Toast` (`ToastStyle`) | [Feedback](feedback.md#toast) |
 | `TopIntroView` | [Navigation & containers](navigation-and-containers.md#topintroview) |

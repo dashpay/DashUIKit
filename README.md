@@ -67,6 +67,7 @@ a component already exists before building your own.
 |---|---|---|
 | `DashButton` | Themed button — 4 sizes × 11 styles, icons, loading, full-width | [Buttons & inputs](docs/buttons-and-inputs.md) |
 | `DashSwitch` | DS-tinted toggle | [Buttons & inputs](docs/buttons-and-inputs.md) |
+| `SwitchView` | DS-drawn switch; a native `Toggle` to VoiceOver | [Buttons & inputs](docs/buttons-and-inputs.md) |
 | `SearchBar` | Search field with an animated cancel button | [Buttons & inputs](docs/buttons-and-inputs.md) |
 | `AddressFieldView` | Labeled text field (label / field / help text) with optional QR, clear and error state | [Buttons & inputs](docs/buttons-and-inputs.md) |
 | `Criteria` | Requirement check-list — `Criterion` rows in six states | [Buttons & inputs](docs/buttons-and-inputs.md) |
@@ -93,7 +94,7 @@ a component already exists before building your own.
 | `XmarkIcon` | Code-drawn close (✕) icon | [Feedback](docs/feedback.md) |
 | `CheckmarkIcon` | Code-drawn selection (✓) mark | [Feedback](docs/feedback.md) |
 | `ChevronIcon` | Code-drawn chevron, in any of the four directions | [Feedback](docs/feedback.md) |
-| Geometry helpers | `readingFrame`, `readingLocation`, `ScrollViewWithOnScrollChanged`, `scaleToFitWidth` | [Utilities](docs/utilities.md) |
+| Geometry helpers | `readingFrame`, `ScrollViewWithOnScrollChanged`, `scaleToFitWidth` | [Utilities](docs/utilities.md) |
 | Foundation | `Color.dash.*`, `Font.dash.*`, `.dashFont`, `DashIconSource` | [Foundation](docs/foundation.md) |
 
 ## Project layout
