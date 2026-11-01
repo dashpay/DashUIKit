@@ -25,12 +25,13 @@ final class NumericKeyboardViewSnapshotTests: XCTestCase {
         value: String = "12",
         showDecimalSeparator: Bool = true,
         actionEnabled: Bool = true,
-        helperText: String? = "Help text"
+        helperText: String? = "Help text",
+        locale: Locale = Locale(identifier: "en_US")
     ) -> some View {
         NumericKeyboardView(
             value: .constant(value),
             showDecimalSeparator: showDecimalSeparator,
-            locale: Locale(identifier: "en_US"),
+            locale: locale,
             actionButtonText: "Continue",
             actionEnabled: actionEnabled,
             inProgress: false,
@@ -41,6 +42,14 @@ final class NumericKeyboardViewSnapshotTests: XCTestCase {
 
     func testHelpTextAndDecimalSeparator() throws {
         try assertComponentSnapshots(of: keyboard(), named: "help-decimal")
+    }
+
+    /// A comma decimal key sits lower in its cell than a full stop.
+    func testCommaDecimalSeparator() throws {
+        try assertComponentSnapshots(
+            of: keyboard(locale: Locale(identifier: "uk_UA")),
+            named: "comma"
+        )
     }
 
     func testNoHelpTextNoDecimalSeparator() throws {

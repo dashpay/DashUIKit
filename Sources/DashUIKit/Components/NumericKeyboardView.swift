@@ -222,11 +222,8 @@ public struct NumericKeyboardView: View {
     private func keyButtonView(_ key: String) -> some View {
         if key == NumericKeyboardLocaleSupport.Layout.emptyKey {
             // The bottom-left slot without a decimal separator: holds the
-            // grid's shape, and is neither a target nor a VoiceOver stop.
-            // Still takes a tap, as the keys around it do, so a miss does
-            // not fall through to the host.
+            // grid's shape, and is neither a key nor a VoiceOver stop.
             keyCell(Color.clear)
-                .contentShape(Rectangle())
                 .accessibilityHidden(true)
         } else {
             keyButton(key)
