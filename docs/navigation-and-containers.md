@@ -41,6 +41,9 @@ Convenience initializers let you omit any slot (e.g. only `leading`, or `central
   `.disabled(true)`. VoiceOver reads its label ("Back", "Close", "Add", "Info"); UI tests find it
   by its accessibility identifier, the raw value (`navigationbar-back`, `navigationbar-close`,
   `navigationbar-plus`, `navigationbar-info`), which does not change with the language.
+  `BottomSheet`'s header back and close buttons are these buttons, so they carry the same
+  identifiers. `NavigationBarCircleButton` and `NavigationBarCircleMenu` carry none: give
+  them your own with `.accessibilityIdentifier(_:)`.
 
 ### Custom circle actions
 

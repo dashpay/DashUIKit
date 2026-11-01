@@ -27,4 +27,12 @@ final class NavigationBarElementTests: XCTestCase {
             XCTAssertEqual(element.rawValue, element.asset.assetName, "\(element)")
         }
     }
+
+    /// The raw value is the buttons' accessibility identifier, which host UI tests
+    /// look up, so renaming an imageset must not change it silently.
+    func testRawValuesAreTheDocumentedIdentifiers() {
+        XCTAssertEqual(NavigationBarElement.allCases.map(\.rawValue), [
+            "navigationbar-back", "navigationbar-close", "navigationbar-plus", "navigationbar-info",
+        ])
+    }
 }
