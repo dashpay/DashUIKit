@@ -365,3 +365,40 @@ override func deleteBackward() {
 `,` maps to the locale's decimal separator, except when it *is* the locale's grouping
 separator — that one is passed through so `applyKeyPress` drops it, exactly as a tapped key
 would be.
+
+---
+
+## VotePill
+
+File `Components/VotePill.swift`
+
+A compact vote button: a count next to a thumb, or a chevron that expands a group of
+requests. Built for the username-voting list (Figma "Username voting", `3830:20658`).
+
+```swift
+VotePill(kind: .block, count: 3, isSelected: true) { vote(.lock) }
+VotePill(kind: .approve, count: 0, status: isSending ? .busy : .enabled) { vote(.approve) }
+VotePill(kind: .expand(isExpanded: isExpanded)) { isExpanded.toggle() }
+```
+
+- `init(kind: VotePill.Kind, count: Int = 0, isSelected: Bool = false, status: VotePill.Status = .enabled, accessibilityLabel: String? = nil, accessibilityValue: String? = nil, action: @escaping () -> Void)`
+- `Kind`: `.block` (red, thumb down), `.approve` (blue, thumb up), `.expand(isExpanded:)` (gray
+  chevron, no count).
+- `isSelected`: the filled look with white content, the user's own vote. No effect on `.expand`.
+- `Status`: `.enabled`, `.busy` (a spinner replaces the icon, the count stays), `.disabled` (the
+  pill's look at 40% opacity). `.busy` and `.disabled` ignore taps. Selection and status combine,
+  so a vote in flight or a closed vote still shows whose vote it is.
+
+The pill is at least 70×40pt, with 14pt continuous corners and 8/4pt padding. The count is
+`.subheadMedium` with monospaced digits; four digits and more show as "999+", which makes the
+pill a few points wider than 70pt (VoiceOver still reads the number). Colours: block `redAlpha5` / `errorText`, selected `red` / `whiteText`;
+approve `blueAlpha5` / `blueText`, selected `blue` / `whiteText`; expand `gray300Alpha10` /
+`gray300`. The thumb is `DashIcon.Voting.thumbUp`, drawn at 16.13×14pt; block turns it over, as the
+design does. The tap area reaches 2pt past the top and bottom (44pt) without taking layout space, so a row
+built around the 40pt pill keeps its height.
+
+VoiceOver reads one button. The default label is "Block", "Approve", "Show requests" or "Hide
+requests", and the value is the count. Pass `accessibilityLabel` / `accessibilityValue` for a
+localized, fuller reading ("Block johndoe", "3 votes"). The default value adds "Sending" while
+`.busy` ("Loading" on an expand pill); a host value is read as given, so a busy host says "sending"
+in its own words (DashUIKit ships no translations). Counts use the digits of the view's `locale`. Selected pills carry the selected trait.

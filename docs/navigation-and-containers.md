@@ -253,6 +253,45 @@ more than one colour keeps them, since a template flattens everything to a singl
 
 ---
 
+## FilterBar
+
+File `Components/FilterBar.swift`
+
+The bottom bar of a filtered list: a 30pt filled-blue round button with the `filter-s` icon (`DashIcon.Common.filterS`),
+and a centred two-line caption, "Filtered by" over the active filter. Tapping the button or
+the caption calls `action`.
+
+```swift
+List { … }
+    .safeAreaInset(edge: .bottom) {
+        FilterBar(value: sortName,
+                  replacement: toastMessage.map { Toast(style: .success, message: $0) }) {
+            showFilters = true
+        }
+    }
+```
+
+- `FilterBar<Replacement: View>`: `init(value: String, title: String? = nil, filterAccessibilityLabel: String? = nil, replacement: Replacement?, action: @escaping () -> Void)`
+- `init(value: String, title: String? = nil, filterAccessibilityLabel: String? = nil, action: @escaping () -> Void)` — no replacement.
+
+`value` should not be empty. `title` replaces "Filtered by" (DashUIKit ships no translations, so a
+localized host passes its own), and `filterAccessibilityLabel` replaces "Filters".
+
+Layout: three columns, 40pt | flexible | 40pt, with 14pt gaps and 20pt side padding, in a
+50pt row (the filter button's tap target is 44pt tall) plus 4pt on top, on
+`secondaryBackground`. The caption is `.caption1`,
+"Filtered by" in `tertiaryText` and the value in `primaryText`, each on one line, cut at the tail.
+The bar adds no home-indicator space: in `.safeAreaInset(edge: .bottom)` the system inset
+provides it.
+
+`replacement` is shown in the centre column in place of the caption while it is non-nil, with
+a fade, so a confirming `Toast` and the caption never overlap. To fade one toast into the next,
+give each its own `.id` and change it inside `withAnimation`; otherwise the text swaps in place. VoiceOver, Switch Control and Full
+Keyboard Access reach the bar through one button, "Filters", whose value is the caption (title, then value) (the
+caption's own tap area is hidden from them, being the same action). The replacement keeps its own element.
+
+---
+
 ## MenuViewModifier
 
 File `ViewModifiers/MenuViewModifier.swift`

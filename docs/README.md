@@ -14,7 +14,7 @@ and callbacks; they render and report intent. They require `import DashUIKit` an
   bundle access.
 - **[Buttons & inputs](buttons-and-inputs.md)** — `DashButton`, `DashSwitch`, `SwitchView`,
   `SearchBar`, `AddressFieldView`, `Criteria`, `SimpleSelect`, `SegmentedControl`,
-  `NumericKeyboardView`.
+  `NumericKeyboardView`, `VotePill`.
 - **[Amount & currency](amount-and-currency.md)** — `EnterAmountView`, `SwapAmountView`,
   `ReceiveEstimateView`, `DashAmount`, `DashBalanceView`, `DashPickerView`,
   `CurrencyOption`.
@@ -22,7 +22,7 @@ and callbacks; they render and report intent. They require `import DashUIKit` an
   `ConverterCard`, `TransactionView`, `RadioButtonRow`, `List1View`, `List8View`.
 - **[Navigation & containers](navigation-and-containers.md)** — `NavigationBar`,
   `NavigationBarElement`, `NavigationBarCircleButton`, `NavigationBarCircleMenu`,
-  `NavigationBarCircleIcon`, `TopIntroView`, `BottomSheet`, `MenuViewModifier`.
+  `NavigationBarCircleIcon`, `TopIntroView`, `BottomSheet`, `FilterBar`, `MenuViewModifier`.
 - **[Feedback](feedback.md)** — `Toast`, `SystemMessageView`,
   `LoadingIllustration` / `LoadingSpinner`, `SuccessIllustration`, `ErrorIllustration`,
   `XmarkIcon`, `CheckmarkIcon`, `ChevronIcon`, `InfoRoundIcon`.
@@ -56,6 +56,7 @@ and callbacks; they render and report intent. They require `import DashUIKit` an
 | `DashTextStyle` / `.dashFont` / `Font.dash.*` | [Foundation](foundation.md#typography) |
 | `EnterAmountView` (`EnterAmountStyle`) | [Amount & currency](amount-and-currency.md#enteramountview) |
 | `ErrorIllustration` | [Feedback](feedback.md#successillustration--errorillustration) |
+| `FilterBar` | [Navigation & containers](navigation-and-containers.md#filterbar) |
 | `List1View` | [Lists & rows](lists-and-rows.md#list1view) |
 | `List8View` | [Lists & rows](lists-and-rows.md#list8view) |
 | `LoadingIllustration` / `LoadingSpinner` | [Feedback](feedback.md#loadingillustration--loadingspinner) |
@@ -81,6 +82,7 @@ and callbacks; they render and report intent. They require `import DashUIKit` an
 | `Toast` (`ToastStyle`) | [Feedback](feedback.md#toast) |
 | `TopIntroView` | [Navigation & containers](navigation-and-containers.md#topintroview) |
 | `TransactionView` | [Lists & rows](lists-and-rows.md#transactionview) |
+| `VotePill` | [Buttons & inputs](buttons-and-inputs.md#votepill) |
 | `XmarkIcon` | [Feedback](feedback.md#xmarkicon) |
 | `CheckmarkIcon` | [Feedback](feedback.md#checkmarkicon) |
 | `ChevronIcon` | [Feedback](feedback.md#chevronicon) |
