@@ -58,6 +58,26 @@ final class VotePillTests: XCTestCase {
         XCTAssertFalse(pill(.expand(isExpanded: true), isSelected: true).showsSelected)
     }
 
+    /// Only an enabled status lets the pill take taps, so a vote in flight
+    /// cannot be sent twice.
+    func testOnlyAnEnabledStatusAllowsTaps() {
+        XCTAssertTrue(pill(.approve).statusAllowsTaps)
+        XCTAssertTrue(pill(.approve, isSelected: true).statusAllowsTaps)
+        XCTAssertFalse(pill(.approve, status: .busy).statusAllowsTaps)
+        XCTAssertFalse(pill(.block, status: .disabled).statusAllowsTaps)
+    }
+
+    /// Every status × ancestor case: the pill fades for its own `.disabled` and
+    /// for any disabled ancestor; a busy pill keeps its look only on its own.
+    func testFadeFollowsStatusAndADisabledAncestor() {
+        XCTAssertFalse(VotePill.isFaded(status: .enabled, environmentEnabled: true))
+        XCTAssertFalse(VotePill.isFaded(status: .busy, environmentEnabled: true))
+        XCTAssertTrue(VotePill.isFaded(status: .disabled, environmentEnabled: true))
+        XCTAssertTrue(VotePill.isFaded(status: .enabled, environmentEnabled: false))
+        XCTAssertTrue(VotePill.isFaded(status: .busy, environmentEnabled: false))
+        XCTAssertTrue(VotePill.isFaded(status: .disabled, environmentEnabled: false))
+    }
+
     private let en = Locale(identifier: "en_US")
 
     private func pill(

@@ -39,6 +39,27 @@ final class FilterBarLayoutTests: XCTestCase {
         XCTAssertEqual(height(of: bar), 54, accuracy: 0.5)
     }
 
+    /// A message far wider than the centre column stays on one line, so the
+    /// bar does not grow when it shows.
+    func testKeepsItsHeightWithALongReplacement() {
+        let bar = FilterBar(
+            value: "New to old",
+            replacement: Toast(
+                style: .success,
+                message: "Voted averyveryverylongusername_2026 username on every request")) {}
+        XCTAssertEqual(height(of: bar), 54, accuracy: 0.5)
+    }
+
+    /// A custom replacement taller than the row is cut, not grown into.
+    func testKeepsItsHeightWithATallCustomReplacement() {
+        let tall = VStack {
+            Text(verbatim: "First line")
+            Text(verbatim: "Second line")
+            Text(verbatim: "Third line")
+        }
+        XCTAssertEqual(height(of: FilterBar(value: "New to old", replacement: tall) {}), 54, accuracy: 0.5)
+    }
+
     private func height(of view: some View) -> CGFloat {
         UIHostingController(rootView: view).sizeThatFits(in: screen).height
     }

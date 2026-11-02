@@ -35,9 +35,11 @@ import SwiftUI
 /// `.safeAreaInset(edge: .bottom)`, the system inset provides it.
 ///
 /// `replacement` takes the place of the caption while it is non-nil, for
-/// example a `Toast` confirming an action, so the two never overlap. Showing
-/// and hiding it fades. To fade one replacement into the next, give each its
-/// own `.id` and change it inside `withAnimation`:
+/// example a `Toast` confirming an action, so the two never overlap. It gets the
+/// caption's 44 pt row and is clipped to it; its text gets a one-line default
+/// (shrunk a little, then cut at the tail), so keep it short, with what
+/// matters first. Showing and hiding it fades. To fade one replacement into
+/// the next, give each its own `.id` and change it inside `withAnimation`:
 ///
 /// ```swift
 /// FilterBar(value: sortName,
@@ -71,12 +73,16 @@ public struct FilterBar<Replacement: View>: View {
 
     private var hasReplacement: Bool { replacement != nil }
 
+    /// The row every column shares: the filter button's tap target and the
+    /// centre column the caption or replacement lives in.
+    static var rowHeight: CGFloat { 44 }
+
     public var body: some View {
         HStack(spacing: 14) {
             Button(action: action) {
                 filterCircle
                     // 40 pt column, 44 pt tall tap target around the 30 pt circle.
-                    .frame(width: 40, height: 44)
+                    .frame(width: 40, height: Self.rowHeight)
                     .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
@@ -91,13 +97,17 @@ public struct FilterBar<Replacement: View>: View {
             ZStack {
                 if let replacement {
                     replacement
+                        // One line, so a toast's message fits the row: it
+                        // shrinks a little before it is cut.
+                        .lineLimit(1)
+                        // 13 pt shrinks to 11 pt at most, the smallest legible size.
+                        .minimumScaleFactor(0.85)
                         .transition(.opacity)
                 } else {
                     Button(action: action) {
                         caption
-                            // The whole centre column, not just the text, answers
-                            // taps: the row's full 44 pt, never more.
-                            .frame(maxWidth: .infinity, minHeight: 44)
+                            // The whole centre column, not just the text, answers taps.
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
                             .contentShape(Rectangle())
                     }
                     .buttonStyle(.plain)
@@ -106,7 +116,13 @@ public struct FilterBar<Replacement: View>: View {
                     .transition(.opacity)
                 }
             }
+            // The row's 44 pt whatever is in it, so a replacement taller than
+            // the caption cannot grow the bar and shift the list above it.
             .frame(maxWidth: .infinity)
+            .frame(height: Self.rowHeight)
+            .clipped()
+            // Clipping hides the overflow; this keeps it from taking taps too.
+            .contentShape(Rectangle())
             .animation(.easeInOut(duration: 0.2), value: hasReplacement)
 
             Color.clear
@@ -208,6 +224,14 @@ private struct FilterBarPreview<Replacement: View>: View {
     FilterBarPreview(bar: FilterBar(
         value: "New to old",
         replacement: Toast(style: .success, message: "Voted johndoe username")) {})
+}
+
+#Preview("With a long toast") {
+    FilterBarPreview(bar: FilterBar(
+        value: "New to old",
+        replacement: Toast(
+            style: .success,
+            message: "Voted averyveryverylongusername_2026 username on every request")) {})
 }
 
 #Preview("With a toast, dark") {

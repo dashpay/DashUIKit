@@ -70,6 +70,10 @@ public struct VotePill: View {
     let action: () -> Void
 
     @Environment(\.locale) private var locale
+    /// `false` when an ancestor is `.disabled`. Read here, above the pill's own
+    /// `.disabled`, so it reflects the ancestor only. The pill's button style
+    /// draws no disabled look, so the fade has to follow this too.
+    @Environment(\.isEnabled) private var isEnabled
 
     /// `isSelected` draws the filled look (the user's own vote). It has no effect
     /// on an `.expand` pill.
@@ -102,9 +106,9 @@ public struct VotePill: View {
                 .padding(.vertical, -2)
         }
         // Its own style: the system plain style dims a disabled label on top
-        // of the pill's 40% fade, and would grey out the busy spinner.
+        // of the pill's own fade, and would grey out the busy spinner.
         .buttonStyle(VotePillButtonStyle())
-        .disabled(status != .enabled)
+        .disabled(!statusAllowsTaps)
         .accessibilityLabel(Text(resolvedAccessibilityLabel))
         .accessibilityValue(Text(resolvedAccessibilityValue))
         .accessibilityAddTraits(showsSelected ? .isSelected : [])
@@ -127,9 +131,7 @@ public struct VotePill: View {
         .frame(minWidth: 70, minHeight: 40)
         .background(backgroundColor)
         .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
-        // Disabled keeps the pill's own colours, faded. The tinted-disabled
-        // button tokens lose the count against the dark background.
-        .opacity(status == .disabled ? 0.4 : 1)
+        .opacity(Self.isFaded(status: status, environmentEnabled: isEnabled) ? Self.disabledOpacity : 1)
     }
 
     @ViewBuilder
@@ -175,6 +177,23 @@ public struct VotePill: View {
     private var showsCount: Bool {
         if case .expand = kind { return false }
         return true
+    }
+
+    /// Whether the pill's own status lets it take taps: a busy one must not
+    /// send the same vote twice, a disabled one cannot vote at all. A disabled
+    /// ancestor blocks taps on top of this, as for any SwiftUI control.
+    var statusAllowsTaps: Bool { status == .enabled }
+
+    /// A disabled pill keeps its own colours at this opacity. The tinted-disabled
+    /// button tokens lose the count against the dark background.
+    static let disabledOpacity: Double = 0.4
+
+    /// Faded when the pill is disabled, or when an ancestor disabled it — the
+    /// pill's button style replaces the system dimming, so it fades itself. A
+    /// busy pill fades with a disabled ancestor too, so a frozen row reads as
+    /// frozen; on its own it keeps its look, its spinner saying why.
+    static func isFaded(status: Status, environmentEnabled: Bool) -> Bool {
+        status == .disabled || !environmentEnabled
     }
 
     /// The filled look: `isSelected` on a vote kind.
@@ -344,6 +363,11 @@ private struct VotePillPreviewRow: View {
 #Preview("Accessibility XXL") {
     VotePillPreviewGrid()
         .dynamicTypeSize(.accessibility3)
+}
+
+#Preview("Inside a disabled ancestor") {
+    VotePillPreviewGrid()
+        .disabled(true)
 }
 
 #Preview("Right to left") {

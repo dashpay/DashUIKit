@@ -386,7 +386,8 @@ VotePill(kind: .expand(isExpanded: isExpanded)) { isExpanded.toggle() }
   chevron, no count).
 - `isSelected`: the filled look with white content, the user's own vote. No effect on `.expand`.
 - `Status`: `.enabled`, `.busy` (a spinner replaces the icon, the count stays), `.disabled` (the
-  pill's look at 40% opacity). `.busy` and `.disabled` ignore taps. Selection and status combine,
+  pill's look at 40% opacity). `.busy` and `.disabled` ignore taps.
+  A pill inside a `.disabled` ancestor fades the same way, busy or not. Selection and status combine,
   so a vote in flight or a closed vote still shows whose vote it is.
 
 The pill is at least 70×40pt, with 14pt continuous corners and 8/4pt padding. The count is

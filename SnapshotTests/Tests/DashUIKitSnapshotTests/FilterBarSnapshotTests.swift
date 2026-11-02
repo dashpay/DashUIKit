@@ -40,5 +40,16 @@ final class FilterBarSnapshotTests: XCTestCase {
         ) {}
         try assertComponentSnapshots(of: bar, named: "replacement")
     }
+
+    /// A message wider than the centre column shrinks, then is cut on one line.
+    func testLongReplacement() throws {
+        let bar = FilterBar(
+            value: "New to old",
+            replacement: Toast(
+                style: .success,
+                message: "Voted averyveryverylongusername_2026 username on every request")
+        ) {}
+        try assertComponentSnapshots(of: bar, named: "long-replacement")
+    }
 }
 #endif

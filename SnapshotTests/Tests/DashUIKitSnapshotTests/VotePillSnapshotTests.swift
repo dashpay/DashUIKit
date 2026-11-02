@@ -43,6 +43,17 @@ final class VotePillSnapshotTests: XCTestCase {
         try assertComponentSnapshots(of: view, named: "states", background: .dash.secondaryBackground)
     }
 
+    /// Inside a disabled ancestor every pill fades, busy or not.
+    func testInsideADisabledAncestor() throws {
+        let view = HStack(spacing: 10) {
+            VotePill(kind: .block, count: 1, isSelected: true) {}
+            VotePill(kind: .approve, count: 12, status: .busy) {}
+            VotePill(kind: .expand(isExpanded: false)) {}
+        }
+        .disabled(true)
+        try assertComponentSnapshots(of: view, named: "disabled-ancestor", background: .dash.secondaryBackground)
+    }
+
     /// Counts that need the most room: three digits fill the 70 pt pill, four and
     /// more collapse to "999+", a few points wider.
     func testLargeCounts() throws {

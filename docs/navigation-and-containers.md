@@ -284,11 +284,20 @@ Layout: three columns, 40pt | flexible | 40pt, with 14pt gaps and 20pt side padd
 The bar adds no home-indicator space: in `.safeAreaInset(edge: .bottom)` the system inset
 provides it.
 
-`replacement` is shown in the centre column in place of the caption while it is non-nil, with
-a fade, so a confirming `Toast` and the caption never overlap. To fade one toast into the next,
-give each its own `.id` and change it inside `withAnimation`; otherwise the text swaps in place. VoiceOver, Switch Control and Full
-Keyboard Access reach the bar through one button, "Filters", whose value is the caption (title, then value) (the
-caption's own tap area is hidden from them, being the same action). The replacement keeps its own element.
+`replacement` is shown in the centre column in place of the caption while it is non-nil, with a
+fade, so a confirming `Toast` and the caption never overlap. To fade one toast into the next, give
+each its own `.id` and change it inside `withAnimation`; otherwise the text swaps in place.
+
+The replacement gets the caption's 44pt row, is clipped to it and takes no taps outside it, so the
+bar keeps its height whatever is passed. The bar sets a one-line default for every `Text` in it
+(`.lineLimit(1)`, shrinking to 85% — 11pt for a toast — before it is cut at the tail), which a
+replacement's own `.lineLimit` overrides: keep a toast's message short, with what matters first. A
+custom replacement must fit the 44pt row itself. Announcing a toast to VoiceOver stays
+the host's job, as for any `Toast` (see [Feedback](feedback.md#toast)).
+
+VoiceOver, Switch Control and Full Keyboard Access reach the bar through one button, "Filters",
+whose value is the caption (title, then value); the caption's own tap area is hidden from them,
+being the same action. The replacement keeps its own element.
 
 ---
 
