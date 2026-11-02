@@ -21,11 +21,20 @@ public struct TopIntroView: View {
     private let title: String
     private let mainDescription: String?
     private let secondaryDescription: String?
+    private let descriptionColor: Color
 
-    public init(title: String, mainDescription: String? = nil, secondaryDescription: String? = nil) {
+    /// A title with up to two descriptions. `descriptionColor` colours both
+    /// descriptions; the title is always `primaryText`.
+    public init(
+        title: String,
+        mainDescription: String? = nil,
+        secondaryDescription: String? = nil,
+        descriptionColor: Color = Color.dash.primaryText
+    ) {
         self.title = title
         self.mainDescription = mainDescription
         self.secondaryDescription = secondaryDescription
+        self.descriptionColor = descriptionColor
     }
 
     public var body: some View {
@@ -40,7 +49,7 @@ public struct TopIntroView: View {
             if let mainDescription {
                 Text(mainDescription)
                     .dashFont(.subhead)
-                    .foregroundStyle(Color.dash.primaryText)
+                    .foregroundStyle(descriptionColor)
             }
 
 
@@ -49,7 +58,7 @@ public struct TopIntroView: View {
             if let secondaryDescription {
                 Text(secondaryDescription)
                     .dashFont(.subhead)
-                    .foregroundStyle(Color.dash.primaryText)
+                    .foregroundStyle(descriptionColor)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -57,3 +66,24 @@ public struct TopIntroView: View {
         .padding(.bottom, 10)
     }
 }
+
+#if DEBUG
+
+#Preview("Primary descriptions") {
+    TopIntroView(
+        title: "Confirm details",
+        mainDescription: "Review the amount before continuing.",
+        secondaryDescription: "You can always go back and edit it.")
+        .padding(.horizontal, 20)
+}
+
+#Preview("Secondary descriptions") {
+    TopIntroView(
+        title: "Username Voting",
+        mainDescription: "As a masternode owner you can vote to approve requested usernames before users will be able to create it.",
+        secondaryDescription: "You can block the creation of the usernames that you feel inappropriate.",
+        descriptionColor: Color.dash.secondaryText)
+        .padding(.horizontal, 20)
+}
+
+#endif

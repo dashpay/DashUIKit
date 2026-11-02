@@ -106,6 +106,17 @@ TopIntroView(
 
 Use it for screen headers that sit above the main content rather than inside a nav bar.
 
+The title is always `primaryText`; both descriptions are too unless `descriptionColor`
+sets another token:
+
+```swift
+TopIntroView(
+    title: "Username Voting",
+    mainDescription: "As a masternode owner you can vote to approve requested usernames…",
+    descriptionColor: .dash.secondaryText
+)
+```
+
 ---
 
 ## BottomSheet
