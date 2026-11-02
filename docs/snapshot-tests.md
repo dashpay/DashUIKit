@@ -40,7 +40,19 @@ Covered: `DashButton` (every style and size, enabled and disabled, icons, full w
 `MenuItem`, `Toast` (every style but `.loading`, whose spinner animates on a timer), `SwitchView`, `NavigationBar`, `BottomSheet` and `SheetFeature`,
 `SearchBar`, `TransactionView`, `SegmentedControl` (text and icon, each selection position of three segments,
 right to left, a taller container, a narrow width, a selection that matches no option),
-`NumericKeyboardView` (not `inProgress`, whose button spinner animates). Every render is pinned to the Large text size, the
+`NumericKeyboardView` (including `inProgress`), `VotePill`, `FilterBar`,
+`AddressFieldView` (unfocused only: focus needs a key window), `CoinSelector`, `ConverterCard`
+(including a top row taller than the height it assumes before measuring), `Criteria`,
+`DashAmount`, `DashBalanceView`, `DashSwitch` (the track; the system thumb is a visual effect
+and is not drawn), `EnterAmountView` (both styles, at rest), `SwapAmountView`, `DashPickerView`,
+`RadioButtonRow`, `ReceiveEstimateView`, `SimpleSelect`, `SystemMessageView`, `TopIntroView`,
+`List1View`, `List8View`, `MenuViewModifier`, `NavigationBarCircleIcon`,
+`NavigationBarCircleButton`, `NavigationBarCircleMenu` (its label; the open menu is system UI),
+`SuccessIllustration`, `ErrorIllustration` and the code-drawn icons (`XmarkIcon`,
+`CheckmarkIcon`, `ChevronIcon`, `InfoRoundIcon`). `LoadingIllustration` and `LoadingSpinner` stay
+out: they animate on a timer, which moves them while the image is taken. A `ProgressView` spinner
+(`VotePill` busy, `Criteria` checking, `ReceiveEstimateView` loading, the `NumericKeyboardView`
+action button in progress) is drawn from the layer tree as one still frame, so it is covered. Every render is pinned to the Large text size, the
 simulator default. The type tokens are fixed sizes (`Font.system(size:)`), but SF Symbols
 and text that take the default font (the `DashButton` icons) scale, and no reference
 covers a larger text size.
@@ -57,7 +69,7 @@ on the `iPhone 17` simulator of the newest runtime it can run, so code that read
 size renders the same every time), and compared only on that environment:
 
 - `ReferenceEnvironment` in `SnapshotSupport.swift` names it: the simulator runtime's
-  version and build, the text direction, and how the locale writes 1234.5 (amounts use
+  version and build, the text direction, and the locale and how it writes 1234.5 (amounts and currency symbols use
   `Locale.current`; the job runs with `-testLanguage en -testRegion US`). The device model
   is not part of it, only that it is an iPhone: width and scale are fixed, so the covered
   components render the same pixels on another iPhone of the same runtime (an iPhone 17 Pro
