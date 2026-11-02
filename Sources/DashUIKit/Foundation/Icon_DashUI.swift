@@ -53,6 +53,7 @@ public enum DashIcon {
         case chevronDownCurrencySelect = "chevron-down-currency-select"
         case diagonalUpDown = "diagonal-up-down"
         case enterAmountDash = "enter-amount-dash"
+        case filterS = "filter-s"
         case iconDashCurrency = "icon_dash_currency"
         case illustrationXmark = "illustration-xmark"
     }
@@ -248,6 +249,12 @@ public enum DashIcon {
         case noWifi = "toast-no-wifi"
         case success = "toast-success"
         case warning = "toast-warning"
+    }
+
+    // MARK: - Voting
+    /// `Voting`
+    public enum Voting: String, CaseIterable, DashIconAsset {
+        case thumbUp = "voting-thumb-up"
     }
 
     // MARK: - Other

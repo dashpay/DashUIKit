@@ -37,6 +37,7 @@ final class DashIconTests: XCTestCase {
         assertResolves(DashIcon.NavigationBar.self)
         assertResolves(DashIcon.SystemMessage.self)
         assertResolves(DashIcon.Toast.self)
+        assertResolves(DashIcon.Voting.self)
         assertResolves(DashIcon.Other.self)
         assertResolves(DashIcon.AdditionalInfo.self)
         assertResolves(DashIcon.Transaction.self)

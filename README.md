@@ -73,6 +73,7 @@ a component already exists before building your own.
 | `Criteria` | Requirement check-list — `Criterion` rows in six states | [Buttons & inputs](docs/buttons-and-inputs.md) |
 | `SegmentedControl` | Sliding-pill segmented control, text-only or with icons | [Buttons & inputs](docs/buttons-and-inputs.md) |
 | `NumericKeyboardView` | Locale-aware on-screen number pad with action button | [Buttons & inputs](docs/buttons-and-inputs.md) |
+| `VotePill` | Vote count + thumb (block / approve) or expand chevron; idle, selected, busy, disabled | [Buttons & inputs](docs/buttons-and-inputs.md) |
 | `EnterAmountView` | Amount-entry screen control — single & dual-swap modes | [Amount & currency](docs/amount-and-currency.md) |
 | `SwapAmountView` | Animated primary/secondary amount display | [Amount & currency](docs/amount-and-currency.md) |
 | `DashAmount` | Renders a duffs `Int64` as a formatted Dash amount + symbol | [Amount & currency](docs/amount-and-currency.md) |
@@ -88,6 +89,7 @@ a component already exists before building your own.
 | `NavigationBarCircleButton` / `NavigationBarCircleMenu` | Bar button / menu in the nav circle, for actions with no bundled element | [Navigation & containers](docs/navigation-and-containers.md) |
 | `NavigationBarCircleIcon` | The nav bar's 34pt token circle around any icon | [Navigation & containers](docs/navigation-and-containers.md) |
 | `BottomSheet` | Sheet chrome (grabber + nav bar) with self-sizing support | [Navigation & containers](docs/navigation-and-containers.md) |
+| `FilterBar` | Bottom "Filtered by" bar with a round filter button; a toast can take the caption's place | [Navigation & containers](docs/navigation-and-containers.md) |
 | `MenuViewModifier` | Card chrome — rounded background + shadow | [Navigation & containers](docs/navigation-and-containers.md) |
 | `Toast` | Blurred toast — warning/info/error/success/copied/loading/noInternet; optional VoiceOver label | [Feedback](docs/feedback.md) |
 | `LoadingIllustration` / `LoadingSpinner` | iOS-style activity spinner | [Feedback](docs/feedback.md) |
