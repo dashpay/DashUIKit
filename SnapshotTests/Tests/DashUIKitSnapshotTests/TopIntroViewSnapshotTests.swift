@@ -25,6 +25,7 @@ final class TopIntroViewSnapshotTests: XCTestCase {
     private let main = "As a masternode owner you can vote to approve requested usernames before users will be able to create it."
     private let secondary = "You can block the creation of the usernames that you feel inappropriate."
 
+    /// Both descriptions in the default `primaryText`.
     func testDefaultColor() throws {
         let intro = TopIntroView(title: title, mainDescription: main, secondaryDescription: secondary)
         try assertComponentSnapshots(of: intro, named: "default")

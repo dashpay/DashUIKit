@@ -106,8 +106,11 @@ TopIntroView(
 
 Use it for screen headers that sit above the main content rather than inside a nav bar.
 
-The title is always `primaryText`; both descriptions are too unless `descriptionColor`
-sets another token:
+- `init(title:mainDescription:secondaryDescription:)` — both descriptions in `primaryText`.
+- `init(title:mainDescription:secondaryDescription:descriptionColor:)` — both descriptions in
+  `descriptionColor`, a `Color.dash` text token so the intro stays on the design palette.
+
+The title is always `primaryText`:
 
 ```swift
 TopIntroView(

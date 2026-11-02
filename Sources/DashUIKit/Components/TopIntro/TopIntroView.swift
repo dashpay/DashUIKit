@@ -17,19 +17,31 @@
 
 import SwiftUI
 
+/// A screen's intro above its content: a title and up to two descriptions.
+/// The title is always `primaryText`; the descriptions are too unless the
+/// host passes another `Color.dash` text token.
 public struct TopIntroView: View {
     private let title: String
     private let mainDescription: String?
     private let secondaryDescription: String?
     private let descriptionColor: Color
 
-    /// A title with up to two descriptions. `descriptionColor` colours both
-    /// descriptions; the title is always `primaryText`.
+    /// Both descriptions in `primaryText`.
+    public init(title: String, mainDescription: String? = nil, secondaryDescription: String? = nil) {
+        self.init(
+            title: title,
+            mainDescription: mainDescription,
+            secondaryDescription: secondaryDescription,
+            descriptionColor: Color.dash.primaryText)
+    }
+
+    /// Both descriptions in `descriptionColor`: a `Color.dash` text token such
+    /// as `secondaryText`, so the intro stays on the design palette.
     public init(
         title: String,
         mainDescription: String? = nil,
         secondaryDescription: String? = nil,
-        descriptionColor: Color = Color.dash.primaryText
+        descriptionColor: Color
     ) {
         self.title = title
         self.mainDescription = mainDescription
@@ -69,7 +81,7 @@ public struct TopIntroView: View {
 
 #if DEBUG
 
-#Preview("Primary descriptions") {
+#Preview("Primary-text descriptions") {
     TopIntroView(
         title: "Confirm details",
         mainDescription: "Review the amount before continuing.",
@@ -77,7 +89,17 @@ public struct TopIntroView: View {
         .padding(.horizontal, 20)
 }
 
-#Preview("Secondary descriptions") {
+#Preview("Title only") {
+    TopIntroView(title: "Confirm details")
+        .padding(.horizontal, 20)
+}
+
+#Preview("One description") {
+    TopIntroView(title: "Confirm details", mainDescription: "Review the amount before continuing.")
+        .padding(.horizontal, 20)
+}
+
+#Preview("Secondary-text descriptions") {
     TopIntroView(
         title: "Username Voting",
         mainDescription: "As a masternode owner you can vote to approve requested usernames before users will be able to create it.",
