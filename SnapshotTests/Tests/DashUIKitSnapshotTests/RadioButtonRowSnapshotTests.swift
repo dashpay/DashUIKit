@@ -53,5 +53,26 @@ final class RadioButtonRowSnapshotTests: XCTestCase {
         }
         try assertComponentSnapshots(of: view, named: "content")
     }
+
+    /// The highlighted title: blue on a selected radio; a checkbox keeps its colour.
+    func testHighlightedTitle() throws {
+        let view = VStack(spacing: 0) {
+            RadioButtonRow(title: "Radio selected", isSelected: true, highlightsSelectedTitle: true) {}
+            RadioButtonRow(title: "Radio unselected", isSelected: false, highlightsSelectedTitle: true) {}
+            RadioButtonRow(title: "Checkbox selected", isSelected: true, style: .checkbox, highlightsSelectedTitle: true) {}
+        }
+        try assertComponentSnapshots(of: view, named: "highlighted-title")
+    }
+
+    /// Rows inside `.disabled(true)`: the system's disabled look.
+    func testDisabled() throws {
+        let view = VStack(spacing: 0) {
+            RadioButtonRow(title: "Radio", subtitle: "Secondary text", trailingText: "-10%", isSelected: false) {}
+            RadioButtonRow(title: "With icon", icon: .system("star.fill"), isSelected: false) {}
+            RadioButtonRow(title: "Checkbox", isSelected: false, style: .checkbox) {}
+        }
+        .disabled(true)
+        try assertComponentSnapshots(of: view, named: "disabled")
+    }
 }
 #endif
