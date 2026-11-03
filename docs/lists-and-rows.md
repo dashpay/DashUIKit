@@ -163,11 +163,24 @@ RadioButtonRow(
     style: .radio,                   // .radio (default) or .checkbox
     action: { /* select */ }
 )
+
+// A list of options where the chosen one's title turns blue:
+RadioButtonRow(title: "Date: Old to new", isSelected: true, highlightsSelectedTitle: true) { }
 ```
 
 **`Style`** — `.radio` (a ring that thickens/fills blue when selected) or `.checkbox`
 (draws `DashIcon.Checkbox.checkmarkChecked` / `.checkmarkUnchecked`). Row min-height is
 60 with a subtitle, otherwise 54; the whole row is the tap target.
+
+**`highlightsSelectedTitle`** (second initializer) — a selected `.radio` row draws its title in
+`Color.dash.blue`. A checkbox title keeps its colour. The first initializer passes `false`.
+
+**Disabled** — inside `.disabled(true)` (the row's own or an ancestor's) the row takes the system's
+disabled look and ignores taps: an option the host shows but cannot
+offer yet. The indicator still follows `isSelected`, so pass `false` for such an option.
+
+**Accessibility** — the row is one button: VoiceOver reads its texts and the `isSelected` trait
+when selected. The indicator image is not read.
 
 ---
 

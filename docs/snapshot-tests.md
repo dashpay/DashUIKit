@@ -41,7 +41,7 @@ Covered: `DashButton` (every style and size, enabled and disabled, icons, full w
 `SearchBar`, `TransactionView`, `SegmentedControl` (text and icon, each selection position of three segments,
 right to left, a taller container, a narrow width, a selection that matches no option),
 `NumericKeyboardView` (not `inProgress`, whose button spinner animates), `TopIntroView` (both description colours,
-title only, one description), `VotePill`, `FilterBar`. Every render is pinned to the Large text size, the
+title only, one description), `VotePill`, `FilterBar`, `RadioButtonRow` (styles, content, highlighted title, disabled). Every render is pinned to the Large text size, the
 simulator default. The type tokens are fixed sizes (`Font.system(size:)`), but SF Symbols
 and text that take the default font (the `DashButton` icons) scale, and no reference
 covers a larger text size.
