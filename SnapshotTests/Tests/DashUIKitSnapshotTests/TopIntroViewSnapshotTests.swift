@@ -21,19 +21,33 @@ import XCTest
 @MainActor
 final class TopIntroViewSnapshotTests: XCTestCase {
 
-    /// A title alone, with one description, and with both; the last wraps
-    /// inside the 40 pt it keeps clear on the trailing side.
-    func testContent() throws {
-        let view = VStack(spacing: 16) {
-            TopIntroView(title: "Send")
-            TopIntroView(title: "Choose a username", mainDescription: "It is how other people find you.")
-            TopIntroView(
-                title: "Recovery phrase",
-                mainDescription: "Write these 12 words down in this order and keep them somewhere safe.",
-                secondaryDescription: "Anyone who has them can spend your funds."
-            )
+    private let title = "Username Voting"
+    private let main = "As a masternode owner you can vote to approve requested usernames before users will be able to create it."
+    private let secondary = "You can block the creation of the usernames that you feel inappropriate."
+
+    /// Both descriptions in the default `primaryText`.
+    func testDefaultColor() throws {
+        let intro = TopIntroView(title: title, mainDescription: main, secondaryDescription: secondary)
+        try assertComponentSnapshots(of: intro, named: "default")
+    }
+
+    /// The shapes most screens use: a title alone, and a title with one description.
+    func testFewerDescriptions() throws {
+        let intros = VStack(alignment: .leading, spacing: 24) {
+            TopIntroView(title: title)
+            TopIntroView(title: title, mainDescription: main)
         }
-        try assertComponentSnapshots(of: view, named: "content")
+        try assertComponentSnapshots(of: intros, named: "fewer-descriptions")
+    }
+
+    /// Both descriptions take the colour; the title stays primary.
+    func testSecondaryTextDescriptions() throws {
+        let intro = TopIntroView(
+            title: title,
+            mainDescription: main,
+            secondaryDescription: secondary,
+            descriptionColor: Color.dash.secondaryText)
+        try assertComponentSnapshots(of: intro, named: "secondary-text")
     }
 }
 #endif
