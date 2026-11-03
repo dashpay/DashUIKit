@@ -32,6 +32,11 @@ enum ReferenceEnvironment {
     /// Amounts are formatted with `Locale.current`; this is 1234.5 in the
     /// reference locale's separators.
     static let number = "1,234.5"
+    /// Currency symbols come from `Locale.current` as well, and another English
+    /// region writes the same 1234.5 with a different dollar ("US$"), so the locale's
+    /// language and region are part of the environment (not the full identifier,
+    /// whose extra keywords do not change what the components draw).
+    static let locale = "en_US"
     /// Leading and trailing swap in a right-to-left language.
     static let rightToLeft = false
     /// An iPhone: an iPad lays out with a regular size class.
@@ -39,7 +44,7 @@ enum ReferenceEnvironment {
 
     /// The device model is not part of it: the width and the scale are fixed, so any
     /// iPhone renders the same pixels.
-    static let current: (iOS: String, number: String, rightToLeft: Bool, iPhone: Bool) = {
+    static let current: (iOS: String, number: String, locale: String, rightToLeft: Bool, iPhone: Bool) = {
         let environment = ProcessInfo.processInfo.environment
         let version = environment["SIMULATOR_RUNTIME_VERSION"] ?? "?"
         let build = environment["SIMULATOR_RUNTIME_BUILD_VERSION"] ?? "?"
@@ -49,6 +54,7 @@ enum ReferenceEnvironment {
         return (
             "\(version) (\(build))",
             formatter.string(from: 1234.5) ?? "",
+            "\(Locale.current.language.languageCode?.identifier ?? "?")_\(Locale.current.region?.identifier ?? "?")",
             Locale.Language(identifier: Locale.preferredLanguages.first ?? "en")
                 .characterDirection == .rightToLeft,
             environment["SIMULATOR_MODEL_IDENTIFIER"]?.hasPrefix("iPhone") == true
@@ -67,12 +73,13 @@ enum ReferenceEnvironment {
         if environment["SNAPSHOT_FORCE"] == "1" { return }
 
         let current = current
-        if current == (iOS, number, rightToLeft, iPhone) { return }
+        if current == (iOS, number, locale, rightToLeft, iPhone) { return }
 
         let message = """
-            References are rendered on iOS \(iOS), numbers as "\(number)", right-to-left \
-            \(rightToLeft), iPhone \(iPhone); this is iOS \(current.iOS), "\(current.number)", \
-            right-to-left \(current.rightToLeft), iPhone \(current.iPhone). Set SNAPSHOT_FORCE=1 to \
+            References are rendered on iOS \(iOS), numbers as "\(number)", locale \
+            \(locale), right-to-left \(rightToLeft), iPhone \(iPhone); this is iOS \
+            \(current.iOS), "\(current.number)", \(current.locale), right-to-left \
+            \(current.rightToLeft), iPhone \(current.iPhone). Set SNAPSHOT_FORCE=1 to \
             compare anyway, or update ReferenceEnvironment and re-record \
             (docs/snapshot-tests.md).
             """

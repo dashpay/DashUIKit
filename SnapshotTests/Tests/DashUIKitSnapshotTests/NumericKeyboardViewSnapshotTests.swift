@@ -26,6 +26,7 @@ final class NumericKeyboardViewSnapshotTests: XCTestCase {
         showDecimalSeparator: Bool = true,
         actionEnabled: Bool = true,
         helperText: String? = "Help text",
+        inProgress: Bool = false,
         locale: Locale = Locale(identifier: "en_US")
     ) -> some View {
         NumericKeyboardView(
@@ -34,7 +35,7 @@ final class NumericKeyboardViewSnapshotTests: XCTestCase {
             locale: locale,
             actionButtonText: "Continue",
             actionEnabled: actionEnabled,
-            inProgress: false,
+            inProgress: inProgress,
             helperText: helperText,
             actionHandler: {}
         )
@@ -68,6 +69,13 @@ final class NumericKeyboardViewSnapshotTests: XCTestCase {
 
     func testActionDisabled() throws {
         try assertComponentSnapshots(of: keyboard(actionEnabled: false), named: "action-disabled")
+    }
+
+    /// In progress: the keys fade and the action button shows its spinner in
+    /// place of the title. The spinner is drawn from the layer tree without
+    /// running its animation, so its frame is stable.
+    func testInProgress() throws {
+        try assertComponentSnapshots(of: keyboard(inProgress: true), named: "in-progress")
     }
 }
 #endif
