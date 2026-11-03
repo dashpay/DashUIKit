@@ -173,14 +173,16 @@ RadioButtonRow(title: "Date: Old to new", isSelected: true, highlightsSelectedTi
 60 with a subtitle, otherwise 54; the whole row is the tap target.
 
 **`highlightsSelectedTitle`** (second initializer) — a selected `.radio` row draws its title in
-`Color.dash.blue`. A checkbox title keeps its colour. The first initializer passes `false`.
+`Color.dash.blueText`. A checkbox title keeps its colour. The first initializer passes `false`.
 
 **Disabled** — inside `.disabled(true)` (the row's own or an ancestor's) the row takes the system's
 disabled look and ignores taps: an option the host shows but cannot
 offer yet. The indicator still follows `isSelected`, so pass `false` for such an option.
 
-**Accessibility** — the row is one button: VoiceOver reads its texts and the `isSelected` trait
-when selected. The indicator image is not read.
+**Accessibility** — the row is one button, and the indicator image is not read. A radio row has
+the `isSelected` trait when selected. A checkbox row has `isToggle`, so it is on or off to
+VoiceOver, as a system `Toggle` is. The leading `icon` is not hidden: a `.custom` icon reads its
+asset name.
 
 ---
 

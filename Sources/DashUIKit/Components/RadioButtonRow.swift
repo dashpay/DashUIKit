@@ -24,7 +24,9 @@ import SwiftUI
 /// option the host shows but cannot offer yet. The indicator still shows `isSelected`, so a
 /// disabled option is normally passed `isSelected: false`.
 ///
-/// VoiceOver reads the row's texts and its `isSelected` trait, not the indicator image.
+/// The indicator image is hidden from VoiceOver; traits carry the state instead. A radio row
+/// has `isSelected` when selected. A checkbox row has `isToggle`, so assistive technologies
+/// see it as on or off, the way they see a system `Toggle`.
 public struct RadioButtonRow: View {
 
     public enum Style {
@@ -63,7 +65,7 @@ public struct RadioButtonRow: View {
     }
 
     /// `highlightsSelectedTitle`: a selected `.radio` row draws its title in
-    /// `Color.dash.blue`, as in a list of options where the chosen one stands out.
+    /// `Color.dash.blueText`, as in a list of options where the chosen one stands out.
     /// A checkbox title keeps its colour.
     public init(
         title: String,
@@ -116,7 +118,7 @@ public struct RadioButtonRow: View {
                 }
 
                 indicator
-                    // The trait below carries the state; the image would read its asset name.
+                    // The traits below carry the state; the image would read its asset name.
                     .accessibilityHidden(true)
             }
             .padding(.horizontal, 16)
@@ -126,11 +128,19 @@ public struct RadioButtonRow: View {
         }
         // The system plain style also gives a disabled row its faded look.
         .buttonStyle(PlainButtonStyle())
-        .accessibilityAddTraits(isSelected ? .isSelected : [])
+        .accessibilityAddTraits(accessibilityTraits)
+    }
+
+    // A toggle takes its on or off value from `isSelected`, so an unchecked checkbox has a
+    // state too, not only a checked one.
+    private var accessibilityTraits: AccessibilityTraits {
+        var traits: AccessibilityTraits = style == .checkbox ? .isToggle : []
+        if isSelected { traits.insert(.isSelected) }
+        return traits
     }
 
     private var titleColor: Color {
-        if highlightsSelectedTitle && isSelected && style == .radio { return Color.dash.blue }
+        if highlightsSelectedTitle && isSelected && style == .radio { return Color.dash.blueText }
         return Color.dash.primaryText
     }
 
