@@ -37,7 +37,7 @@ change fails when it moves a colour by more than ΔE 2, about the smallest diffe
 sees.
 
 Covered: `DashButton` (every style and size, enabled and disabled, icons, full width),
-`MenuItem`, `Toast` (every style but `.loading`, whose spinner animates on a timer), `SwitchView`, `NavigationBar`, `BottomSheet` and `SheetFeature`,
+`MenuItem`, `Toast` (every style but `.loading`, whose spinner animates on a timer, and the action button), `SwitchView`, `NavigationBar`, `BottomSheet` and `SheetFeature`,
 `SearchBar`, `TransactionView`, `SegmentedControl` (text and icon, each selection position of three segments,
 right to left, a taller container, a narrow width, a selection that matches no option),
 `NumericKeyboardView` (including `inProgress`), `VotePill`, `FilterBar`,
