@@ -9,14 +9,28 @@ Status, progress, and notification visuals.
 File `Components/Toast.swift` · **UIKit only**
 (`#if canImport(UIKit)`)
 
-A blurred, rounded toast: leading status icon, message, and an optional dismiss (✕)
-button. Background is a `systemUltraThinMaterialDark` blur under `Color.dash.toastBackground`.
+A blurred, rounded toast: leading status icon, message, an optional action button and an
+optional dismiss (✕) button. Background is a `systemUltraThinMaterialDark` blur under `Color.dash.toastBackground`.
 
 ```swift
 Toast(
     style: .success,
     message: "Done",
     onDismiss: { /* hide */ }   // nil → no dismiss button
+)
+```
+
+**Action** — `action: (title:, handler:)` adds a small button ("Try again") before the
+dismiss button; `nil` (the default) draws the toast as before. The title is shown as given,
+so pass a localized string. A long message wraps and the button keeps its size. VoiceOver
+reads it as a button, a stop of its own after the message.
+
+```swift
+Toast(
+    style: .error,
+    message: couldNotRefresh,
+    action: (title: tryAgain, handler: { /* retry */ }),
+    onDismiss: { /* hide */ }
 )
 ```
 

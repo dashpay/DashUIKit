@@ -41,5 +41,26 @@ final class ToastSnapshotTests: XCTestCase {
         }
         try assertComponentSnapshots(of: view, named: "styles", background: .dash.blue)
     }
+
+    /// The optional action button: alone, next to the close button, and with a
+    /// message long enough to wrap while the button keeps its size.
+    func testAction() throws {
+        let view = VStack(spacing: 12) {
+            Toast(style: .error, message: "Couldn't refresh.", action: (title: "Try again", handler: {}))
+            Toast(
+                style: .error,
+                message: "Couldn't refresh.",
+                action: (title: "Try again", handler: {}),
+                onDismiss: {}
+            )
+            Toast(
+                style: .warning,
+                message: "Couldn't read your vote history. Voting is paused until it loads.",
+                action: (title: "Try again", handler: {}),
+                onDismiss: {}
+            )
+        }
+        try assertComponentSnapshots(of: view, named: "action", background: .dash.blue)
+    }
 }
 #endif

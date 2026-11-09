@@ -55,14 +55,24 @@ public struct Toast: View {
     private let style: ToastStyle
     private let message: String
     private let accessibilityLabel: Text
+    private let action: (title: String, handler: () -> Void)?
     private let onDismiss: (() -> Void)?
 
+    /// `action` adds a small button before the close button ("Try again"); its
+    /// `title` is shown as given, so the host localizes it.
     public init(
         style: ToastStyle,
         message: String,
+        action: (title: String, handler: () -> Void)? = nil,
         onDismiss: (() -> Void)? = nil
     ) {
-        self.init(style: style, message: message, accessibilityLabel: Text(message), onDismiss: onDismiss)
+        self.init(
+            style: style,
+            message: message,
+            accessibilityLabel: Text(message),
+            action: action,
+            onDismiss: onDismiss
+        )
     }
 
     /// `accessibilityLabel` is what VoiceOver reads instead of `message`, for a
@@ -74,11 +84,13 @@ public struct Toast: View {
         style: ToastStyle,
         message: String,
         accessibilityLabel: Text,
+        action: (title: String, handler: () -> Void)? = nil,
         onDismiss: (() -> Void)? = nil
     ) {
         self.style = style
         self.message = message
         self.accessibilityLabel = accessibilityLabel
+        self.action = action
         self.onDismiss = onDismiss
     }
 
@@ -99,16 +111,38 @@ public struct Toast: View {
             }
             .padding(.trailing, 8)
 
-            if let onDismiss {
+            if action != nil || onDismiss != nil {
                 Spacer(minLength: 10)
 
-                Button(action: onDismiss) {
-                    XmarkIcon(color: Color.dash.toastText)
-                        .padding(8)
-                        .background(Circle().fill(Color.dash.whiteAlpha10))
+                HStack(alignment: .top, spacing: 8) {
+                    if let action {
+                        Button(action: action.handler) {
+                            Text(action.title)
+                                .dashFont(.caption1Medium)
+                                .foregroundStyle(Color.dash.toastText)
+                                .lineLimit(1)
+                                .padding(.vertical, 4)
+                                .padding(.horizontal, 8)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 9, style: .continuous)
+                                        .fill(Color.dash.whiteAlpha10)
+                                )
+                        }
+                        .buttonStyle(.plain)
+                        // A long message wraps; the button keeps its size.
+                        .fixedSize()
+                    }
+
+                    if let onDismiss {
+                        Button(action: onDismiss) {
+                            XmarkIcon(color: Color.dash.toastText)
+                                .padding(8)
+                                .background(Circle().fill(Color.dash.whiteAlpha10))
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityLabel(Text(NSLocalizedString("Close", bundle: .module, comment: "DashUIKit")))
+                    }
                 }
-                .buttonStyle(.plain)
-                .accessibilityLabel(Text(NSLocalizedString("Close", bundle: .module, comment: "DashUIKit")))
             }
         }
         .padding(.leading, 12)
@@ -153,6 +187,21 @@ public struct Toast: View {
         Toast(style: .copied, message: "Copied to clipboard")
         Toast(style: .loading, message: "Loading…")
         Toast(style: .noInternet, message: "No internet connection")
+    }
+    .padding()
+    .background(Color.dash.blue)
+}
+
+#Preview("Action") {
+    VStack(spacing: 12) {
+        Toast(style: .error, message: "Couldn't refresh.", action: (title: "Try again", handler: {}))
+        Toast(style: .error, message: "Couldn't refresh.", action: (title: "Try again", handler: {}), onDismiss: {})
+        Toast(
+            style: .warning,
+            message: "Couldn't read your vote history. Voting is paused until it loads.",
+            action: (title: "Try again", handler: {}),
+            onDismiss: {}
+        )
     }
     .padding()
     .background(Color.dash.blue)
