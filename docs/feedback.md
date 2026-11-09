@@ -20,8 +20,8 @@ Toast(
 )
 ```
 
-**Action** — `action: (title:, handler:)` adds a small button ("Try again") before the
-dismiss button; `nil` (the default) draws the toast as before. The title is shown as given,
+**Action** — the initializers with `action: (title:, handler:)` add a small button ("Try again") before the
+dismiss button; the others draw the toast as before. The title is shown as given,
 so pass a localized string. A long message wraps and the button keeps its size. VoiceOver
 reads it as a button, a stop of its own after the message.
 

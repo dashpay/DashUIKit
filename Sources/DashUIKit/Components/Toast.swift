@@ -58,12 +58,20 @@ public struct Toast: View {
     private let action: (title: String, handler: () -> Void)?
     private let onDismiss: (() -> Void)?
 
+    public init(
+        style: ToastStyle,
+        message: String,
+        onDismiss: (() -> Void)? = nil
+    ) {
+        self.init(style: style, message: message, accessibilityLabel: Text(message), onDismiss: onDismiss)
+    }
+
     /// `action` adds a small button before the close button ("Try again"); its
     /// `title` is shown as given, so the host localizes it.
     public init(
         style: ToastStyle,
         message: String,
-        action: (title: String, handler: () -> Void)? = nil,
+        action: (title: String, handler: () -> Void),
         onDismiss: (() -> Void)? = nil
     ) {
         self.init(
@@ -84,7 +92,21 @@ public struct Toast: View {
         style: ToastStyle,
         message: String,
         accessibilityLabel: Text,
-        action: (title: String, handler: () -> Void)? = nil,
+        onDismiss: (() -> Void)? = nil
+    ) {
+        self.style = style
+        self.message = message
+        self.accessibilityLabel = accessibilityLabel
+        self.action = nil
+        self.onDismiss = onDismiss
+    }
+
+    /// The `accessibilityLabel` initializer with an action button; see the two above.
+    public init(
+        style: ToastStyle,
+        message: String,
+        accessibilityLabel: Text,
+        action: (title: String, handler: () -> Void),
         onDismiss: (() -> Void)? = nil
     ) {
         self.style = style
