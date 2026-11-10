@@ -69,6 +69,7 @@ public enum DashIcon {
     public enum Illustrations: String, CaseIterable, DashIconAsset {
         case crowdnodeWarning = "crowdnode.warning"
         case dashDex = "illustration-dash-dex"
+        case dialogueWarning = "dialogue-warning"
     }
 
     // MARK: - Features
