@@ -22,6 +22,9 @@ public struct NavigationBar<Leading: View, Central: View, Trailing: View>: View 
     private let central: Central
     private let trailing: Trailing
 
+    @State private var leadingWidth: CGFloat = 0
+    @State private var trailingWidth: CGFloat = 0
+
     public init(
         @ViewBuilder leading: () -> Leading,
         @ViewBuilder central: () -> Central,
@@ -36,16 +39,60 @@ public struct NavigationBar<Leading: View, Central: View, Trailing: View>: View 
         ZStack {
             HStack {
                 leading
+                    .background(NavigationBarWidthReader<NavigationBarLeadingWidthKey>())
 
                 Spacer()
 
                 trailing
+                    .background(NavigationBarWidthReader<NavigationBarTrailingWidthKey>())
             }
-            .padding(.horizontal, 20)
+            .padding(.horizontal, NavigationBarLayout.edgePadding)
 
+            // Centered over the full width, and inset by the wider side on both
+            // sides so a long title truncates before it reaches either control.
             central
+                .padding(.horizontal, centralInset)
         }
         .frame(maxWidth: .infinity, minHeight: 74)
+        .onPreferenceChange(NavigationBarLeadingWidthKey.self) { leadingWidth = $0 }
+        .onPreferenceChange(NavigationBarTrailingWidthKey.self) { trailingWidth = $0 }
+    }
+
+    private var centralInset: CGFloat {
+        let side = max(leadingWidth, trailingWidth)
+        guard side > 0 else { return NavigationBarLayout.edgePadding }
+        return NavigationBarLayout.edgePadding + side + NavigationBarLayout.minimumSpacing
+    }
+}
+
+// MARK: - Layout
+
+private enum NavigationBarLayout {
+    static let edgePadding: CGFloat = 20
+    /// The minimum gap between the title and a control.
+    static let minimumSpacing: CGFloat = 10
+}
+
+private struct NavigationBarLeadingWidthKey: PreferenceKey {
+    static let defaultValue: CGFloat = 0
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+        value = max(value, nextValue())
+    }
+}
+
+private struct NavigationBarTrailingWidthKey: PreferenceKey {
+    static let defaultValue: CGFloat = 0
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+        value = max(value, nextValue())
+    }
+}
+
+/// Reports the laid-out width of the slot it backs.
+private struct NavigationBarWidthReader<Key: PreferenceKey>: View where Key.Value == CGFloat {
+    var body: some View {
+        GeometryReader { proxy in
+            Color.clear.preference(key: Key.self, value: proxy.size.width)
+        }
     }
 }
 
