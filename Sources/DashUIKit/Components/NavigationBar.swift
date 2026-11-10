@@ -48,9 +48,12 @@ public struct NavigationBar<Leading: View, Central: View, Trailing: View>: View 
             }
             .padding(.horizontal, NavigationBarLayout.edgePadding)
 
-            // Centered over the full width, and inset by the wider side on both
-            // sides so a long title truncates before it reaches either control.
+            // One line, centered over the full width, and inset by the wider side
+            // on both sides: a long title ends in an ellipsis before it reaches
+            // either control.
             central
+                .lineLimit(1)
+                .truncationMode(.tail)
                 .padding(.horizontal, centralInset)
         }
         .frame(maxWidth: .infinity, minHeight: 74)
