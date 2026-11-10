@@ -23,7 +23,7 @@ and callbacks; they render and report intent. They require `import DashUIKit` an
 - **[Navigation & containers](navigation-and-containers.md)** — `NavigationBar`,
   `NavigationBarElement`, `NavigationBarCircleButton`, `NavigationBarCircleMenu`,
   `NavigationBarCircleIcon`, `TopIntroView`, `BottomSheet`, `FilterBar`, `MenuViewModifier`.
-- **[Feedback](feedback.md)** — `Toast`, `SystemMessageView`,
+- **[Feedback](feedback.md)** — `Toast`, `SystemMessageView`, `ModalDialog`,
   `LoadingIllustration` / `LoadingSpinner`, `SuccessIllustration`, `ErrorIllustration`,
   `XmarkIcon`, `CheckmarkIcon`, `ChevronIcon`, `InfoRoundIcon`.
 - **[Utilities](utilities.md)** — geometry reader (`readingFrame`),
@@ -36,6 +36,7 @@ and callbacks; they render and report intent. They require `import DashUIKit` an
 | Symbol | Page |
 |---|---|
 | `AddressFieldView` | [Buttons & inputs](buttons-and-inputs.md#addressfieldview) |
+| `ModalDialog` | [Feedback](feedback.md#modaldialog) |
 | `SheetFeature` | [Navigation & containers](navigation-and-containers.md#sheetfeature) |
 | `BottomSheet` | [Navigation & containers](navigation-and-containers.md#bottomsheet) |
 | `Bundle.dashUIKit` | [Foundation](foundation.md#bundle) |

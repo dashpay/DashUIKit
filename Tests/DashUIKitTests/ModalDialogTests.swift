@@ -46,12 +46,28 @@ final class ModalDialogTests: XCTestCase {
         XCTAssertTrue(ran)
     }
 
-    /// Paragraphs render in the order given, each its own block; none is dropped
-    /// or merged.
-    func testParagraphsKeepTheirOrder() {
-        let paragraphs = ["First.", "Second.", "Third."]
-        let dialog = ModalDialog(heading: "Success", paragraphs: paragraphs, primaryAction: .init(title: "OK") {})
+    /// A destructive secondary action is red as well: the colour follows the
+    /// role, whichever button it is.
+    func testADestructiveSecondaryActionIsRedToo() {
+        let dialog = ModalDialog(
+            heading: "Remove", paragraphs: [],
+            primaryAction: .init(title: "Cancel") {},
+            secondaryAction: .init(title: "Remove", role: .destructive) {})
 
-        XCTAssertEqual(dialog.paragraphs, paragraphs)
+        XCTAssertEqual(dialog.buttons.map(\.style), [.tintedRed, .tintedGray])
+    }
+
+    /// The paragraphs are drawn as one text, in the order given, a blank line
+    /// between them.
+    func testParagraphsAreDrawnInOrderWithABlankLineBetween() {
+        let dialog = ModalDialog(heading: "Success", paragraphs: ["First.", "Second.", "Third."], primaryAction: .init(title: "OK") {})
+
+        XCTAssertEqual(dialog.bodyText, "First.\n\nSecond.\n\nThird.")
+    }
+
+    func testNoParagraphsDrawNoText() {
+        let dialog = ModalDialog(heading: "Success", paragraphs: [], primaryAction: .init(title: "OK") {})
+
+        XCTAssertNil(dialog.bodyText)
     }
 }

@@ -15,7 +15,6 @@
 //
 #if canImport(UIKit)
 import DashUIKit
-import DashUIKit
 import SwiftUI
 import XCTest
 
@@ -56,6 +55,18 @@ final class ModalDialogSnapshotTests: XCTestCase {
             ModalDialog(heading: "Disconnected", paragraphs: [], primaryAction: .init(title: "OK") {})
         }
         try assertComponentSnapshots(of: view, named: "paragraphs-bare")
+    }
+
+    /// Text taller than the height the host gives scrolls inside the card,
+    /// and the button stays visible under it.
+    func testLongTextScrollsAboveTheButtons() throws {
+        let paragraph = "Some keys on your identity (1) may belong to another app of the same developer, so this wallet left them on. Each one shows on its own row in Connections; disconnect it there if you no longer need it."
+        let view = ModalDialog(
+            icon: .warning, heading: "Success",
+            paragraphs: Array(repeating: paragraph, count: 5),
+            primaryAction: .init(title: "OK") {})
+            .frame(height: 500)
+        try assertComponentSnapshots(of: view, named: "scrolls")
     }
 }
 #endif

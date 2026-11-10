@@ -47,7 +47,7 @@ public struct ModalDialog: View {
     }
 
     /// A button as drawn, top to bottom.
-    struct Button {
+    struct DrawnButton {
         let title: String
         let style: DashButtonStyle
         let handler: () -> Void
@@ -73,16 +73,22 @@ public struct ModalDialog: View {
         self.secondaryAction = secondaryAction
     }
 
-    /// The secondary action above the primary one.
-    var buttons: [Button] {
+    /// The secondary action above the primary one; a destructive one is red,
+    /// whichever button it is.
+    var buttons: [DrawnButton] {
         [secondaryAction, primaryAction].compactMap { action in
             action.map { action in
-                Button(
+                DrawnButton(
                     title: action.title,
                     style: action.role == .destructive ? .tintedRed : .tintedGray,
                     handler: action.handler)
             }
         }
+    }
+
+    /// The paragraphs as one text, a blank line between them; nil without any.
+    var bodyText: String? {
+        paragraphs.isEmpty ? nil : paragraphs.joined(separator: "\n\n")
     }
 
     public var body: some View {
@@ -105,6 +111,9 @@ public struct ModalDialog: View {
         .frame(maxWidth: 330)
         .background(Color.dash.secondaryBackground)
         .clipShape(RoundedRectangle(cornerRadius: 34, style: .continuous))
+        // VoiceOver stays in the card while it is open, whatever the host
+        // presents it in.
+        .accessibilityAddTraits(.isModal)
     }
 
     private var topContent: some View {
@@ -117,11 +126,9 @@ public struct ModalDialog: View {
                 Text(heading)
                     .dashFont(.headline)
                     .accessibilityAddTraits(.isHeader)
-                ForEach(Array(paragraphs.enumerated()), id: \.offset) { index, paragraph in
-                    Text(paragraph)
+                if let bodyText {
+                    Text(bodyText)
                         .dashFont(.subhead)
-                        // A blank line between paragraphs, as the text reads.
-                        .padding(.top, index == 0 ? 0 : DashTextStyle.subhead.lineHeight)
                 }
             }
             .foregroundStyle(Color.dash.primaryText)
@@ -150,7 +157,7 @@ private let leftText = "Disconnected. Some keys of this app are still on your id
 
 private func dimmed(_ dialog: ModalDialog) -> some View {
     ZStack {
-        Color.black.opacity(0.4).ignoresSafeArea()
+        Color.dash.backgroundOverlay.ignoresSafeArea()
         dialog.padding(.horizontal, 20)
     }
 }
