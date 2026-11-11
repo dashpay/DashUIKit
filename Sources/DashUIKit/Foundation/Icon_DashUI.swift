@@ -234,7 +234,7 @@ public enum DashIcon {
     /// `System message`
     public enum SystemMessage: String, CaseIterable, DashIconAsset {
         case infoRectSmall = "system-message-info-rect-small"
-        case publicVisibility = "system-message-public"
+        case `public` = "system-message-public"
         case shieldSmall = "system-message-shield-small"
         case timerSmall = "system-message-timer-small"
         case unmixedFunds = "system-message-unmixed-funds"

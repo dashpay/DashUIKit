@@ -167,4 +167,13 @@ public struct SystemMessageView: View {
     .padding()
 }
 
+#Preview("Public icon") {
+    SystemMessageView(
+        title: "This transaction will be public",
+        subtitle: "The amount and the destination address will be visible on the blockchain.",
+        icon: DashIcon.SystemMessage.public.source
+    )
+    .padding()
+}
+
 #endif // DEBUG

@@ -1,23 +1,16 @@
 {
   "images" : [
     {
-      "filename" : "system-message-public.png",
-      "idiom" : "universal",
-      "scale" : "1x"
-    },
-    {
-      "filename" : "system-message-public@2x.png",
-      "idiom" : "universal",
-      "scale" : "2x"
-    },
-    {
-      "filename" : "system-message-public@3x.png",
-      "idiom" : "universal",
-      "scale" : "3x"
+      "filename" : "system-message-public.svg",
+      "idiom" : "universal"
     }
   ],
   "info" : {
     "author" : "xcode",
     "version" : 1
+  },
+  "properties" : {
+    "preserves-vector-representation" : true,
+    "template-rendering-intent" : "original"
   }
 }

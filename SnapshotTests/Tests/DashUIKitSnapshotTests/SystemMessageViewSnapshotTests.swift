@@ -77,5 +77,15 @@ final class SystemMessageViewSnapshotTests: XCTestCase {
         }
         try assertComponentSnapshots(of: view, named: "link-action")
     }
+
+    /// The coloured public icon (no template tint), on the default surface.
+    func testPublicIcon() throws {
+        let view = SystemMessageView(
+            title: "This transaction will be public",
+            subtitle: "The amount and the destination address will be visible on the blockchain.",
+            icon: DashIcon.SystemMessage.public.source
+        )
+        try assertComponentSnapshots(of: view, named: "public-icon")
+    }
 }
 #endif
