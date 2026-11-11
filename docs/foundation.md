@@ -31,7 +31,7 @@ Token groups (see the source for the full list):
   applicable). These back `DashButtonStyle`.
 - **Component-specific:** `grabberFill`, `searchBackground`/`searchIcon`/…,
   `segmentControl…`, `select…`, `stepper…`, `switchTrackFillOn/Off…`, `textFieldCryptoAddress…`,
-  `toastBackground`/`toastText`, `toolbar…`, `topIntro…`, `bottomNavBackground`,
+  `textFieldPlaceholder`, `toastBackground`/`toastText`, `toolbar…`, `topIntro…`, `bottomNavBackground`,
   `navBackButton`, `backgroundOverlay`, `listGiftCardNumberBackground`, `badgeBackground…`,
   `statusBarElements`, `shortcutBarBackground`
 - **Raw tokens:** `blue` (+ `blueAlpha5…90`), `black`/`black1000Alpha5…90`/`black800/900`,

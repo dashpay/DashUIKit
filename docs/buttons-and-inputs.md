@@ -145,11 +145,12 @@ State-driven styling:
 - **Blurred + filled (no error):** clean read-out — the trailing action button is hidden
   but kept in the layout (opacity 0, non-interactive) so the field width/wrapping doesn't
   shift between focused/unfocused.
-- **Disabled:** field non-editable, action button omitted.
+- **Disabled:** field non-editable, action button omitted; label and entered text drop to
+  `secondaryText`, the placeholder to `tertiaryText` (the `MenuItem` disabled step).
 
-Label: `footnoteMedium` in `primaryText`. Placeholder: `subhead` in `primaryText` at 50 %. Scan
-button: the corner-brackets `DashIcon.Other.textFieldScanQR` (template, `primaryText`) in
-a 40pt tap area.
+Label: `footnoteMedium` in `primaryText`. Placeholder: `subhead` in `textFieldPlaceholder`
+(#0A0A0D / white, both at 50 %). Scan button: the corner-brackets
+`DashIcon.Other.textFieldScanQR` (template, `textFieldCryptoAddressIcon`) in a 40pt tap area.
 
 `showsClearButton: false` drops the trailing ✕ for a field short enough to clear by hand;
 with no `onScanQR` either, no trailing space is reserved at all.

@@ -99,7 +99,7 @@ public struct AddressFieldView<Accessory: View>: View {
             HStack(spacing: 8) {
                 Text(label)
                     .dashFont(.footnoteMedium)
-                    .foregroundStyle(Color.dash.primaryText)
+                    .foregroundStyle(contentColor)
 
                 Spacer(minLength: 0)
 
@@ -221,14 +221,14 @@ extension AddressFieldView {
             // line height cannot be applied to `Text` anyway.
             prompt: Text(placeholder)
                 .font(Font.dash.subhead)
-                .foregroundStyle(Color.dash.primaryText.opacity(0.5)),
+                .foregroundStyle(placeholderColor),
             axis: .vertical
         )
         .lineLimit(1...2)
         .dashFont(.subhead)
         .textInputAutocapitalization(.never)
         .autocorrectionDisabled()
-        .foregroundStyle(Color.dash.primaryText)
+        .foregroundStyle(contentColor)
         .tint(Color.dash.primaryText)
         .focused($isTextFieldFocused)
         .disabled(isDisabled)
@@ -244,10 +244,9 @@ extension AddressFieldView {
                 if let onScanQR {
                     Button(action: onScanQR) {
                         DashIcon.Other.textFieldScanQR.image
-                            .renderingMode(.template)
                             .resizable()
                             .scaledToFit()
-                            .foregroundStyle(Color.dash.primaryText)
+                            .foregroundStyle(Color.dash.textFieldCryptoAddressIcon)
                             .frame(width: Layout.iconSize, height: Layout.iconSize)
                     }
                     .accessibilityLabel(NSLocalizedString("Scan QR code", bundle: .module, comment: "DashUIKit"))
@@ -279,6 +278,16 @@ extension AddressFieldView {
     }
 
     // MARK: - Styling
+
+    /// Label and entered text. A disabled field steps them down one text
+    /// level, as `MenuItem` does, so it does not read as one that takes input.
+    private var contentColor: Color {
+        isDisabled ? Color.dash.secondaryText : Color.dash.primaryText
+    }
+
+    private var placeholderColor: Color {
+        isDisabled ? Color.dash.tertiaryText : Color.dash.textFieldPlaceholder
+    }
 
     private var backgroundColor: Color {
         if isFocusedState { return .clear }
@@ -419,6 +428,18 @@ extension AddressFieldView {
         label: "Destination address",
         placeholder: "BTC address",
         hasError: false, errorText: nil,
+        onScanQR: {}
+    )
+    .padding()
+}
+
+#Preview("Disabled") {
+    AddressFieldView(
+        text: .constant("bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh"),
+        label: "Destination address",
+        placeholder: "BTC address",
+        hasError: false, errorText: nil,
+        isDisabled: true,
         onScanQR: {}
     )
     .padding()
