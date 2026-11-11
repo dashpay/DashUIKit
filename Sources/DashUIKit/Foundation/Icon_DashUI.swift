@@ -263,6 +263,7 @@ public enum DashIcon {
     public enum Other: String, CaseIterable, DashIconAsset {
         case textFieldClear = "text-field-clear"
         case textFieldQR = "text-field-qr"
+        case textFieldScanQR = "text-field-scan-qr"
     }
 
     // MARK: - AdditionalInfo

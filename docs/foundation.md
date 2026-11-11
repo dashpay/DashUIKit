@@ -31,7 +31,7 @@ Token groups (see the source for the full list):
   applicable). These back `DashButtonStyle`.
 - **Component-specific:** `grabberFill`, `searchBackground`/`searchIcon`/…,
   `segmentControl…`, `select…`, `stepper…`, `switchTrackFillOn/Off…`, `textFieldCryptoAddress…`,
-  `toastBackground`/`toastText`, `toolbar…`, `topIntro…`, `bottomNavBackground`,
+  `textFieldPlaceholder`, `toastBackground`/`toastText`, `toolbar…`, `topIntro…`, `bottomNavBackground`,
   `navBackButton`, `backgroundOverlay`, `listGiftCardNumberBackground`, `badgeBackground…`,
   `statusBarElements`, `shortcutBarBackground`
 - **Raw tokens:** `blue` (+ `blueAlpha5…90`), `black`/`black1000Alpha5…90`/`black800/900`,
@@ -118,7 +118,7 @@ Many components accept a `DashIconSource?` directly (`DashButton.leadingIcon`,
 Bundled custom assets (under `Media.xcassets/Icons & Illustrations/`) include nav icons
 (`navigationbar-back/close/plus/info`), search icons, currency glyphs
 (`icon_dash_currency`, `enter-amount-dash`, `chevron-down-currency-select`), checkbox
-icons, text-field icons (`text-field-qr`, `text-field-clear`), menu icons
+icons, text-field icons (`text-field-qr`, `text-field-scan-qr`, `text-field-clear`), menu icons
 (`menu-send/receive`, `support`, …), explainer-sheet feature icons
 (`feature-shield`, `feature-timer`, `feature-identity`, `feature-platform`, each
 with a `-purple` variant where one exists), segmented-control arrows
