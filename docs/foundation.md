@@ -118,7 +118,7 @@ Many components accept a `DashIconSource?` directly (`DashButton.leadingIcon`,
 Bundled custom assets (under `Media.xcassets/Icons & Illustrations/`) include nav icons
 (`navigationbar-back/close/plus/info`), search icons, currency glyphs
 (`icon_dash_currency`, `enter-amount-dash`, `chevron-down-currency-select`), checkbox
-icons, text-field icons (`text-field-qr`, `text-field-clear`), menu icons
+icons, text-field icons (`text-field-qr`, `text-field-scan-qr`, `text-field-clear`), menu icons
 (`menu-send/receive`, `support`, …), explainer-sheet feature icons
 (`feature-shield`, `feature-timer`, `feature-identity`, `feature-platform`, each
 with a `-purple` variant where one exists), segmented-control arrows

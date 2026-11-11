@@ -147,6 +147,10 @@ State-driven styling:
   shift between focused/unfocused.
 - **Disabled:** field non-editable, action button omitted.
 
+Label: `footnoteMedium` in `primaryText`. Placeholder: `subhead` in `primaryText` at 50 %. Scan
+button: the corner-brackets `DashIcon.Other.textFieldScanQR` (template, `primaryText`) in
+a 40pt tap area.
+
 `showsClearButton: false` drops the trailing ✕ for a field short enough to clear by hand;
 with no `onScanQR` either, no trailing space is reserved at all.
 

@@ -23,7 +23,9 @@ private enum Layout {
     static let hSpacing: CGFloat = 20
     static let lPadding: CGFloat = 20
     static let tPadding: CGFloat = 10
-    static let iconSize: CGFloat = 17
+    /// The scan glyph's drawn box: Figma's 17pt `ScanQR` frame plus the half
+    /// of its 2pt stroke that falls outside it on each side.
+    static let iconSize: CGFloat = 19
     static let cornerRadius: CGFloat = 16
     static let actionTapArea: CGFloat = 40
     /// Width of the focus / error ring, drawn hard-edged outside the field —
@@ -96,8 +98,8 @@ public struct AddressFieldView<Accessory: View>: View {
         VStack(alignment: .leading, spacing: 10) {
             HStack(spacing: 8) {
                 Text(label)
-                    .dashFont(.footnote)
-                    .foregroundStyle(Color.dash.gray500)
+                    .dashFont(.footnoteMedium)
+                    .foregroundStyle(Color.dash.primaryText)
 
                 Spacer(minLength: 0)
 
@@ -219,7 +221,7 @@ extension AddressFieldView {
             // line height cannot be applied to `Text` anyway.
             prompt: Text(placeholder)
                 .font(Font.dash.subhead)
-                .foregroundStyle(Color.dash.black1000Alpha30),
+                .foregroundStyle(Color.dash.primaryText.opacity(0.5)),
             axis: .vertical
         )
         .lineLimit(1...2)
@@ -241,9 +243,11 @@ extension AddressFieldView {
                 // did nothing.
                 if let onScanQR {
                     Button(action: onScanQR) {
-                        DashIcon.Other.textFieldQR.image
+                        DashIcon.Other.textFieldScanQR.image
+                            .renderingMode(.template)
                             .resizable()
                             .scaledToFit()
+                            .foregroundStyle(Color.dash.primaryText)
                             .frame(width: Layout.iconSize, height: Layout.iconSize)
                     }
                     .accessibilityLabel(NSLocalizedString("Scan QR code", bundle: .module, comment: "DashUIKit"))
