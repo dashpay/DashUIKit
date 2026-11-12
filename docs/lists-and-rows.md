@@ -61,7 +61,8 @@ per-call fonts/colors, to keep rows consistent):
 
 - `.none`
 - `.toggle(isOn: Binding<Bool>)` — a `SwitchView` (the design system's switch, not the
-  system green `Toggle`); it takes the row's enabled state from the environment
+  system green `Toggle`); it takes the row's enabled state from the environment, and
+  assistive technologies read it under the row's title
 - `.text(String)`
 - `.button(DashButton)` — embed a `DashButton`
 - `.balance(dash: Int64, sign: DashAmountSign = .negativeOnly, fiat: String? = nil)` —
@@ -71,6 +72,20 @@ per-call fonts/colors, to keep rows consistent):
 - `.selection(isSelected: Bool)` — a `CheckmarkIcon` on the chosen row of a picker list.
   Unselected rows keep the mark's slot (drawn at zero opacity), so nothing shifts
   horizontally as the selection moves.
+
+**`action`** — optional, set through `MenuItem(…, action:)`. The icon and text become one
+button that runs it, and the accessory stays a separate element, so a row that opens an
+explainer and carries a switch exposes both: the explainer under the title, the switch
+under the title too, as a switch. Without `action` the row has no tap behaviour of its own.
+
+```swift
+MenuItem(
+    title: "Advanced mode",
+    info: .round(color: Color.dash.gray300Alpha70),
+    accessory: .toggle(isOn: $isAdvanced),
+    action: { showExplainer = true }
+)
+```
 
 ---
 
