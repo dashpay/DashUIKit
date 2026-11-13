@@ -11,7 +11,10 @@ File `Components/NavigationBar.swift`
 A custom three-slot top bar: **leading**, **central**, **trailing**, each a
 `@ViewBuilder`. The leading/trailing pair is laid out in an `HStack` with a `Spacer`
 between; the central content is overlaid centered (so a long title stays centered
-regardless of side content). Min height 74.
+regardless of side content). Text in the central slot is always one line: the slot is
+inset on both sides by the wider of the two side slots plus the 20pt edge padding and a
+10pt gap, and whatever does not fit ends in an ellipsis before it reaches either control.
+Min height 74.
 
 ```swift
 NavigationBar(
