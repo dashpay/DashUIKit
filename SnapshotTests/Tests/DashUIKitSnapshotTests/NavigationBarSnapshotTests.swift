@@ -46,5 +46,38 @@ final class NavigationBarSnapshotTests: XCTestCase {
         }
         try assertComponentSnapshots(of: view, named: "variants")
     }
+
+    private func longTitle() -> some View {
+        Text("A title far too long to fit between the controls")
+            .dashFont(.subheadMedium)
+            .foregroundColor(.dash.primaryText)
+    }
+
+    /// A long title ends in an ellipsis clear of the wider side: with both
+    /// sides, with a back button only, with two views in one slot (measured
+    /// together), and with no sides, where it spans the full width.
+    func testLongTitles() throws {
+        let view = VStack(spacing: 12) {
+            NavigationBar(
+                leading: { NavigationBarElement.back.button {} },
+                central: { longTitle() },
+                trailing: { NavigationBarElement.info.button {} }
+            )
+            NavigationBar(
+                leading: { NavigationBarElement.back.button {} },
+                central: { longTitle() }
+            )
+            NavigationBar(
+                leading: { NavigationBarElement.back.button {} },
+                central: { longTitle() },
+                trailing: {
+                    NavigationBarCircleButton(.system("arrow.clockwise"), accessibilityLabel: Text("Refresh")) {}
+                    NavigationBarCircleButton(.system("ellipsis"), accessibilityLabel: Text("More")) {}
+                }
+            )
+            NavigationBar(central: { longTitle() })
+        }
+        try assertComponentSnapshots(of: view, named: "long-titles")
+    }
 }
 #endif

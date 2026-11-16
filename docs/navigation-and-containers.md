@@ -9,12 +9,17 @@ Structural chrome — nav bars, bottom sheets, and card styling.
 File `Components/NavigationBar.swift`
 
 A custom three-slot top bar: **leading**, **central**, **trailing**, each a
-`@ViewBuilder`. The leading/trailing pair is laid out in an `HStack` with a `Spacer`
-between; the central content is overlaid centered (so a long title stays centered
-regardless of side content). Text in the central slot is always one line: the slot is
-inset on both sides by the wider of the two side slots plus the 20pt edge padding and a
-10pt gap, and whatever does not fit ends in an ellipsis before it reaches either control.
-Min height 74.
+`@ViewBuilder`. A small `Layout` places the leading slot at the left edge and the
+trailing slot at the right, 20pt in, and centres the central slot over the full width
+(so a long title stays centered regardless of side content). Each slot is measured as
+one row, so two buttons in one slot count as their combined width.
+
+The central slot is inset on both sides by the wider side slot plus the 20pt edge
+padding and a 10pt gap. Text there is one line by default and ends in an ellipsis
+before it reaches either control; a host's own `.lineLimit` still wins, and non-Text
+content is only offered the narrower width. With no side slots the central slot spans
+the full width, so content that pads itself (a search field, a segmented control) keeps
+its own margins. Min height 74.
 
 ```swift
 NavigationBar(
