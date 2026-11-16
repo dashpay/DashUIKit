@@ -79,5 +79,27 @@ final class NavigationBarSnapshotTests: XCTestCase {
         }
         try assertComponentSnapshots(of: view, named: "long-titles")
     }
+
+    /// Mirrored: the back button is on the right, the trailing slot on the
+    /// left, and a long title still ends in an ellipsis clear of both.
+    func testRightToLeft() throws {
+        let view = VStack(spacing: 12) {
+            NavigationBar(
+                leading: { NavigationBarElement.back.button {} },
+                central: { longTitle() },
+                trailing: { NavigationBarElement.info.button {} }
+            )
+            NavigationBar(
+                leading: { NavigationBarElement.back.button {} },
+                central: { longTitle() },
+                trailing: {
+                    NavigationBarCircleButton(.system("arrow.clockwise"), accessibilityLabel: Text("Refresh")) {}
+                    NavigationBarCircleButton(.system("ellipsis"), accessibilityLabel: Text("More")) {}
+                }
+            )
+        }
+        .environment(\.layoutDirection, .rightToLeft)
+        try assertComponentSnapshots(of: view, named: "right-to-left")
+    }
 }
 #endif

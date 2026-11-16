@@ -326,3 +326,17 @@ public enum NavigationBarElement: String, CaseIterable {
         NavigationBar(central: { title })
     }
 }
+
+#Preview("NavigationBar Right to Left") {
+    // Mirrored: the back button is on the right, and the title stays clear of both sides.
+    NavigationBar(
+        leading: { NavigationBarElement.back.button { } },
+        central: {
+            Text("A title far too long to fit between the controls")
+                .dashFont(.subheadMedium)
+                .foregroundStyle(Color.dash.primaryText)
+        },
+        trailing: { NavigationBarElement.info.button { } }
+    )
+    .environment(\.layoutDirection, .rightToLeft)
+}
