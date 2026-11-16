@@ -69,6 +69,7 @@ public enum DashIcon {
     public enum Illustrations: String, CaseIterable, DashIconAsset {
         case crowdnodeWarning = "crowdnode.warning"
         case dashDex = "illustration-dash-dex"
+        case dialogueWarning = "dialogue-warning"
     }
 
     // MARK: - Features
@@ -233,6 +234,7 @@ public enum DashIcon {
     /// `System message`
     public enum SystemMessage: String, CaseIterable, DashIconAsset {
         case infoRectSmall = "system-message-info-rect-small"
+        case `public` = "system-message-public"
         case shieldSmall = "system-message-shield-small"
         case timerSmall = "system-message-timer-small"
         case unmixedFunds = "system-message-unmixed-funds"
@@ -262,6 +264,7 @@ public enum DashIcon {
     public enum Other: String, CaseIterable, DashIconAsset {
         case textFieldClear = "text-field-clear"
         case textFieldQR = "text-field-qr"
+        case textFieldScanQR = "text-field-scan-qr"
     }
 
     // MARK: - AdditionalInfo

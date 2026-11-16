@@ -55,6 +55,13 @@ public struct MenuItem: View {
     public var helpText: String?
     public var info: MenuItemInfo?
     public var accessory: MenuItemAccessory
+    /// What tapping the row's icon and text does, apart from its accessory.
+    ///
+    /// With an action the icon and text are one button and the accessory stays
+    /// its own element, so a row that opens an explainer can still carry a
+    /// switch that assistive technologies reach on its own. Without one the
+    /// host decides what the row does, e.g. by wrapping it in a `Button`.
+    public var action: (() -> Void)?
 
     public init(
         leadingIcon: DashIconSource? = nil,
@@ -74,11 +81,48 @@ public struct MenuItem: View {
         self.accessory = accessory
     }
 
+    /// A row whose icon and text perform `action`, with the accessory kept as
+    /// a separate element. See ``action``.
+    public init(
+        leadingIcon: DashIconSource? = nil,
+        isEnabled: Bool = true,
+        disabledLeadingIcon: DashIconSource? = nil,
+        title: String,
+        helpText: String? = nil,
+        info: MenuItemInfo? = nil,
+        accessory: MenuItemAccessory = .none,
+        action: @escaping () -> Void
+    ) {
+        self.init(
+            leadingIcon: leadingIcon,
+            isEnabled: isEnabled,
+            disabledLeadingIcon: disabledLeadingIcon,
+            title: title,
+            helpText: helpText,
+            info: info,
+            accessory: accessory
+        )
+        self.action = action
+    }
+
     public var body: some View {
         HStack(spacing: 10) {
-            leading
-            central
-            Spacer()
+            if let action {
+                Button(action: action) {
+                    HStack(spacing: 10) {
+                        leading
+                        central
+                        Spacer()
+                    }
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .disabled(!isEnabled)
+            } else {
+                leading
+                central
+                Spacer()
+            }
             trailing
         }
         .padding(10)
@@ -133,8 +177,11 @@ public struct MenuItem: View {
             // by UIKit, so a menu row rendered here did not match the switch
             // the same design system hands out everywhere else. It reads
             // `isEnabled` from the environment, which `.disabled` sets.
+            // Named after the row, so the switch reads as its setting rather
+            // than an unlabelled control next to the title.
             SwitchView(isOn: isOn)
                 .disabled(!isEnabled)
+                .accessibilityLabel(Text(title))
         case .text(let value):
             Text(value)
                 .dashFont(.subhead)
@@ -190,6 +237,18 @@ public struct MenuItem: View {
     MenuItem(
         title: "Enable biometrics",
         accessory: .toggle(isOn: $isOn)
+    )
+    .padding(.horizontal)
+}
+
+#Preview("Accessory: toggle + row action") {
+    @Previewable @State var isOn = false
+    MenuItem(
+        title: "Advanced mode",
+        helpText: "Tap to learn more",
+        info: .round(color: Color.dash.gray300Alpha70),
+        accessory: .toggle(isOn: $isOn),
+        action: {}
     )
     .padding(.horizontal)
 }

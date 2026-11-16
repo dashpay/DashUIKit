@@ -175,6 +175,7 @@ public enum DashColors {
 
     public static var textFieldCryptoAddressBackground: Color { dashAsset("TextFieldCryptoAddressBackground") }
     public static var textFieldCryptoAddressIcon: Color { dashAsset("TextFieldCryptoAddressIcon") }
+    public static var textFieldPlaceholder: Color { dashAsset("TextFieldPlaceholder") }
 
     // MARK: Toast
 

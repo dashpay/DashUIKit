@@ -399,7 +399,7 @@ check_literals() {
 }
 
 # 1. Icons: `case a = "x"`, `case a` (raw value is the name), `case a, b = "y"`,
-# read only directly inside an enum whose declaration (up to its "{", on one line
+# a name in backticks (`case `public` = "x"`), read only directly inside an enum whose declaration (up to its "{", on one line
 # or several) names DashIconAsset. Lines of any other shape (`case let …`,
 # associated values) are not icons.
 icon_values=$work/icon-values
@@ -407,15 +407,15 @@ awk -v f="$icons" '
   function cases(text, ln,   item, one, value) {
     sub(/^[[:space:]]+/, "", text)
     sub(/[[:space:]]*\}[[:space:]]*$/, "", text)
-    if (text !~ /^case[[:space:]]+[A-Za-z_]/) return
+    if (text !~ /^case[[:space:]]+`?[A-Za-z_]/) return
     sub(/^case[[:space:]]+/, "", text)
-    item = "[A-Za-z_][A-Za-z0-9_]*([[:space:]]*=[[:space:]]*\"[^\"]*\")?"
+    item = "(`[A-Za-z_][A-Za-z0-9_]*`|[A-Za-z_][A-Za-z0-9_]*)([[:space:]]*=[[:space:]]*\"[^\"]*\")?"
     if (text !~ ("^" item "([[:space:]]*,[[:space:]]*" item ")*[[:space:]]*$")) return
     while (match(text, item)) {
       one = substr(text, RSTART, RLENGTH)
       text = substr(text, RSTART + RLENGTH)
       if (match(one, /"[^"]*"/)) value = substr(one, RSTART + 1, RLENGTH - 2)
-      else value = one
+      else { value = one; gsub(/`/, "", value) }
       print value "\t" f "\t" ln
     }
   }

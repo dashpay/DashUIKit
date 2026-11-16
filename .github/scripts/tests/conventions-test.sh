@@ -83,6 +83,7 @@ fresh; printf '%s\n' 'enum FixtureIcon: String, CaseIterable, DashIconAsset {' \
   '    case ghost = "no-such-icon"' \
   '    case noSuchBare' \
   '    case listA = "nope-a", listB' \
+  "    case \`default\` = \"no-such-ticked\", \`bareTicked\`" \
   "    case dup = \"${img}\"" \
   '    func f() { switch self { case let x where x == .ghost: break; default: break } }' \
   '}' >> "$work/tree/$src/Foundation/Icon_DashUI.swift"
@@ -91,6 +92,8 @@ expect "enum cases without assets" fail \
   'no imageset named "noSuchBare"' \
   'no imageset named "nope-a"' \
   'no imageset named "listB"' \
+  'no imageset named "no-such-ticked"' \
+  'no imageset named "bareTicked"' \
   "\"${img}\" is declared more than once"
 
 fresh; mkdir "$work/tree/$catalog/Fixture & Folder"; cp -R "$(first_set imageset)" "$work/tree/$catalog/Fixture & Folder/"

@@ -66,6 +66,34 @@ one or two of them.
 
 ---
 
+## ModalDialog
+
+File `Components/ModalDialog.swift`
+
+A dialog card: an optional icon (`.warning`, the yellow tile), a heading, any number of
+paragraphs drawn as one text with a blank line between them, and one or two full-width
+buttons. The secondary action sits above the primary one; a `.destructive` action is drawn
+`tintedRed` whichever button it is, every other one `tintedGray`. The card is at most 330 pt wide and only
+lays itself out: the host presents it, over a dim, centred. Text taller than the space
+the host gives scrolls inside the card, and the buttons stay visible.
+
+```swift
+ModalDialog(
+    icon: .warning,
+    heading: "Keys left on your identity",
+    paragraphs: [question, warning],
+    primaryAction: .init(title: "Turn them off", role: .destructive) { /* … */ },
+    secondaryAction: .init(title: "Leave them") { /* … */ }
+)
+```
+
+VoiceOver reads the heading as a header, then the paragraphs in order; the icon is
+hidden. The card carries the `isModal` trait, so VoiceOver does not reach the screen
+behind it while it is shown, even in a host's `ZStack`. The heading uses the `headline` token, which is bold where the Figma `Dialogue`
+component draws it semibold.
+
+---
+
 ## LoadingIllustration / LoadingSpinner
 
 File `Components/Illustrations/LoadingIllustration.swift`

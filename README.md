@@ -92,6 +92,7 @@ a component already exists before building your own.
 | `FilterBar` | Bottom "Filtered by" bar with a round filter button; a toast can take the caption's place | [Navigation & containers](docs/navigation-and-containers.md) |
 | `MenuViewModifier` | Card chrome — rounded background + shadow | [Navigation & containers](docs/navigation-and-containers.md) |
 | `Toast` | Blurred toast — warning/info/error/success/copied/loading/noInternet; optional VoiceOver label | [Feedback](docs/feedback.md) |
+| `ModalDialog` | Dialog card — warning icon, heading, paragraphs, one or two stacked buttons (one destructive) | [Feedback](docs/feedback.md) |
 | `LoadingIllustration` / `LoadingSpinner` | iOS-style activity spinner | [Feedback](docs/feedback.md) |
 | `SuccessIllustration` / `ErrorIllustration` | 90×90 status badges | [Feedback](docs/feedback.md) |
 | `XmarkIcon` | Code-drawn close (✕) icon | [Feedback](docs/feedback.md) |

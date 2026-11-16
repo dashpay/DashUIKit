@@ -113,7 +113,7 @@ public struct SearchBar: View {
             // line height cannot be applied to `Text` anyway.
             prompt: Text(placeholder)
                 .font(Font.dash.subhead)
-                .foregroundStyle(Color.dash.black1000Alpha30)
+                .foregroundStyle(Color.dash.searchPlaceholder)
         ) {
             EmptyView()
         }
