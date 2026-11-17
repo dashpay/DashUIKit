@@ -33,19 +33,76 @@ public struct NavigationBar<Leading: View, Central: View, Trailing: View>: View 
     }
 
     public var body: some View {
-        ZStack {
-            HStack {
-                leading
-
-                Spacer()
-
-                trailing
+        // Each slot is exactly one subview, however many views its builder
+        // returns (none for an omitted slot), so a slot with two buttons is
+        // measured as both.
+        NavigationBarSlotsLayout {
+            HStack { leading }
+            ZStack {
+                central
+                    .lineLimit(1)
+                    .truncationMode(.tail)
             }
-            .padding(.horizontal, 20)
-
-            central
+            HStack { trailing }
         }
-        .frame(maxWidth: .infinity, minHeight: 74)
+    }
+}
+
+// MARK: - Layout
+
+/// Places the leading and trailing slots at the edges and centres the central
+/// slot over the full width, inset on both sides by the wider side plus a gap:
+/// a long title ends in an ellipsis before it reaches either control. With no
+/// side slots, the central slot spans the full width.
+private struct NavigationBarSlotsLayout: Layout {
+    static let edgePadding: CGFloat = 20
+    /// The minimum gap between the title and a control.
+    static let minimumSpacing: CGFloat = 10
+    static let minimumHeight: CGFloat = 74
+
+    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
+        assert(subviews.count == 3, "NavigationBar passes leading, central and trailing")
+        guard subviews.count == 3 else { return .zero }
+
+        let leading = subviews[0].sizeThatFits(.unspecified)
+        let trailing = subviews[2].sizeThatFits(.unspecified)
+        let width = proposal.width ?? {
+            let central = subviews[1].sizeThatFits(.unspecified).width
+            return 2 * centralInset(leading: leading.width, trailing: trailing.width) + central
+        }()
+        let central = subviews[1].sizeThatFits(ProposedViewSize(
+            width: centralWidth(in: width, leading: leading.width, trailing: trailing.width),
+            height: nil))
+        let height = max(Self.minimumHeight, leading.height, trailing.height, central.height)
+        return CGSize(width: width, height: height)
+    }
+
+    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
+        guard subviews.count == 3 else { return }
+
+        let leading = subviews[0].sizeThatFits(.unspecified)
+        let trailing = subviews[2].sizeThatFits(.unspecified)
+
+        subviews[0].place(at: CGPoint(x: bounds.minX + Self.edgePadding, y: bounds.midY),
+                          anchor: .leading, proposal: ProposedViewSize(leading))
+        subviews[2].place(at: CGPoint(x: bounds.maxX - Self.edgePadding, y: bounds.midY),
+                          anchor: .trailing, proposal: ProposedViewSize(trailing))
+
+        let width = centralWidth(in: bounds.width, leading: leading.width, trailing: trailing.width)
+        subviews[1].place(at: CGPoint(x: bounds.midX, y: bounds.midY),
+                          anchor: .center, proposal: ProposedViewSize(width: width, height: bounds.height))
+    }
+
+    private func centralInset(leading: CGFloat, trailing: CGFloat) -> CGFloat {
+        let side = max(leading, trailing)
+        guard side > 0 else { return 0 }
+        return Self.edgePadding + side + Self.minimumSpacing
+    }
+
+    /// Never negative, so side slots wider than the bar leave no room for the
+    /// central slot instead of pushing it past the bar's edges.
+    private func centralWidth(in width: CGFloat, leading: CGFloat, trailing: CGFloat) -> CGFloat {
+        max(0, width - 2 * centralInset(leading: leading, trailing: trailing))
     }
 }
 
@@ -236,4 +293,50 @@ public enum NavigationBarElement: String, CaseIterable {
         },
         trailing: { NavigationBarElement.close.button { } }
     )
+}
+
+#Preview("NavigationBar Long Titles") {
+    let title = Text("A title far too long to fit between the controls")
+        .dashFont(.subheadMedium)
+        .foregroundStyle(Color.dash.primaryText)
+
+    VStack {
+        NavigationBar(
+            leading: { NavigationBarElement.back.button { } },
+            central: { title },
+            trailing: { NavigationBarElement.info.button { } }
+        )
+
+        NavigationBar(
+            leading: { NavigationBarElement.back.button { } },
+            central: { title }
+        )
+
+        NavigationBar(
+            leading: { NavigationBarElement.back.button { } },
+            central: { title },
+            trailing: {
+                NavigationBarCircleButton(.system("arrow.clockwise"), accessibilityLabel: Text("Refresh")) { }
+                NavigationBarCircleMenu(.system("ellipsis"), accessibilityLabel: Text("More")) {
+                    Button("Action") { }
+                }
+            }
+        )
+
+        NavigationBar(central: { title })
+    }
+}
+
+#Preview("NavigationBar Right to Left") {
+    // Mirrored: the back button is on the right, and the title stays clear of both sides.
+    NavigationBar(
+        leading: { NavigationBarElement.back.button { } },
+        central: {
+            Text("A title far too long to fit between the controls")
+                .dashFont(.subheadMedium)
+                .foregroundStyle(Color.dash.primaryText)
+        },
+        trailing: { NavigationBarElement.info.button { } }
+    )
+    .environment(\.layoutDirection, .rightToLeft)
 }
