@@ -124,6 +124,7 @@ public enum DashColors {
 
     // MARK: Overlay
 
+    /// The dim behind a modal: `black1000` at 50% in light, `black800` at 80% in dark.
     public static var backgroundOverlay: Color { dashAsset("BackgroundOverlay") }
 
     // MARK: Search
@@ -221,6 +222,7 @@ public enum DashColors {
     public static var black1000Alpha80: Color { dashAsset("Black1000Alpha80") }
     public static var black1000Alpha90: Color { dashAsset("Black1000Alpha90") }
     public static var black800: Color { dashAsset("Black800") }
+    public static var black800Alpha80: Color { dashAsset("Black800Alpha80") }
     public static var black900: Color { dashAsset("Black900") }
     public static var gray50: Color { dashAsset("Gray50") }
     public static var gray100: Color { dashAsset("Gray100") }

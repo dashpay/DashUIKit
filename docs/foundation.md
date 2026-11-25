@@ -34,7 +34,7 @@ Token groups (see the source for the full list):
   `textFieldPlaceholder`, `toastBackground`/`toastText`, `toolbar…`, `topIntro…`, `bottomNavBackground`,
   `navBackButton`, `backgroundOverlay`, `listGiftCardNumberBackground`, `badgeBackground…`,
   `statusBarElements`, `shortcutBarBackground`
-- **Raw tokens:** `blue` (+ `blueAlpha5…90`), `black`/`black1000Alpha5…90`/`black800/900`,
+- **Raw tokens:** `blue` (+ `blueAlpha5…90`), `black`/`black1000Alpha5…90`/`black800/900`/`black800Alpha80`,
   `gray50…500` (+ alpha variants), `green`/`greenAlpha10`, `red`/`redAlpha5/10`,
   `white`/`whiteAlpha5…90`, `orange`, `yellow`, `lightBlue`, `purple`, `topper`, `uphold`
 - **`shadow`** — the `Shadow` colorset (subtle on light, clear on dark);
