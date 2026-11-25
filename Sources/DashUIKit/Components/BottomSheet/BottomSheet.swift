@@ -68,15 +68,26 @@ public struct BottomSheet<Content: View>: View {
 
     public var body: some View {
         let sheet = VStack(spacing: 0) {
-            grabber
-                .frame(maxWidth: .infinity, minHeight: 18, maxHeight: 18, alignment: .center)
-
             if hasHeaderContent {
                 header
+            } else {
+                // No header to lay the grabber over: keep its strip clear so
+                // the content doesn't start underneath it.
+                Color.clear.frame(height: Self.grabberStripHeight)
             }
 
             content()
                 .frame(maxWidth: .infinity, maxHeight: fillsHeight ? .infinity : nil)
+        }
+        // Pinned to the sheet's top edge and laid over the header rather than
+        // stacked above it, so the navigation bar starts flush with the top
+        // and the grabber sits in the same place on every sheet.
+        .overlay(alignment: .top) {
+            grabber
+                .frame(maxWidth: .infinity, minHeight: Self.grabberStripHeight,
+                       maxHeight: Self.grabberStripHeight, alignment: .center)
+                .allowsHitTesting(false)
+                .accessibilityHidden(true)
         }
         // The shape-style overload, which `.background(Color)` resolves to: the fill
         // runs under the safe areas the sheet keeps, so a `fillsHeight` sheet's
@@ -113,6 +124,9 @@ public struct BottomSheet<Content: View>: View {
             }
             .interactiveDismissDisabled(!isDismissalEnabled)
     }
+
+    /// The strip the grabber is centred in, from the sheet's top edge.
+    static var grabberStripHeight: CGFloat { 18 }
 
     private var grabber: some View {
         Rectangle()

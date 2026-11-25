@@ -137,6 +137,10 @@ File `Components/BottomSheet/BottomSheet.swift`
 Sheet chrome to put **inside** a SwiftUI `.sheet { }`: a grabber, a `NavigationBar` header
 (optional back button + title + close), and your content. Two height modes.
 
+The grabber is pinned to the sheet's top edge and drawn over the header, so the
+`NavigationBar` starts flush with the top. A sheet with no header keeps an 18pt strip
+clear for the grabber instead.
+
 ```swift
 .sheet(isPresented: $isPresented) {
     BottomSheet(
